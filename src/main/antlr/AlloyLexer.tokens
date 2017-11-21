@@ -1,9 +1,0 @@
-NEWLINE=1
-WS=2
-SIG=3
-LBRACKET=4
-RBRACKET=5
-ID=6
-'sig'=3
-'{'=4
-'}'=5
