@@ -11,9 +11,29 @@ PRIVATE            : 'private' ;
 OPEN               : 'open' ;
 AS                 : 'as' ;
 FACT               : 'fact' ;
+FUN                : 'fun' ;
+PRED               : 'pred' ;
+EXPECT             : 'expect' ;
+FOR                : 'for' ;
+BUT                : 'but' ;
+ENUM               : 'enum' ;
+ABSTRACT           : 'abstract' ;
+EXTENDS            : 'extends' ;
+LET                : 'let' ;
+
+
+// commands
+RUN                : 'run' ;
+CHECK              : 'check' ;
+ASSERT             : 'assert' ;
 
 // quantifiers
 EXACTLY            : 'exactly' ;
+LONE               : 'lone' ;
+ONE                : 'one' ;
+SOME               : 'some' ;
+ALL                : 'all' ;
+NO                 : 'no' ;
 
 // brackets
 LBRACKET           : '{' ;
@@ -26,6 +46,8 @@ RPAREN             : ')' ;
 // symbols
 COMMA              : ',' ;
 DASH               : '|' ;
+DOT                : '.' ;
+COLON              : ':' ;
 
 // types
 INT                : 'int' ;
