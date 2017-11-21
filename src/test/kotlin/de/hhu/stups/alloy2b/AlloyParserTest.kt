@@ -31,22 +31,9 @@ class AlloyParserTest {
     fun parseResource(resourceName: String) : AlloyParser.SpecificationContext = AlloyParser(CommonTokenStream(lexerForResource(resourceName))).specification()
 
     @test fun parseFileSystemModel() {
-        assertEquals(
-                """SandyFile
-  Line
-    AssignmentStatement
-      Assignment
-        T[a]
-        T[=]
-        BinaryOperation
-          IntLiteral
-            T[1]
-          T[+]
-          IntLiteral
-            T[2]
-    T[<EOF>]
-""",
-                toParseTree(parseResource("FileSystem")).multiLineString())
+        val expected = this.javaClass.getResourceAsStream("/FileSystem_Tree.txt");
+        val expectedAsString = expected.bufferedReader().use { it.readText() }
+        assertEquals(expectedAsString, toParseTree(parseResource("FileSystem")).multiLineString())
     }
 
 
