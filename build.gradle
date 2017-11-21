@@ -1,0 +1,49 @@
+group 'de.hhu.stups'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.1.60'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'antlr'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/kotlin', 'build/generated-src']
+        }
+    }
+}
+
+dependencies {
+    antlr "org.antlr:antlr4:4.7"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    testCompile 'junit:junit:4.12'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+// gradle generateGrammarSource
+generateGrammarSource {
+    maxHeapSize = "64m"
+    arguments += ["-visitor", "-long-messages", "-package", "de.hhu.stups.alloy2b.antlr"]
+    outputDirectory = file('build/generated-src/de/hhu/stups/alloy2b/antlr')
+}
