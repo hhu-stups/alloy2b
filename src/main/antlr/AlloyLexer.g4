@@ -1,9 +1,9 @@
 lexer grammar AlloyLexer;
 
 // whitespace
-NEWLINE            : '\r\n' | 'r' | '\n' ;
-WS                 : [\t ]+ ;
-COMMENT            : '//' ~( '\r' | '\n' )* ;
+NEWLINE            : ('\r\n' | 'r' | '\n') -> skip ;
+WS                 : [\t ]+ -> skip ;
+COMMENT            : '//' ~( '\r' | '\n' )* -> skip ;
 
 // keywords
 SIG                : 'sig' ;
