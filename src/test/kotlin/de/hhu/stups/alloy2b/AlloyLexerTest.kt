@@ -1,10 +1,8 @@
 package de.hhu.stups.alloy2b
 
 import de.hhu.stups.alloy2b.antlr.*
-import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CharStreams
 import org.junit.Assert.assertEquals
-import java.io.*
 import java.util.*
 import org.junit.Test as test
 //import kotlin.test.*
