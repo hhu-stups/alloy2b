@@ -20,7 +20,13 @@ ENUM               : 'enum' ;
 ABSTRACT           : 'abstract' ;
 EXTENDS            : 'extends' ;
 LET                : 'let' ;
-
+THIS               : 'this' ;
+SET                : 'set' ;
+SUM                : 'sum' ;
+IDEN               : 'iden' ;
+UNIV               : 'univ' ;
+ELSE               : 'else' ;
+DISJ               : 'DISJ' ;
 
 // commands
 RUN                : 'run' ;
@@ -34,6 +40,7 @@ ONE                : 'one' ;
 SOME               : 'some' ;
 ALL                : 'all' ;
 NO                 : 'no' ;
+NONE               : 'none' ;
 
 // brackets
 LBRACKET           : '{' ;
@@ -48,6 +55,8 @@ COMMA              : ',' ;
 DASH               : '|' ;
 DOT                : '.' ;
 COLON              : ':' ;
+SLASH              : '/' ;
+AT                 : '@' ;
 
 // types
 INT                : 'int' ;
@@ -61,6 +70,11 @@ IMPLIES            : 'implies' | '=>' ;
 IFF                : '<=>' | 'iff' ;
 OR                 : '||' | 'or' ;
 NOT                : '!' | 'not' ;
+ARROW              : '->' ;
+EQUAL              : '=' ;
+PLUS               : '+' ;
+MINUS              : '-' ;
+IN                 : 'in' ;
 
 // identifiers
 ID                 : [A-Za-z][A-Za-z0-9_]* ;
