@@ -14,11 +14,11 @@ factDecl           : FACT (name)? block ;
 
 assertDecl         : ASSERT (name)? block ;
 
-funDecl            : PRIVATE? FUN (ref DOT)? name LPAREN decl RPAREN COLON expr block // was decl,*
-                   | PRIVATE? FUN (ref DOT)? name LSQBRACKET decl RSQBRACKET COLON expr block // was decl,*
+funDecl            : PRIVATE? FUN (ref DOT)? name LPAREN declList? RPAREN COLON expr block
+                   | PRIVATE? FUN (ref DOT)? name LSQBRACKET declList? RSQBRACKET COLON expr block
                    | PRIVATE? FUN (ref DOT)? name COLON expr block
-                   | PRIVATE? PRED (ref DOT)? name LPAREN decl RPAREN block // was decl,*
-                   | PRIVATE? PRED (ref DOT)? name LSQBRACKET decl RSQBRACKET block // was decl,*
+                   | PRIVATE? PRED (ref DOT)? name LPAREN declList? RPAREN block
+                   | PRIVATE? PRED (ref DOT)? name LSQBRACKET declList? RSQBRACKET block
                    | PRIVATE? PRED (ref DOT)? name block ;
 
 cmdDecl            : (name COLON)? (RUN | CHECK) ( name | block ) scope;
@@ -30,7 +30,10 @@ scope              : FOR NUMBER ( EXPECT NUMBER )? // number permits more than j
 
 typescope          : EXACTLY? NUMBER (name | INT | SEQ)? ;
 
-sigDecl            : sigQual* SIG name ( sigExt )? LBRACKET decl RBRACKET ( block )? ; // was name,+ and decl,*
+sigDecl            : sigQual* SIG name ( sigExt )? LBRACKET declList? RBRACKET ( block )? ; // was name,+
+
+declList           : decl
+                   | decl COMMA declList ;
 
 enumDecl           : ENUM name LBRACKET name (COMMA name)* RBRACKET ;
 
@@ -40,7 +43,7 @@ sigExt             : EXTENDS ref
                    | IN ref (PLUS ref)* ;
 
 expr               : LET letDecl blockOrBar // was letDecl,+
-                   | quant decl blockOrBar // was decl,+
+                   | quant declList blockOrBar
                    | unOp expr
                    | expr binOp expr
                    | expr arrowOp expr
@@ -57,7 +60,7 @@ expr               : LET letDecl blockOrBar // was letDecl,+
                    | LPAREN expr RPAREN
                    | AT? name
                    | block
-                   | LBRACKET decl blockOrBar RBRACKET ; // was decl,+
+                   | LBRACKET declList blockOrBar RBRACKET ;
 
 decl               : PRIVATE? DISJ? name COLON DISJ? expr ; //was name,+
 
@@ -65,13 +68,13 @@ letDecl            : name EQUAL expr ;
 
 quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
-binOp              : OR | AND | IFF | IMPLIES | PLUS | MINUS ; // todo: add | "++" | "<:" | ":>" | "." | "<<" | ">>" | ">>>" ;
+binOp              : OR | AND | IFF | IMPLIES | PLUS | MINUS | DOT; // todo: add | "++" | "<:" | ":>" | "<<" | ">>" | ">>>" ;
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;
 
 compareOp          : EQUAL | IN ; // todo: add | "<" | ">" | "=<" | ">=" ;
 
-unOp               : NOT | NO | SOME | LONE | ONE | SET | SEQ ; // todo: add | "#" | "~" | "*" | "^" ;
+unOp               : NOT | NO | SOME | LONE | ONE | SET | SEQ | ITERATION | CLOSURE | INVERSE; // todo: add | "#" ;
 
 block              : LBRACKET expr* RBRACKET ;
 

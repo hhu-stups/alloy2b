@@ -76,6 +76,9 @@ EQUAL              : '=' ;
 PLUS               : '+' ;
 MINUS              : '-' ;
 IN                 : 'in' ;
+ITERATION          : '*' ;
+CLOSURE            : '^' ;
+INVERSE            : '~' ;
 
 // identifiers
 ID                 : [A-Za-z][A-Za-z0-9_]* ;
