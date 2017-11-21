@@ -8,7 +8,7 @@ import org.junit.Assert.assertEquals
 import java.util.*
 import org.junit.Test as test
 
-class SandyParserTest {
+class AlloyParserTest {
 
     fun lexerForCode(code: String) = AlloyLexer(CharStreams.fromString(code))
 
