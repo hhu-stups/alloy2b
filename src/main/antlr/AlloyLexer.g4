@@ -3,6 +3,7 @@ lexer grammar AlloyLexer;
 // whitespace
 NEWLINE            : '\r\n' | 'r' | '\n' ;
 WS                 : [\t ]+ ;
+COMMENT            : '//' ~( '\r' | '\n' )* ;
 
 // keywords
 SIG                : 'sig' ;
