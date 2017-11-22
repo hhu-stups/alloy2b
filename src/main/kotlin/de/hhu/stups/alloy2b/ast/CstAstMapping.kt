@@ -36,14 +36,6 @@ fun ExprContext.toAst(considerPosition: Boolean = false) : Expression = when(thi
 
 fun DeclContext.toAst(considerPosition: Boolean = false) : Decl = Decl(this.name().text, this.expr().toAst(considerPosition))
 
-
-//fun StatementContext.toAst(considerPosition: Boolean = false) : Statement = when (this) {
-//    is VarDeclarationStatementContext -> VarDeclaration(varDeclaration().assignment().ID().text, varDeclaration().assignment().expression().toAst(considerPosition), toPosition(considerPosition))
-//    is AssignmentStatementContext -> Assignment(assignment().ID().text, assignment().expression().toAst(considerPosition), toPosition(considerPosition))
-//    is PrintStatementContext -> Print(print().expression().toAst(considerPosition), toPosition(considerPosition))
-//    else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
-//}
-
 class AlloyParseTreeToAstMapper : ParseTreeToAstMapper<SpecificationContext, AlloySpecification> {
     override fun map(parseTreeNode: SpecificationContext): AlloySpecification = parseTreeNode.toAst()
 }
