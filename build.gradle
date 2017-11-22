@@ -47,6 +47,7 @@ generateGrammarSource {
     outputDirectory = file('build/generated-src/de/hhu/stups/alloy2b/antlr')
 }
 compileJava.dependsOn generateGrammarSource
+compileKotlin.dependsOn generateGrammarSource
 
 sourceSets {
     generated {
