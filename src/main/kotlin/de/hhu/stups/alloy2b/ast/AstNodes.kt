@@ -25,7 +25,7 @@ data class NameSignatureExtension(val name: String, override val position: Posit
 
 // expressions
 data class UnaryOperatorExpression(val operator: Operator, val expression: Expression, override val position: Position? = null) : Expression
-data class BinaryOperatorExpression(val operator: Operator, val expressions: List<Expression>, override val position: Position? = null) : Expression
+data class BinaryOperatorExpression(val operator: Operator, val left: Expression, val right: Expression, override val position: Position? = null) : Expression
 data class IdentifierExpression(val name: String, override val position: Position? = null) : Expression
 data class QuantifiedExpression(val operator: Operator, val decls: List<Decl>, val expressions: List<Expression>, override val position: Position? = null) : Expression
 

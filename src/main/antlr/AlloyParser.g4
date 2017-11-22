@@ -47,9 +47,9 @@ sigExt             : EXTENDS ref        # extendsExtension
 expr               : LET letDecl blockOrBar                # letExpr// was letDecl,+
                    | quant declList blockOrBar             # quantExpr
                    | unOp expr                             # unOpExpr
-                   | expr binOp expr                       # binOpExpr
-                   | expr arrowOp expr                     # arrowOpExpr
-                   | expr NOT? compareOp expr              # compareExpr
+                   | left=expr binOp right=expr            # binOpExpr
+                   | left=expr arrowOp right=expr          # arrowOpExpr
+                   | left=expr NOT? compareOp right=expr   # compareExpr
                    | expr IMPLIES? expr ELSE expr          # ifExpr
                    | expr LSQBRACKET expr RSQBRACKET       # blockExpr // was expr,*
                    | NUMBER                                # numberExpr

@@ -42,9 +42,9 @@ fun SigExtContext.toAst(considerPosition: Boolean = false) : SignatureExtension 
 fun ExprContext.toAst(considerPosition: Boolean = false) : Expression = when(this) {
     is IdExprContext -> IdentifierExpression(this.name().text, toPosition(considerPosition))
     is UnOpExprContext -> UnaryOperatorExpression(Operator.fromString(this.unOp().text), expr().toAst(considerPosition), toPosition(considerPosition))
-    is BinOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.binOp().text), expr().map { it.toAst(considerPosition) }, toPosition(considerPosition))
+    is BinOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.binOp().text), left.toAst(considerPosition), right.toAst(considerPosition), toPosition(considerPosition))
     is QuantExprContext -> QuantifiedExpression(Operator.fromString(this.quant().text), declList()?.decls?.filterIsInstance<DeclContext>()?.map { it.toAst(considerPosition) } ?: emptyList(), blockOrBar().toAst(considerPosition), toPosition(considerPosition))
-    is CompareExprContext -> BinaryOperatorExpression(Operator.fromString(this.compareOp().text), expr().map { it.toAst(considerPosition) }, toPosition(considerPosition))
+    is CompareExprContext -> BinaryOperatorExpression(Operator.fromString(this.compareOp().text), left.toAst(considerPosition), right.toAst(considerPosition), toPosition(considerPosition))
     else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
 }
 
