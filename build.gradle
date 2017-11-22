@@ -41,9 +41,16 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-// gradle generateGrammarSource
 generateGrammarSource {
     maxHeapSize = "64m"
     arguments += ["-visitor", "-long-messages", "-package", "de.hhu.stups.alloy2b.antlr"]
     outputDirectory = file('build/generated-src/de/hhu/stups/alloy2b/antlr')
 }
+compileJava.dependsOn generateGrammarSource
+
+sourceSets {
+    generated {
+        java.srcDir 'build/generated-src/'
+    }
+}
+compileJava.source sourceSets.generated.java, sourceSets.main.java
