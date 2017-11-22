@@ -22,9 +22,9 @@ Specification
       T[sig]
       Name
         T[Dir]
-      SigExt
+      ExtendsExtension
         T[extends]
-        Ref
+        NameRef
           Name
             T[FSObject]
       T[{]
@@ -45,9 +45,9 @@ Specification
       T[sig]
       Name
         T[File]
-      SigExt
+      ExtendsExtension
         T[extends]
-        Ref
+        NameRef
           Name
             T[FSObject]
       T[{]
@@ -128,9 +128,9 @@ Specification
       T[sig]
       Name
         T[Root]
-      SigExt
+      ExtendsExtension
         T[extends]
-        Ref
+        NameRef
           Name
             T[Dir]
       T[{]
