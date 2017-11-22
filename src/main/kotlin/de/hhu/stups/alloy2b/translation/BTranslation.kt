@@ -1,13 +1,24 @@
 package de.hhu.stups.alloy2b.translation
 
-import de.hhu.stups.alloy2b.ast.AlloySpecification
+import de.hhu.stups.alloy2b.ast.*
 
-class BTranslation {
+class BTranslation(spec: AlloySpecification) {
     val sets = emptyList<String>()
 
-    constructor(spec: AlloySpecification) {
+    fun getTranslation() = sets.joinToString(",")
 
+    init {
+        spec.declarations.forEach({ stmt -> translate(stmt) })
     }
 
-    fun getTranslation() = sets.joinToString(",")
+    private fun translate(stmt: Statement) {
+        when(stmt) {
+            is CheckStatement -> print("check")
+            is AssertionStatement -> print("assertion")
+            is SignatureDeclaration -> print("signature")
+            is FactDeclaration -> print("fact")
+            else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
+        }
+    }
 }
+
