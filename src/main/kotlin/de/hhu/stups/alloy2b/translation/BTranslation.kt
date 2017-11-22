@@ -1,11 +1,14 @@
 package de.hhu.stups.alloy2b.translation
 
 import de.hhu.stups.alloy2b.ast.*
+import de.hhu.stups.alloy2b.ast.Operator.*
 
 class BTranslation(spec: AlloySpecification) {
     var sets = emptyList<String>()
     var constants = emptyList<String>()
     var properties = emptyList<String>()
+
+    var extendingSignatures = mutableMapOf<String,List<String>>();
 
     fun getTranslation() : String {
         val builder = StringBuilder()
@@ -26,6 +29,20 @@ class BTranslation(spec: AlloySpecification) {
 
     init {
         spec.declarations.forEach({ stmt -> translate(stmt) })
+        addSignatureExtensionProperties()
+    }
+
+    private fun addSignatureExtensionProperties() {
+        // two signatures extending the same base signature are disjuct
+        extendingSignatures.values.forEach({ signatures ->
+            for (i1 in 0..signatures.size-1) {
+                for(i2 in i1..signatures.size-1) {
+                    if(!signatures[i1].equals(signatures[i2])) {
+                        properties += "${signatures[i1]} /\\ ${signatures[i2]} = {}"
+                    }
+                }
+            }
+        })
     }
 
     private fun translate(stmt: Statement) {
@@ -49,9 +66,26 @@ class BTranslation(spec: AlloySpecification) {
         } else {
             constants = constants + sdec.name
             when(sdec.signatureExtension) {
-                is NameSignatureExtension -> properties = properties + (sdec.name + " <: " + sdec.signatureExtension.name)
+                is NameSignatureExtension -> {
+                    properties = properties + "${sdec.name} <: ${sdec.signatureExtension.name}"
+                    extendingSignatures[sdec.signatureExtension.name] = extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name
+                }
                 else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)
             }
+        }
+
+        // quantifiers handled by cardinality
+        if(NO in sdec.qualifiers) {
+            properties = properties + "card(${sdec.name}) = 0"
+        }
+        if(LONE in sdec.qualifiers) {
+            properties = properties + "card(${sdec.name}) =< 1"
+        }
+        if(ONE in sdec.qualifiers) {
+            properties = properties + "card(${sdec.name}) = 1"
+        }
+        if(SOME in sdec.qualifiers) {
+            properties = properties + "card(${sdec.name}) >= 1"
         }
     }
 }

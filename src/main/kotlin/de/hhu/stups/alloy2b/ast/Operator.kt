@@ -1,7 +1,7 @@
 package de.hhu.stups.alloy2b.ast
 
 enum class Operator {
-    LONE, SET, ALL, DOT, EQUAL, PLUS, NO, IN, STAR, CLOSURE, ONE;
+    LONE, SET, ALL, DOT, EQUAL, PLUS, NO, IN, STAR, CLOSURE, ONE, SOME;
 
     companion object {
         fun fromString(op: String): Operator = when (op) {
@@ -16,6 +16,7 @@ enum class Operator {
             "*" -> STAR
             "^" -> CLOSURE
             "one" -> ONE
+            "some" -> SOME
             else -> throw UnsupportedOperationException(op)
         }
     }

@@ -6,4 +6,6 @@ CONSTANTS
 PROPERTIES
     Dir <: FSObject &
     File <: FSObject &
-    Root <: Dir
+    Root <: Dir &
+    card(Root) = 1 &
+    Dir /\ File = {}

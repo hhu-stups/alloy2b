@@ -27,7 +27,7 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false) : Statement {
     val child = this.getChild(0)
     when(child) {
         is FactDeclContext -> return FactDeclaration(child.name()?.text ?: "", child.block().expr().map { it.toAst(considerPosition) }, toPosition(considerPosition))
-        is SigDeclContext -> return SignatureDeclaration(child.name()?.text ?: "", child.sigExt()?.toAst(considerPosition), child.declList()?.decls?.filterIsInstance<DeclContext>()?.map { it.toAst(considerPosition) } ?: emptyList(), child.block()?.expr()?.map { it.toAst(considerPosition) } ?: emptyList(), toPosition(considerPosition))
+        is SigDeclContext -> return SignatureDeclaration(child.sigQual().map { Operator.fromString(it.text) }, child.name()?.text ?: "", child.sigExt()?.toAst(considerPosition), child.declList()?.decls?.filterIsInstance<DeclContext>()?.map { it.toAst(considerPosition) } ?: emptyList(), child.block()?.expr()?.map { it.toAst(considerPosition) } ?: emptyList(), toPosition(considerPosition))
         is AssertDeclContext -> return AssertionStatement(child.name()?.text ?: "", child.block().toAst(considerPosition), toPosition(considerPosition))
         is CmdDeclContext -> return CheckStatement(child.cmdname?.text ?: "", child.block()?.toAst(considerPosition) ?: asList(child.name(0).toAst(considerPosition)), toPosition(considerPosition))
         else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
