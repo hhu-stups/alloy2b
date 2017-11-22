@@ -41,8 +41,8 @@ enumDecl           : ENUM name LBRACKET name (COMMA name)* RBRACKET ;
 
 sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
 
-sigExt             : EXTENDS ref
-                   | IN ref (PLUS ref)* ;
+sigExt             : EXTENDS ref        # extendsExtension
+                   | IN ref (PLUS ref)* # inExtension;
 
 expr               : LET letDecl blockOrBar                # letExpr// was letDecl,+
                    | quant declList blockOrBar             # quantExpr
@@ -86,4 +86,7 @@ blockOrBar         : block     # blockInBlockOrBar
 
 name               : ID ; // was (THIS | ID) ( SLASH ID )* ;
 
-ref                : name | UNIV | CAPINT | SeqInt ;
+ref                : name # nameRef
+                   | UNIV # univRef
+                   | CAPINT # capIntRef
+                   | SeqInt # seqIntRef;
