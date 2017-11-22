@@ -54,3 +54,11 @@ sourceSets {
     }
 }
 compileJava.source sourceSets.generated.java, sourceSets.main.java
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'de.hhu.stups.alloy2b.Alloy2BKt'
+    }
+
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
