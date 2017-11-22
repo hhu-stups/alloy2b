@@ -115,15 +115,17 @@ class BTranslation(spec: AlloySpecification) {
         // field declarations are mapped to constants and properties
         sdec.decls.forEach({ d ->
             constants += d.name
-            if(d.expression is UnaryOperatorExpression) {
-                if(d.expression.operator == LONE) {
-                    // one-to-one mapping, i.e. function
-                    properties += "${d.name} : ${sdec.name} +-> ${translateExpression(d.expression.expression)}"
+            sdec.names.forEach { sdecName ->
+                if (d.expression is UnaryOperatorExpression) {
+                    if (d.expression.operator == LONE) {
+                        // one-to-one mapping, i.e. function
+                        properties += "${d.name} : ${sdecName} +-> ${translateExpression(d.expression.expression)}"
+                    } else {
+                        properties += "${d.name} : ${sdecName} <-> ${translateExpression(d.expression.expression)}"
+                    }
                 } else {
-                    properties += "${d.name} : ${sdec.name} <-> ${translateExpression(d.expression.expression)}"
+                    properties += "${d.name} : ${sdecName} <-> ${translateExpression(d.expression)}"
                 }
-            } else {
-                properties += "${d.name} : ${sdec.name} <-> ${translateExpression(d.expression)}"
             }
         })
     }
@@ -195,6 +197,6 @@ class BTranslation(spec: AlloySpecification) {
             decls.map { d -> d.name }.joinToString(", ")
 
     private fun translateDeclsExprList(decls: List<Decl>) =
-            decls.map { d -> "${d.name} : ${translateExpression(d.expression)}" }.joinToString(", ")
+        decls.map { d -> "${d.name} : ${translateExpression(d.expression)}" }.joinToString(" & ")
 }
 

@@ -8,7 +8,7 @@ PROPERTIES
     Dir <: FSObject &
     contents : Dir <-> FSObject &
     File <: FSObject &
-    !(d, o).(d : Dir, o : (d ; contents) => (o ; parent) = d) &
+    !(d, o).(d : Dir & o : (d ; contents) => (o ; parent) = d) &
     File \/ Dir = FSObject &
     Root <: Dir &
     card(Root) = 1 &
