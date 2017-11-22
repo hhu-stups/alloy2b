@@ -21,9 +21,13 @@ data class Decl(val name: String, val expression: Expression, override val posit
 
 // expressions
 data class UnaryOperatorExpression(val operator: Operator, val expression: Expression, override val position: Position? = null) : Expression
+data class BinaryOperatorExpression(val operator: Operator, val expressions: List<Expression>, override val position: Position? = null) : Expression
 data class IdentifierExpression(val name: String, override val position: Position? = null) : Expression
+data class QuantifiedExpression(val operator: Operator, val decls: List<Decl>, val expressions: List<Expression>, override val position: Position? = null) : Expression
 
 // statements
 data class FactDeclaration(val name: String, val expressions: List<Expression>, override val position: Position? = null) : Statement
 data class SignatureDeclaration(val name: String, val decls: List<Decl> = emptyList(), val expressions: List<Expression> = emptyList(), override val position: Position? = null) : Statement
+data class AssertionStatement(val name: String, val expressions: List<Expression>, override val position: Position? = null) : Statement
+data class CheckStatement(val name: String, val expressions: List<Expression>, override val position: Position? = null) : Statement
 

@@ -21,7 +21,7 @@ funDecl            : PRIVATE? FUN (ref DOT)? name LPAREN declList? RPAREN COLON 
                    | PRIVATE? PRED (ref DOT)? name LSQBRACKET declList? RSQBRACKET block
                    | PRIVATE? PRED (ref DOT)? name block ;
 
-cmdDecl            : (name COLON)? (RUN | CHECK) ( name | block ) scope;
+cmdDecl            : (cmdname=name COLON)? (RUN | CHECK) ( name | block ) scope;
 
 scope              : FOR NUMBER ( EXPECT NUMBER )? // number permits more than just 0 or 1
                    | FOR NUMBER BUT typescope ( EXPECT NUMBER )? // was typescope,+ // number permits more than just 0 or 1
@@ -81,9 +81,9 @@ unOp               : NOT | NO | SOME | LONE | ONE | SET | SEQ | ITERATION | CLOS
 
 block              : LBRACKET expr* RBRACKET ;
 
-blockOrBar         : block
-                   | DASH expr ;
+blockOrBar         : block     # blockInBlockOrBar
+                   | DASH expr # exprInBlockOrBar;
 
-name               : (THIS | ID) ( SLASH ID )* ;
+name               : ID ; // was (THIS | ID) ( SLASH ID )* ;
 
 ref                : name | UNIV | CAPINT | SeqInt ;
