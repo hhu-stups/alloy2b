@@ -2,9 +2,11 @@ MACHINE alloytranslation
 SETS
     FSObject
 CONSTANTS
-    Dir, File, Root
+    parent, Dir, contents, File, Root
 PROPERTIES
+    parent : FSObject +-> Dir &
     Dir <: FSObject &
+    contents : Dir <-> FSObject &
     File <: FSObject &
     !(d, o).(d : Dir, o : (d ; contents) => (o ; parent) = d) &
     File \/ Dir = FSObject &

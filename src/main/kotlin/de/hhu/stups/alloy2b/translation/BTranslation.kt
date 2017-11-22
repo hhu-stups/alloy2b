@@ -111,6 +111,21 @@ class BTranslation(spec: AlloySpecification) {
         if (SOME in sdec.qualifiers) {
             sdec.names.forEach { properties.add("card(${it}) >= 1") }
         }
+
+        // field declarations are mapped to constants and properties
+        sdec.decls.forEach({ d ->
+            constants += d.name
+            if(d.expression is UnaryOperatorExpression) {
+                if(d.expression.operator == LONE) {
+                    // one-to-one mapping, i.e. function
+                    properties += "${d.name} : ${sdec.name} +-> ${translateExpression(d.expression.expression)}"
+                } else {
+                    properties += "${d.name} : ${sdec.name} <-> ${translateExpression(d.expression.expression)}"
+                }
+            } else {
+                properties += "${d.name} : ${sdec.name} <-> ${translateExpression(d.expression)}"
+            }
+        })
     }
 
     private fun translateExpression(e: Expression) =
