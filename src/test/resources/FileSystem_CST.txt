@@ -82,7 +82,7 @@ Specification
                 IdExpr
                   Name
                     T[contents]
-          BlockOrBar
+          ExprInBlockOrBar
             T[|]
             CompareExpr
               BinOpExpr
@@ -186,7 +186,7 @@ Specification
               IdExpr
                 Name
                   T[Dir]
-          BlockOrBar
+          ExprInBlockOrBar
             T[|]
             CompareExpr
               IdExpr
@@ -233,7 +233,7 @@ Specification
               IdExpr
                 Name
                   T[Dir]
-          BlockOrBar
+          ExprInBlockOrBar
             T[|]
             BinOpExpr
               UnOpExpr
@@ -274,7 +274,7 @@ Specification
               IdExpr
                 Name
                   T[FSObject]
-          BlockOrBar
+          ExprInBlockOrBar
             T[|]
             QuantExpr
               Quant
@@ -287,7 +287,7 @@ Specification
                   IdExpr
                     Name
                       T[Dir]
-              BlockOrBar
+              ExprInBlockOrBar
                 T[|]
                 CompareExpr
                   IdExpr
