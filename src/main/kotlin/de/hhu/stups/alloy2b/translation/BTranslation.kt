@@ -13,12 +13,16 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translate(stmt: Statement) {
         when(stmt) {
-            is CheckStatement -> print("check")
+            is CheckStatement -> translate(stmt)
             is AssertionStatement -> print("assertion")
             is SignatureDeclaration -> print("signature")
             is FactDeclaration -> print("fact")
             else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
         }
+    }
+
+    private fun translate(stmt: CheckStatement) {
+        print("check statement")
     }
 }
 
