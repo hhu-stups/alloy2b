@@ -32,8 +32,10 @@ typescope          : EXACTLY? NUMBER (name | INT | SEQ)? ;
 
 sigDecl            : sigQual* SIG name ( sigExt )? LBRACKET declList? RBRACKET ( block )? ; // was name,+
 
-declList           : decl
-                   | decl COMMA declList ;
+declList returns [ List decls ]
+                   : vs+=decl (COMMA vs+=decl)* {
+                       $decls = $vs;
+                   } ;
 
 enumDecl           : ENUM name LBRACKET name (COMMA name)* RBRACKET ;
 
@@ -42,25 +44,26 @@ sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
 sigExt             : EXTENDS ref
                    | IN ref (PLUS ref)* ;
 
-expr               : LET letDecl blockOrBar // was letDecl,+
-                   | quant declList blockOrBar
-                   | unOp expr
-                   | expr binOp expr
-                   | expr arrowOp expr
-                   | expr NOT? compareOp expr
-                   | expr IMPLIES? expr ELSE expr
-                   | expr LSQBRACKET expr RSQBRACKET // was expr,*
-                   | NUMBER
-                   | MINUS NUMBER
-                   | NONE
-                   | IDEN
-                   | UNIV
-                   | CAPINT
-                   | SeqInt
-                   | LPAREN expr RPAREN
-                   | AT? name
-                   | block
-                   | LBRACKET declList blockOrBar RBRACKET ;
+expr               : LET letDecl blockOrBar                # letExpr// was letDecl,+
+                   | quant declList blockOrBar             # quantExpr
+                   | unOp expr                             # unOpExpr
+                   | expr binOp expr                       # binOpExpr
+                   | expr arrowOp expr                     # arrowOpExpr
+                   | expr NOT? compareOp expr              # compareExpr
+                   | expr IMPLIES? expr ELSE expr          # ifExpr
+                   | expr LSQBRACKET expr RSQBRACKET       # blockExpr // was expr,*
+                   | NUMBER                                # numberExpr
+                   | MINUS NUMBER                          # negNumberExpr
+                   | NONE                                  # noneExpr
+                   | IDEN                                  # idenExpr
+                   | UNIV                                  # univExpr
+                   | CAPINT                                # capIntExpr
+                   | SeqInt                                # seqIntExpr
+                   | LPAREN expr RPAREN                    # parenExpr
+                   | AT? name                              # idExpr
+                   | block                                 # blockExpr
+                   | LBRACKET declList blockOrBar RBRACKET # declListExpr
+                   ;
 
 decl               : PRIVATE? DISJ? name COLON DISJ? expr ; //was name,+
 

@@ -10,10 +10,10 @@ Specification
           Name
             T[parent]
           T[:]
-          Expr
+          UnOpExpr
             UnOp
               T[lone]
-            Expr
+            IdExpr
               Name
                 T[Dir]
       T[}]
@@ -33,10 +33,10 @@ Specification
           Name
             T[contents]
           T[:]
-          Expr
+          UnOpExpr
             UnOp
               T[set]
-            Expr
+            IdExpr
               Name
                 T[FSObject]
       T[}]
@@ -57,7 +57,7 @@ Specification
       T[fact]
       Block
         T[{]
-        Expr
+        QuantExpr
           Quant
             T[all]
           DeclList
@@ -65,39 +65,38 @@ Specification
               Name
                 T[d]
               T[:]
-              Expr
+              IdExpr
                 Name
                   T[Dir]
             T[,]
-            DeclList
-              Decl
-                Name
-                  T[o]
-                T[:]
-                Expr
-                  Expr
-                    Name
-                      T[d]
-                  BinOp
-                    T[.]
-                  Expr
-                    Name
-                      T[contents]
+            Decl
+              Name
+                T[o]
+              T[:]
+              BinOpExpr
+                IdExpr
+                  Name
+                    T[d]
+                BinOp
+                  T[.]
+                IdExpr
+                  Name
+                    T[contents]
           BlockOrBar
             T[|]
-            Expr
-              Expr
-                Expr
+            CompareExpr
+              BinOpExpr
+                IdExpr
                   Name
                     T[o]
                 BinOp
                   T[.]
-                Expr
+                IdExpr
                   Name
                     T[parent]
               CompareOp
                 T[=]
-              Expr
+              IdExpr
                 Name
                   T[d]
         T[}]
@@ -106,19 +105,19 @@ Specification
       T[fact]
       Block
         T[{]
-        Expr
-          Expr
-            Expr
+        CompareExpr
+          BinOpExpr
+            IdExpr
               Name
                 T[File]
             BinOp
               T[+]
-            Expr
+            IdExpr
               Name
                 T[Dir]
           CompareOp
             T[=]
-          Expr
+          IdExpr
             Name
               T[FSObject]
         T[}]
@@ -138,10 +137,10 @@ Specification
       T[}]
       Block
         T[{]
-        Expr
+        UnOpExpr
           UnOp
             T[no]
-          Expr
+          IdExpr
             Name
               T[parent]
         T[}]
@@ -150,22 +149,22 @@ Specification
       T[fact]
       Block
         T[{]
-        Expr
-          Expr
+        CompareExpr
+          IdExpr
             Name
               T[FSObject]
           CompareOp
             T[in]
-          Expr
-            Expr
+          BinOpExpr
+            IdExpr
               Name
                 T[Root]
             BinOp
               T[.]
-            Expr
+            UnOpExpr
               UnOp
                 T[*]
-              Expr
+              IdExpr
                 Name
                   T[contents]
         T[}]
@@ -176,7 +175,7 @@ Specification
         T[acyclic]
       Block
         T[{]
-        Expr
+        QuantExpr
           Quant
             T[no]
           DeclList
@@ -184,27 +183,27 @@ Specification
               Name
                 T[d]
               T[:]
-              Expr
+              IdExpr
                 Name
                   T[Dir]
           BlockOrBar
             T[|]
-            Expr
-              Expr
+            CompareExpr
+              IdExpr
                 Name
                   T[d]
               CompareOp
                 T[in]
-              Expr
-                Expr
+              BinOpExpr
+                IdExpr
                   Name
                     T[d]
                 BinOp
                   T[.]
-                Expr
+                UnOpExpr
                   UnOp
                     T[^]
-                  Expr
+                  IdExpr
                     Name
                       T[contents]
         T[}]
@@ -223,7 +222,7 @@ Specification
         T[oneRoot]
       Block
         T[{]
-        Expr
+        QuantExpr
           Quant
             T[one]
           DeclList
@@ -231,21 +230,21 @@ Specification
               Name
                 T[d]
               T[:]
-              Expr
+              IdExpr
                 Name
                   T[Dir]
           BlockOrBar
             T[|]
-            Expr
-              Expr
+            BinOpExpr
+              UnOpExpr
                 UnOp
                   T[no]
-                Expr
+                IdExpr
                   Name
                     T[d]
               BinOp
                 T[.]
-              Expr
+              IdExpr
                 Name
                   T[parent]
         T[}]
@@ -264,7 +263,7 @@ Specification
         T[oneLocation]
       Block
         T[{]
-        Expr
+        QuantExpr
           Quant
             T[all]
           DeclList
@@ -272,12 +271,12 @@ Specification
               Name
                 T[o]
               T[:]
-              Expr
+              IdExpr
                 Name
                   T[FSObject]
           BlockOrBar
             T[|]
-            Expr
+            QuantExpr
               Quant
                 T[lone]
               DeclList
@@ -285,24 +284,24 @@ Specification
                   Name
                     T[d]
                   T[:]
-                  Expr
+                  IdExpr
                     Name
                       T[Dir]
               BlockOrBar
                 T[|]
-                Expr
-                  Expr
+                CompareExpr
+                  IdExpr
                     Name
                       T[o]
                   CompareOp
                     T[in]
-                  Expr
-                    Expr
+                  BinOpExpr
+                    IdExpr
                       Name
                         T[d]
                     BinOp
                       T[.]
-                    Expr
+                    IdExpr
                       Name
                         T[contents]
         T[}]
