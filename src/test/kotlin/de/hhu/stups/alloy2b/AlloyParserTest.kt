@@ -4,7 +4,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test as test
 
 class AlloyParserTest {
-    @test fun parseFileSystemModel() {
+    @test
+    fun parseFileSystemModel() {
         val expected = getResourceAsString("FileSystem_CST.txt");
         assertEquals(expected, toParseTree(parseResource("FileSystem.als")).multiLineString())
     }

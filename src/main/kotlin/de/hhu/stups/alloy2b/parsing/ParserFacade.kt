@@ -14,7 +14,7 @@ import java.util.*
 
 data class Error(val message: String)
 
-data class ParsingResult(val root : AlloyParser.SpecificationContext?, val errors: List<Error>) {
+data class ParsingResult(val root: AlloyParser.SpecificationContext?, val errors: List<Error>) {
     fun isCorrect() = errors.isEmpty() && root != null
 }
 
@@ -22,11 +22,11 @@ fun String.toStream(charset: Charset = Charsets.UTF_8) = ByteArrayInputStream(to
 
 object ParserFacade {
 
-    fun parse(code: String) : ParsingResult = parse(code.toStream())
+    fun parse(code: String): ParsingResult = parse(code.toStream())
 
-    fun parse(file: File) : ParsingResult = parse(FileInputStream(file))
+    fun parse(file: File): ParsingResult = parse(FileInputStream(file))
 
-    fun parse(inputStream: InputStream) : ParsingResult {
+    fun parse(inputStream: InputStream): ParsingResult {
         val errors = LinkedList<Error>()
         val errorListener = object : ANTLRErrorListener {
             override fun reportAmbiguity(p0: Parser?, p1: DFA?, p2: Int, p3: Int, p4: Boolean, p5: BitSet?, p6: ATNConfigSet?) {
