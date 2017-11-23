@@ -52,12 +52,14 @@ data class FactDeclaration(val name: String,
                            override val position: Position? = null) : Statement
 
 data class SignatureDeclaration(val qualifiers: List<Operator> = emptyList(),
-                                val name: String, val signatureExtension: SignatureExtension? = null,
+                                val names: List<String>, // a list of strings for definitions like 'sig File, Dir [...]'
+                                val signatureExtension: SignatureExtension? = null,
                                 val decls: List<Decl> = emptyList(),
                                 val expressions: List<Expression> = emptyList(),
                                 override val position: Position? = null) : Statement
 
-data class AssertionStatement(val name: String, val expressions: List<Expression>,
+data class AssertionStatement(val name: String,
+                              val expressions: List<Expression>,
                               override val position: Position? = null) : Statement
 
 data class CheckStatement(val name: String, val expressions: List<Expression>,

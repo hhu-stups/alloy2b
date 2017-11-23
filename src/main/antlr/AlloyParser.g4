@@ -30,8 +30,7 @@ scope              : FOR NUMBER ( EXPECT NUMBER )? // number permits more than j
 
 typescope          : EXACTLY? NUMBER (name | INT | SEQ)? ;
 
-// todo(see CstAstMapping.kt): there can be several names seperated by commas, smth like name (COMMA name)*
-sigDecl            : sigQual* SIG name ( sigExt )? LBRACKET declList? RBRACKET ( block )? ; // was name,+
+sigDecl            : sigQual* SIG name (COMMA name)* ( sigExt )? LBRACKET declList? RBRACKET ( block )? ; // was name,+
 
 declList returns [ List decls ]
                    : vs+=decl (COMMA vs+=decl)* {

@@ -31,7 +31,7 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
                 child.block().expr().map { it.toAst(considerPosition) },
                 toPosition(considerPosition))
         is SigDeclContext -> return SignatureDeclaration(child.sigQual().map { Operator.fromString(it.text) },
-                child.name()?.text ?: "", child.sigExt()?.toAst(considerPosition),              // todo (see AlloyParser.g4): child.name() can be a list of names if seperated by commas, one sig decl for each name with the same content?
+                child.name()?.map({ it.text }) ?: emptyList(), child.sigExt()?.toAst(considerPosition),
                 child.declList()?.decls?.filterIsInstance<DeclContext>()?.map { it.toAst(considerPosition) } ?: emptyList(),
                 child.block()?.expr()?.map { it.toAst(considerPosition) } ?: emptyList(), toPosition(considerPosition))
         is AssertDeclContext -> return AssertionStatement(child.name()?.text ?: "",

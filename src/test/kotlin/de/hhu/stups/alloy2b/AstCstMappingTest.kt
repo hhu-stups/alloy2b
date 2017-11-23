@@ -11,7 +11,7 @@ class MappingTest {
     fun mapEmptySignaturDeclaration() {
         val code = "sig FSObject {}"
         val ast = ParserFacade.parse(code).root!!.toAst()
-        val expectedAst = AlloySpecification(asList(SignatureDeclaration(name = "FSObject")))
+        val expectedAst = AlloySpecification(asList(SignatureDeclaration(names = asList("FSObject"))))
         assertEquals(expectedAst, ast)
     }
 
@@ -19,7 +19,7 @@ class MappingTest {
     fun mapSimpleSignaturDeclaration() {
         val code = "sig FSObject { parent: lone Dir }"
         val ast = ParserFacade.parse(code).root!!.toAst()
-        val expectedAst = AlloySpecification(asList(SignatureDeclaration(name = "FSObject", decls = asList(Decl(name = "parent", expression = UnaryOperatorExpression(operator = Operator.LONE, expression = IdentifierExpression(name = "Dir")))))))
+        val expectedAst = AlloySpecification(asList(SignatureDeclaration(names = asList("FSObject"), decls = asList(Decl(name = "parent", expression = UnaryOperatorExpression(operator = Operator.LONE, expression = IdentifierExpression(name = "Dir")))))))
         assertEquals(expectedAst, ast)
     }
 }

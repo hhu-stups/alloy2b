@@ -79,18 +79,20 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(sdec: SignatureDeclaration) {
-        signatures.add(sdec.name)
+        signatures.addAll(sdec.names)
 
         if (sdec.signatureExtension == null) {
             // basic signature -> B set
-            sets.add(sdec.name)
+            sets.addAll(sdec.names)
         } else {
-            constants.add(sdec.name)
+            constants.addAll(sdec.names)
             when (sdec.signatureExtension) {
                 is NameSignatureExtension -> {
-                    properties.add("${sdec.name} <: ${sdec.signatureExtension.name}")
-                    extendingSignatures[sdec.signatureExtension.name] =
-                            extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name
+                    sdec.names.forEach({
+                        properties.add("${it} <: ${sdec.signatureExtension.name}")
+                        extendingSignatures[sdec.signatureExtension.name] =
+                                extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + it
+                    })
                 }
                 else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)
             }
@@ -98,16 +100,16 @@ class BTranslation(spec: AlloySpecification) {
 
         // quantifiers handled by cardinality
         if (NO in sdec.qualifiers) {
-            properties.add("card(${sdec.name}) = 0")
+            sdec.names.forEach { properties.add("card(${it}) = 0") }
         }
         if (LONE in sdec.qualifiers) {
-            properties.add("card(${sdec.name}) =< 1")
+            sdec.names.forEach { properties.add("card(${it}) =< 1") }
         }
         if (ONE in sdec.qualifiers) {
-            properties.add("card(${sdec.name}) = 1")
+            sdec.names.forEach { properties.add("card(${it}) = 1") }
         }
         if (SOME in sdec.qualifiers) {
-            properties.add("card(${sdec.name}) >= 1")
+            sdec.names.forEach { properties.add("card(${it}) >= 1") }
         }
     }
 
