@@ -66,19 +66,30 @@ SeqInt             : 'Seq/Int' ;
 SEQ                : 'seq' ;
 
 // operators
-AND                : '&&' | 'and' | '&' ;
+AND                : '&&' | 'and' ;
 IMPLIES            : 'implies' | '=>' ;
 IFF                : '<=>' | 'iff' ;
 OR                 : '||' | 'or' ;
 NOT                : '!' | 'not' ;
 ARROW              : '->' ;
 EQUAL              : '=' ;
+DOM_RESTR          : '<:' ;
+RAN_RESTR          : ':>' ;
+OVERRIDE           : '++' ;
 PLUS               : '+' ;
 MINUS              : '-' ;
 IN                 : 'in' ;
 ITERATION          : '*' ;
 CLOSURE            : '^' ;
 INVERSE            : '~' ;
+CARD               : '#' ;
+INTERSECTION       : '&' ;
+UNION              : '+' ;
+DIFFERENCE         : '-' ;
+GREATER            : '>' ;
+GREATER_EQUAL      : '>=' ;
+LESS               : '<' ;
+LESS_EQUAL         : '=<' ;
 
 // identifiers
 ID                 : [A-Za-z][A-Za-z0-9_]* ;
