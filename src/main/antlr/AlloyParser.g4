@@ -4,7 +4,7 @@ options { tokenVocab=AlloyLexer; }
 
 specification      : module? open* paragraph* ;
 
-module             : name ( LSQBRACKET  EXACTLY? name  (COMMA EXACTLY? NUMBER)* RSQBRACKET )? ;
+module             : MODULE name ; // was: name ( LSQBRACKET  EXACTLY? name  (COMMA EXACTLY? NUMBER)* RSQBRACKET )? ;
 
 open               : PRIVATE? OPEN name ( LSQBRACKET ref RSQBRACKET )? ( AS name )? ; // was ref,+
 
@@ -32,10 +32,7 @@ typescope          : EXACTLY? NUMBER (name | INT | SEQ)? ;
 
 sigDecl            : sigQual* SIG name (COMMA name)* ( sigExt )? LBRACKET declList? RBRACKET ( block )? ; // was name,+
 
-declList returns [ List decls ]
-                   : vs+=decl (COMMA vs+=decl)* {
-                       $decls = $vs;
-                   } ;
+declList           : decl (COMMA decl)* ;
 
 enumDecl           : ENUM name LBRACKET name (COMMA name)* RBRACKET ;
 
@@ -72,7 +69,7 @@ letDecl            : name EQUAL expr ;
 quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
 binOp              : OR | AND | IFF | IMPLIES | PLUS | MINUS | DOT | INTERSECTION | UNION | DIFFERENCE |
-                     DOM_RESTR | RAN_RESTR | OVERRIDE ; // todo: add | "<<" | ">>" | ">>>" ;
+                     DOM_RESTR | RAN_RESTR | OVERRIDE ; // todo: add | "<<" | ">>" | ">>>" ;  // todo: precedence
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;
 
