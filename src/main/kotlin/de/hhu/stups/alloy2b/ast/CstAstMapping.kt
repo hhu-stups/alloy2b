@@ -32,13 +32,17 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
                 toPosition(considerPosition))
         is SigDeclContext -> return SignatureDeclaration(child.sigQual().map { Operator.fromString(it.text) },
                 child.name()?.map({ it.text }) ?: emptyList(), child.sigExt()?.toAst(considerPosition),
-                child.declList()?.decls?.filterIsInstance<DeclContext>()?.map { it.toAst(considerPosition) } ?: emptyList(),
+                child.declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
                 child.block()?.expr()?.map { it.toAst(considerPosition) } ?: emptyList(), toPosition(considerPosition))
         is AssertDeclContext -> return AssertionStatement(child.name()?.text ?: "",
                 child.block().toAst(considerPosition),
                 toPosition(considerPosition))
         is CmdDeclContext -> return CheckStatement(child.cmdname?.text ?: "",
                 child.block()?.toAst(considerPosition) ?: asList(child.name(0).toAst(considerPosition)),
+                toPosition(considerPosition))
+        is FunDeclContext -> return FunDeclaration(child.name()?.text ?: "",
+                child.declList()?.decl()?.map {it.toAst(considerPosition)} ?: emptyList(),
+                child.block().expr().map { it.toAst(considerPosition) },
                 toPosition(considerPosition))
         else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
     }
@@ -49,24 +53,29 @@ fun SigExtContext.toAst(considerPosition: Boolean = false): SignatureExtension =
     else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
 }
 
-fun ExprContext.toAst(considerPosition: Boolean = false): Expression = when (this) {
-    is IdExprContext -> IdentifierExpression(this.name().text, toPosition(considerPosition))
-    is UnOpExprContext -> UnaryOperatorExpression(Operator.fromString(this.unOp().text),
-            expr().toAst(considerPosition),
-            toPosition(considerPosition))
-    is BinOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.binOp().text),
-            left.toAst(considerPosition),
-            right.toAst(considerPosition),
-            toPosition(considerPosition))
-    is QuantExprContext -> QuantifiedExpression(Operator.fromString(this.quant().text),
-            declList()?.decls?.filterIsInstance<DeclContext>()?.map { it.toAst(considerPosition) } ?: emptyList(),
-            blockOrBar().toAst(considerPosition),
-            toPosition(considerPosition))
-    is CompareExprContext -> BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
-            left.toAst(considerPosition), right.toAst(considerPosition),
-            toPosition(considerPosition))
-    else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
-}
+fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
+        when (this) {
+            is IdExprContext -> IdentifierExpression(this.name().text, toPosition(considerPosition))
+            is UnOpExprContext -> UnaryOperatorExpression(Operator.fromString(this.unOp().text),
+                    expr().toAst(considerPosition),
+                    toPosition(considerPosition))
+            is BinOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.binOp().text),
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition),
+                    toPosition(considerPosition))
+            is QuantExprContext -> QuantifiedExpression(Operator.fromString(this.quant().text),
+                    declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
+                    blockOrBar().toAst(considerPosition),
+                    toPosition(considerPosition))
+            is CompareExprContext -> BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
+                    left.toAst(considerPosition), right.toAst(considerPosition),
+                    toPosition(considerPosition))
+            is ArrowOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.arrowOp().text),
+                    left.toAst(considerPosition), right.toAst(considerPosition),
+                    toPosition(considerPosition))
+            is ParenExprContext -> this.expr().toAst(considerPosition)
+            else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
+        }
 
 fun BlockContext.toAst(considerPosition: Boolean = false): List<Expression> =
         expr().map { it.toAst(considerPosition) }
