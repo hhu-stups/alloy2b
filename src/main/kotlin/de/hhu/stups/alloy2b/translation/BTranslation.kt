@@ -6,6 +6,7 @@ import de.hhu.stups.alloy2b.ast.Operator.*
 class BTranslation(spec: AlloySpecification) {
     val sets = mutableListOf<String>()
     val constants = mutableListOf<String>()
+    val definitions = mutableListOf<String>()
     val properties = mutableListOf<String>()
     val assertions = mutableListOf<String>()
 
@@ -13,29 +14,31 @@ class BTranslation(spec: AlloySpecification) {
     val extendingSignatures = mutableMapOf<String, List<String>>();
     val alloyAssertions = mutableMapOf<String, String>();
 
+    init {
+        spec.declarations.forEach({ stmt -> translate(stmt) })
+        addSignatureExtensionProperties()
+    }
+
     fun getTranslation(): String {
         val builder = StringBuilder()
 
         builder.appendln("MACHINE alloytranslation")
 
-        builder.appendln("SETS")
-        builder.appendln("    " + sets.joinToString(", "))
-
-        builder.appendln("CONSTANTS")
-        builder.appendln("    " + constants.joinToString(", "))
-
-        builder.appendln("PROPERTIES")
-        builder.appendln("    " + properties.joinToString(" &\n    "))
-
-        builder.appendln("ASSERTIONS")
-        builder.appendln("    " + assertions.joinToString(" &\n    "))
+        appendIfNotEmpty(builder, sets, ", ", "SETS")
+        appendIfNotEmpty(builder, constants, ", ", "CONSTANTS")
+        appendIfNotEmpty(builder, definitions, " ;\n    ", "DEFINITIONS")
+        appendIfNotEmpty(builder, properties, " &\n    ", "PROPERTIES")
+        appendIfNotEmpty(builder, assertions, " &\n    ", "ASSERTIONS")
 
         return builder.toString()
     }
 
-    init {
-        spec.declarations.forEach({ stmt -> translate(stmt) })
-        addSignatureExtensionProperties()
+    private fun appendIfNotEmpty(builder: StringBuilder, list: MutableList<String>, delimiter: String, sectionName: String) {
+        if (list.isEmpty()) {
+            return
+        }
+        builder.appendln(sectionName)
+        builder.appendln("    " + list.joinToString(delimiter))
     }
 
     private fun addSignatureExtensionProperties() {
@@ -43,20 +46,28 @@ class BTranslation(spec: AlloySpecification) {
         extendingSignatures.values.forEach({ signatures ->
             for (i1 in 0..signatures.size - 1) {
                 for (i2 in i1..signatures.size - 1) {
-                    if (!signatures[i1].equals(signatures[i2])) {
-                        properties.add("${signatures[i1]} /\\ ${signatures[i2]} = {}")
-                    }
+                    addSignatureExtensionIfNotEqual(signatures[i1], signatures[i2])
                 }
             }
         })
     }
 
+    private fun addSignatureExtensionIfNotEqual(sig1: String, sig2: String) {
+        if (!sig1.equals(sig2)) {
+            properties.add("${sig1} /\\ ${sig2} = {}")
+        }
+    }
+
+    /**
+     * Translate {@link Statement statements}.
+     */
     private fun translate(stmt: Statement) {
         when (stmt) {
             is CheckStatement -> translate(stmt)
             is AssertionStatement -> translate(stmt)
             is SignatureDeclaration -> translate(stmt)
             is FactDeclaration -> translate(stmt)
+            is FunDeclaration -> translate(stmt)
             else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
         }
     }
@@ -67,6 +78,10 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translate(fdec: FactDeclaration) {
         properties.add(fdec.expressions.map { e -> translateExpression(e) }.joinToString(" & "))
+    }
+
+    private fun translate(fdec: FunDeclaration) {
+        // TODO: how to translate functions?
     }
 
     private fun translate(stmt: CheckStatement) {
@@ -81,24 +96,33 @@ class BTranslation(spec: AlloySpecification) {
     private fun translate(sdec: SignatureDeclaration) {
         signatures.addAll(sdec.names)
 
+        handleQuantifiersByCardinality(sdec)
+
+        // field declarations are mapped to constants and properties
+        sdec.decls.forEach({ d ->
+            constants += d.name
+            sdec.names.forEach { sdecName -> translateFieldDeclarations(d, sdecName) }
+        })
+
         if (sdec.signatureExtension == null) {
             // basic signature -> B set
             sets.addAll(sdec.names)
-        } else {
-            constants.addAll(sdec.names)
-            when (sdec.signatureExtension) {
-                is NameSignatureExtension -> {
-                    sdec.names.forEach({
-                        properties.add("${it} <: ${sdec.signatureExtension.name}")
-                        extendingSignatures[sdec.signatureExtension.name] =
-                                extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + it
-                    })
-                }
-                else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)
-            }
+            return
         }
+        constants.addAll(sdec.names)
+        when (sdec.signatureExtension) {
+            is NameSignatureExtension -> {
+                sdec.names.forEach({
+                    properties.add("${it} <: ${sdec.signatureExtension.name}")
+                    extendingSignatures[sdec.signatureExtension.name] =
+                            extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + it
+                })
+            }
+            else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)
+        }
+    }
 
-        // quantifiers handled by cardinality
+    private fun handleQuantifiersByCardinality(sdec: SignatureDeclaration) {
         if (NO in sdec.qualifiers) {
             sdec.names.forEach { properties.add("card(${it}) = 0") }
         }
@@ -111,23 +135,19 @@ class BTranslation(spec: AlloySpecification) {
         if (SOME in sdec.qualifiers) {
             sdec.names.forEach { properties.add("card(${it}) >= 1") }
         }
+    }
 
-        // field declarations are mapped to constants and properties
-        sdec.decls.forEach({ d ->
-            constants += d.name
-            sdec.names.forEach { sdecName ->
-                if (d.expression is UnaryOperatorExpression) {
-                    if (d.expression.operator == LONE) {
-                        // one-to-one mapping, i.e. function
-                        properties += "${d.name} : ${sdecName} +-> ${translateExpression(d.expression.expression)}"
-                    } else {
-                        properties += "${d.name} : ${sdecName} <-> ${translateExpression(d.expression.expression)}"
-                    }
-                } else {
-                    properties += "${d.name} : ${sdecName} <-> ${translateExpression(d.expression)}"
-                }
+    private fun translateFieldDeclarations(decl: Decl, name: String) {
+        if (decl.expression is UnaryOperatorExpression) {
+            if (decl.expression.operator == LONE) {
+                // one-to-one mapping, i.e. function
+                properties.add("${decl.name} : ${name} +-> ${translateExpression(decl.expression.expression)}")
+                return
             }
-        })
+            properties.add("${decl.name} : ${name} <-> ${translateExpression(decl.expression.expression)}")
+            return
+        }
+        properties.add("${decl.name} : ${name} <-> ${translateExpression(decl.expression)}")
     }
 
     private fun translateExpression(e: Expression) =
@@ -169,6 +189,11 @@ class BTranslation(spec: AlloySpecification) {
             OR -> symbol = "or"
             IMPLIES -> symbol = "=>"
             IFF -> symbol = "<=>"
+            INVERSE -> symbol = "~"
+            CARTESIAN -> symbol = "*"
+            TOTAL_FUNCTION -> symbol = "-->"
+            PARTIAL_FUNCTION -> symbol = "+->"
+            BIJECTIVE_FUNCTION -> symbol = ">->>"
             else -> throw UnsupportedOperationException(qe.operator.name)
         }
         return "${translateExpression(qe.left)} $symbol ${translateExpression(qe.right)}"
@@ -180,6 +205,7 @@ class BTranslation(spec: AlloySpecification) {
                 CLOSURE1 -> "closure1(${translateExpression(qe.expression)})"
                 NO -> "${translateExpression(qe.expression)} = {}"
                 CARD -> "card(${translateExpression(qe.expression)})"
+                INVERSE -> "${translateExpression(qe.expression)}~"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -197,6 +223,6 @@ class BTranslation(spec: AlloySpecification) {
             decls.map { d -> d.name }.joinToString(", ")
 
     private fun translateDeclsExprList(decls: List<Decl>) =
-        decls.map { d -> "${d.name} : ${translateExpression(d.expression)}" }.joinToString(" & ")
+            decls.map { d -> "${d.name} : ${translateExpression(d.expression)}" }.joinToString(" & ")
 }
 
