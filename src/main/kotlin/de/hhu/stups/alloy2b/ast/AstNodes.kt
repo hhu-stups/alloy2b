@@ -19,7 +19,7 @@ data class AlloySpecification(val declarations: List<Statement>,
                               override val position: Position? = null) : Node
 
 interface Statement : Node {}
-interface Expression : Node { val type: Type? }
+interface Expression : Node { var type: Type? }
 
 
 // decls
@@ -36,33 +36,33 @@ data class NameSignatureExtension(val name: String,
 data class UnaryOperatorExpression(val operator: Operator,
                                    val expression: Expression,
                                    override val position: Position? = null,
-                                   override val type: Type? = UNTYPED) : Expression
+                                   override var type: Type? = UNTYPED) : Expression
 
 data class BinaryOperatorExpression(val operator: Operator,
                                     val left: Expression,
                                     val right: Expression,
                                     override val position: Position? = null,
-                                    override val type: Type? = UNTYPED) : Expression
+                                    override var type: Type? = UNTYPED) : Expression
 
 data class BoxJoinExpression(val left: Expression,
                              val right: List<Expression>,
                              override val position: Position? = null,
-                             override val type: Type? = UNTYPED) : Expression
+                             override var type: Type? = UNTYPED) : Expression
 
 data class IdentifierExpression(val name: String,
                                 override val position: Position? = null,
-                                override val type: Type? = UNTYPED) : Expression
+                                override var type: Type? = UNTYPED) : Expression
 
 data class LetExpression(val letDecls: List<AlloyParser.LetDeclContext>,
                          val expressions: List<Expression>,
                          override val position: Position? = null,
-                         override val type: Type? = UNTYPED) : Expression
+                         override var type: Type? = UNTYPED) : Expression
 
 data class QuantifiedExpression(val operator: Operator,
                                 val decls: List<Decl>,
                                 val expressions: List<Expression>,
                                 override val position: Position? = null,
-                                override val type: Type? = UNTYPED) : Expression
+                                override var type: Type? = UNTYPED) : Expression
 
 // statements
 data class FactDeclaration(val name: String,

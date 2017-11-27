@@ -3,6 +3,7 @@ package de.hhu.stups.alloy2b.translation
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.ast.Operator.*
 import de.hhu.stups.alloy2b.typechecker.Type.*
+import de.hhu.stups.alloy2b.typechecker.TypeChecker
 
 class BTranslation(spec: AlloySpecification) {
     val sets = mutableListOf<String>()
@@ -19,6 +20,7 @@ class BTranslation(spec: AlloySpecification) {
     val alloyAssertions = mutableMapOf<String, String>();
 
     init {
+        TypeChecker(spec)
         spec.declarations.forEach({ stmt -> translate(stmt) })
         addSignatureExtensionProperties()
     }
@@ -272,7 +274,7 @@ class BTranslation(spec: AlloySpecification) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
         } else if(je.left.type == BINARY && je.right.type == UNARY) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
-        } else if (je.left.type == BINARY && je.right.type == UNARY) {
+        } else if (je.left.type == UNARY && je.right.type == BINARY) {
             return "${translateExpression(je.left)}[${translateExpression(je.right)}]"
         }
         throw UnsupportedOperationException("join not supported this way")
