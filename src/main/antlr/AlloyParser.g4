@@ -35,6 +35,8 @@ sigDecl            : sigQual* SIG name (COMMA name)* ( sigExt )? LBRACKET declLi
 
 declList           : decl (COMMA decl)* ;
 
+exprList           : expr (COMMA expr)* ;
+
 enumDecl           : ENUM name LBRACKET name (COMMA name)* RBRACKET ;
 
 sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
@@ -46,12 +48,12 @@ expr               : LET letDecl (COMMA letDecl)* blockOrBar             # letEx
                    | quant declList blockOrBar                           # quantExpr
                    | unOp expr                                           # unOpExpr
                    | left=expr binOp right=expr                          # binOpExpr
-                   |<assoc=right> left=expr IMPLIES right=expr            # impliesExpr // needed because associativity differs
+                   |<assoc=right> left=expr IMPLIES right=expr           # impliesExpr // needed because associativity differs
                    | left=expr arrowOp right=expr                        # arrowOpExpr
                    | left=expr NOT? compareOp right=expr                 # compareExpr
                    | exprQuantifier expr                                 # quantifiedExpr
                    | expr IMPLIES? expr ELSE expr                        # ifExpr
-                   | left=expr LSQBRACKET expr (COMMA expr)* RSQBRACKET  # boxJoinExpr
+                   | expr LSQBRACKET exprList RSQBRACKET                 # boxJoinExpr
                    | NUMBER                                              # numberExpr
                    | MINUS NUMBER                                        # negNumberExpr
                    | NONE                                                # noneExpr

@@ -224,7 +224,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(bje: BoxJoinExpression): String {
-        val parameters = bje.right.map { translateExpression(it) }
+        val parameters = bje.parameters.map { translateExpression(it) }
         return "${translateExpression(bje.left)}(${parameters.joinToString(", ")})"
     }
 

@@ -74,8 +74,8 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     left.toAst(considerPosition),
                     right.toAst(considerPosition),
                     toPosition(considerPosition))
-            is BoxJoinExprContext -> BoxJoinExpression(left.toAst(considerPosition),
-                    expr().map { it.toAst(considerPosition) },
+            is BoxJoinExprContext -> BoxJoinExpression(expr().toAst(considerPosition),
+                    exprList().expr().map { it.toAst(considerPosition) },
                     toPosition(considerPosition))
             is QuantExprContext -> QuantifiedExpression(Operator.fromString(this.quant().text),
                     declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),

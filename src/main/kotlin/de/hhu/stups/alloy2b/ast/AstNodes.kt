@@ -45,7 +45,7 @@ data class BinaryOperatorExpression(val operator: Operator,
                                     override var type: Type? = UNTYPED) : Expression
 
 data class BoxJoinExpression(val left: Expression,
-                             val right: List<Expression>,
+                             val parameters: List<Expression>,
                              override val position: Position? = null,
                              override var type: Type? = UNTYPED) : Expression
 
