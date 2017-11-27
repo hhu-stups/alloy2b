@@ -30,6 +30,8 @@ class BTranslation(spec: AlloySpecification) {
         appendIfNotEmpty(builder, properties, " &\n    ", "PROPERTIES")
         appendIfNotEmpty(builder, assertions, " &\n    ", "ASSERTIONS")
 
+        builder.appendln("END")
+
         return builder.toString()
     }
 
@@ -127,7 +129,7 @@ class BTranslation(spec: AlloySpecification) {
             sdec.names.forEach { properties.add("card(${it}) = 0") }
         }
         if (LONE in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${it}) =< 1") }
+            sdec.names.forEach { properties.add("card(${it}) <= 1") }
         }
         if (ONE in sdec.qualifiers) {
             sdec.names.forEach { properties.add("card(${it}) = 1") }
@@ -163,9 +165,9 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(qe: QuantifiedExpression): String =
             when (qe.operator) {
                 ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")})"
-                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")})"
+                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}))"
                 ONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}}) = 1"
-                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}}) =< 1"
+                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}}) <= 1"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -184,7 +186,7 @@ class BTranslation(spec: AlloySpecification) {
             GREATER -> symbol = ">"
             GREATER_EQUAL -> symbol = ">="
             LESS -> symbol = "<"
-            LESS_EQUAL -> symbol = "=<"
+            LESS_EQUAL -> symbol = "<="
             AND -> symbol = "&"
             OR -> symbol = "or"
             IMPLIES -> symbol = "=>"
