@@ -2,6 +2,7 @@ package de.hhu.stups.alloy2b.translation
 
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.ast.Operator.*
+import de.hhu.stups.alloy2b.typechecker.Type.*
 
 class BTranslation(spec: AlloySpecification) {
     val sets = mutableListOf<String>()
@@ -264,13 +265,17 @@ class BTranslation(spec: AlloySpecification) {
             }
 
     private fun translateJoin(je: BinaryOperatorExpression): String {
-        if (translateExpression(je.left) in fields) {
-            return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
-        } else if (translateExpression(je.right) in fields) {
-            return "${translateExpression(je.left)}[${translateExpression(je.right)}]"
-        } else {
-            return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
+        if(je.left.type == UNTYPED || je.right.type == UNTYPED) {
+            throw UnsupportedOperationException("missing types in join translation")
         }
+        if (je.left.type == BINARY && je.right.type == BINARY) {
+            return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
+        } else if(je.left.type == BINARY && je.right.type == UNARY) {
+            return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
+        } else if (je.left.type == BINARY && je.right.type == UNARY) {
+            return "${translateExpression(je.left)}[${translateExpression(je.right)}]"
+        }
+        throw UnsupportedOperationException("join not supported this way")
     }
 
     private fun translateDeclsIDList(decls: List<Decl>) =
