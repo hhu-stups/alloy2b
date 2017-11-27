@@ -19,7 +19,9 @@ data class AlloySpecification(val declarations: List<Statement>,
                               override val position: Position? = null) : Node
 
 interface Statement : Node {}
-interface Expression : Node { var type: Type? }
+interface Expression : Node {
+    var type: Type?
+}
 
 
 // decls

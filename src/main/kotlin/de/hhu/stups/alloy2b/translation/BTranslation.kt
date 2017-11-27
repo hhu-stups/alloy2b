@@ -96,31 +96,34 @@ class BTranslation(spec: AlloySpecification) {
         } else {
             builder.append("${fdec.name}(${fdec.decls.map { it.name }.joinToString(", ")}) == ")
         }
-        val decls = fdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
-        val paramdecls = fdec.decls.map { "p_${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
-        val returnVals = fdec.decls.map { "p_${it.name}" }
-        val expressions = fdec.expressions.map { translateExpression(it) }
-        val parameterExpressions = returnVals.map { returnVal -> expressions.map { "${returnVal} : ${it}" }.joinToString(" & ") }.joinToString(" & ")
-        builder.append("{${returnVals.joinToString(", ")} | ${paramdecls} & ${decls} & ${parameterExpressions}}")
+        val decls = fdec.decls.map { "${it.name} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val parameterExpressions = fdec.expressions.map { translateExpression(it) }.map { "temp : ${it}" }.joinToString(" & ")
+        // represent functions as set comprehensions
+        builder.append("{ temp | ${decls} & ${parameterExpressions}}")
         definitions.add(builder.toString())
     }
 
     private fun translate(pdec: PredDeclaration) {
         val builder = StringBuilder()
         val predCall: String
+        val alloyAssertion: String
         if (pdec.decls.isEmpty()) {
             predCall = "${pdec.name}"
+            alloyAssertion = predCall
         } else {
-            predCall = "${pdec.name}(${pdec.decls.map { it.name }.joinToString(", ")})"
+            val params = pdec.decls.map { it.name }.joinToString(", ")
+            predCall = "${pdec.name}(${params})"
+            alloyAssertion = "#(${params}).(${predCall})"
         }
-        val decls = pdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val decls = pdec.decls.map { "${it.name} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
         builder.append("${predCall} == ${decls}")
         val blocks = pdec.expressions.map { translateExpression(it) }.joinToString(" & ")
         if (blocks.isEmpty().not()) {
             builder.append(" & ${blocks}")
         }
         definitions.add(builder.toString())
-        alloyAssertions[pdec.name] = predCall
+        // add existantially quantified predicate to be used for CheckStatement
+        alloyAssertions[pdec.name] = alloyAssertion
     }
 
     private fun translate(stmt: CheckStatement) {
