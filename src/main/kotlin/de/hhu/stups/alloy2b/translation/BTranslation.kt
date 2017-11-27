@@ -12,6 +12,9 @@ class BTranslation(spec: AlloySpecification) {
 
     val signatures = mutableListOf<String>()
     val extendingSignatures = mutableMapOf<String, List<String>>();
+
+    val fields = mutableListOf<String>()
+
     val alloyAssertions = mutableMapOf<String, String>();
 
     init {
@@ -29,6 +32,8 @@ class BTranslation(spec: AlloySpecification) {
         appendIfNotEmpty(builder, definitions, " ;\n    ", "DEFINITIONS")
         appendIfNotEmpty(builder, properties, " &\n    ", "PROPERTIES")
         appendIfNotEmpty(builder, assertions, " &\n    ", "ASSERTIONS")
+
+        builder.appendln("END")
 
         return builder.toString()
     }
@@ -121,7 +126,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(sdec: SignatureDeclaration) {
-        signatures.addAll(sdec.names)
+        signatures.addAll(sdec.names) // used to decide how to translate dot join
 
         handleQuantifiersByCardinality(sdec)
 
@@ -154,7 +159,7 @@ class BTranslation(spec: AlloySpecification) {
             sdec.names.forEach { properties.add("card(${it}) = 0") }
         }
         if (LONE in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${it}) =< 1") }
+            sdec.names.forEach { properties.add("card(${it}) <= 1") }
         }
         if (ONE in sdec.qualifiers) {
             sdec.names.forEach { properties.add("card(${it}) = 1") }
@@ -165,6 +170,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateFieldDeclarations(decl: Decl, name: String) {
+        fields.add(decl.name); // used to decide how to translate dot join
         if (decl.expression is UnaryOperatorExpression) {
             if (decl.expression.operator == LONE) {
                 // one-to-one mapping, i.e. function
@@ -191,9 +197,9 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(qe: QuantifiedExpression): String =
             when (qe.operator) {
                 ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")})"
-                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")})"
+                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}))"
                 ONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}}) = 1"
-                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}}) =< 1"
+                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}}) <= 1"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -224,7 +230,7 @@ class BTranslation(spec: AlloySpecification) {
             GREATER -> symbol = ">"
             GREATER_EQUAL -> symbol = ">="
             LESS -> symbol = "<"
-            LESS_EQUAL -> symbol = "=<"
+            LESS_EQUAL -> symbol = "<="
             AND -> symbol = "&"
             OR -> symbol = "or"
             IMPLIES -> symbol = "=>"
@@ -250,10 +256,10 @@ class BTranslation(spec: AlloySpecification) {
             }
 
     private fun translateJoin(je: BinaryOperatorExpression): String {
-        if (translateExpression(je.left) in signatures) {
-            return "${translateExpression(je.left)}[${translateExpression(je.right)}]"
-        } else if (translateExpression(je.right) in signatures) {
+        if (translateExpression(je.left) in fields) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
+        } else if (translateExpression(je.right) in fields) {
+            return "${translateExpression(je.left)}[${translateExpression(je.right)}]"
         } else {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
         }

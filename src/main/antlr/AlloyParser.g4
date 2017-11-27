@@ -42,25 +42,26 @@ sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
 sigExt             : EXTENDS ref        # extendsExtension
                    | IN ref (PLUS ref)* # inExtension;
 
-expr               : LET letDecl (COMMA letDecl)* blockOrBar      # letExpr// was letDecl,+
-                   | quant declList blockOrBar                    # quantExpr
-                   | unOp expr                                    # unOpExpr
-                   | left=expr binOp right=expr                   # binOpExpr
-                   | left=expr arrowOp right=expr                 # arrowOpExpr
-                   | left=expr NOT? compareOp right=expr          # compareExpr
-                   | expr IMPLIES? expr ELSE expr                 # ifExpr
-                   | expr LSQBRACKET expr RSQBRACKET              # blockExpr // was expr,*
-                   | NUMBER                                       # numberExpr
-                   | MINUS NUMBER                                 # negNumberExpr
-                   | NONE                                         # noneExpr
-                   | IDEN                                         # idenExpr
-                   | UNIV                                         # univExpr
-                   | CAPINT                                       # capIntExpr
-                   | SeqInt                                       # seqIntExpr
-                   | LPAREN expr RPAREN                           # parenExpr
-                   | AT? name                                     # idExpr
-                   | block                                        # blockExpr
-                   | LBRACKET declList blockOrBar RBRACKET        # declListExpr
+expr               : LET letDecl (COMMA letDecl)* blockOrBar             # letExpr// was letDecl,+
+                   | quant declList blockOrBar                           # quantExpr
+                   | unOp expr                                           # unOpExpr
+                   | left=expr binOp right=expr                          # binOpExpr
+                   | left=expr arrowOp right=expr                        # arrowOpExpr
+                   | left=expr NOT? compareOp right=expr                 # compareExpr
+                   | exprQuantifier expr                                 # quantifiedExpr
+                   | expr IMPLIES? expr ELSE expr                        # ifExpr
+                   | left=expr LSQBRACKET expr (COMMA expr)* RSQBRACKET  # boxJoinExpr
+                   | NUMBER                                              # numberExpr
+                   | MINUS NUMBER                                        # negNumberExpr
+                   | NONE                                                # noneExpr
+                   | IDEN                                                # idenExpr
+                   | UNIV                                                # univExpr
+                   | CAPINT                                              # capIntExpr
+                   | SeqInt                                              # seqIntExpr
+                   | LPAREN expr RPAREN                                  # parenExpr
+                   | AT? name                                            # idExpr
+                   | block                                               # blockExpr
+                   | LBRACKET declList blockOrBar RBRACKET               # declListExpr
                    ;
 
 decl               : PRIVATE? DISJ? name COLON DISJ? expr ; //was name,+
@@ -76,7 +77,9 @@ arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SE
 
 compareOp          : EQUAL | IN | GREATER | GREATER_EQUAL | LESS | LESS_EQUAL ;
 
-unOp               : NOT | NO | SOME | LONE | ONE | SET | SEQ | ITERATION | CLOSURE | INVERSE | CARD;
+unOp               : NOT | SEQ | ITERATION | CLOSURE | INVERSE | CARD;
+
+exprQuantifier     : NO | SOME | LONE | ONE | SET;
 
 block              : LBRACKET expr* RBRACKET ;
 
