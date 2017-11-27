@@ -275,7 +275,7 @@ class BTranslation(spec: AlloySpecification) {
         } else if(je.left.type == BINARY && je.right.type == UNARY) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
         } else if (je.left.type == UNARY && je.right.type == BINARY) {
-            return "${translateExpression(je.left)}[${translateExpression(je.right)}]"
+            return "${translateExpression(je.right)}[{${translateExpression(je.left)}}]"
         }
         throw UnsupportedOperationException("join not supported this way")
     }

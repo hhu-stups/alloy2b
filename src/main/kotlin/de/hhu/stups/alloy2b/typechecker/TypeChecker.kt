@@ -44,7 +44,10 @@ class TypeChecker(spec: AlloySpecification) {
         return stmt.expressions.fold(tEnv, {te, expr -> typeCheckExpr(te, expr)})
     }
 
-    private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration): TypeEnvironment = throw UnsupportedOperationException("missing in type checker")
+    private fun typeCheck(teIn: TypeEnvironment, stmt: PredDeclaration): TypeEnvironment {
+        val tEnv = stmt.decls.fold(teIn, {te, decl -> typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED)})
+        return stmt.expressions.fold(tEnv, {te, expr -> typeCheckExpr(te, expr)})
+    }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: Expression) =
             when (expr) {
@@ -83,6 +86,20 @@ class TypeChecker(spec: AlloySpecification) {
         expr.type = expr.expression.type
         return te
     }
-    private fun typeCheckExpr(te: TypeEnvironment, expr: LetExpression): TypeEnvironment = throw UnsupportedOperationException("missing in type checker")
-    private fun typeCheckExpr(te: TypeEnvironment, expr: BoxJoinExpression): TypeEnvironment = throw UnsupportedOperationException("missing in type checker")
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: LetExpression): TypeEnvironment {
+        val tEnv = expr.letDecls.fold(teIn, {te, decl -> typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED)})
+        return expr.expressions.fold(tEnv, {te, expr -> typeCheckExpr(te, expr)})
+    }
+
+    private fun typeCheckExpr(te: TypeEnvironment, expr: BoxJoinExpression): TypeEnvironment {
+        typeCheckExpr(te, expr.left)
+        expr.right.map { typeCheckExpr(te, it) }
+        if(expr.left.type == BINARY && expr.right.filter { it.type == BINARY }.isNotEmpty()) {
+            expr.type = BINARY
+        } else {
+            expr.type = UNARY
+        }
+        return te
+    }
 }

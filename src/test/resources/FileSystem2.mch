@@ -10,10 +10,10 @@ PROPERTIES
     File <: FSObject &
     card(Root) = 1 &
     Root <: Dir &
-    Root[parent] = {} & parent = contents~ & File \/ Dir = FSObject & FSObject : (Root ; closure(contents)) &
+    parent[{Root}] = {} & parent = contents~ & File \/ Dir = FSObject & FSObject : closure(contents)[{Root}] &
     Dir /\ File = {}
 ASSERTIONS
-    not(#(d).(d : Dir & d : (d ; closure1(contents)))) &
-    card({d | d : Dir & d[parent] = {}}) = 1 &
-    !(f).(f : FSObject => card({d | d : Dir & f : d[contents]}) <= 1)
+    not(#(d).(d : Dir & d : closure1(contents)[{d}])) &
+    card({d | d : Dir & parent[{d}] = {}}) = 1 &
+    !(f).(f : FSObject => card({d | d : Dir & f : contents[{d}]}) <= 1)
 END
