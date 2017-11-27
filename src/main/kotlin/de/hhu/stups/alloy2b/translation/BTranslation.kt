@@ -96,11 +96,11 @@ class BTranslation(spec: AlloySpecification) {
         } else {
             builder.append("${fdec.name}(${fdec.decls.map { it.name }.joinToString(", ")}) == ")
         }
-        val decls = fdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
-        val paramdecls = fdec.decls.map { "p_${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val decls = fdec.decls.map { "${it.name} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val paramdecls = fdec.decls.map { "p_${it.name} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
         val returnVals = fdec.decls.map { "p_${it.name}" }
         val expressions = fdec.expressions.map { translateExpression(it) }
-        val parameterExpressions = returnVals.map { returnVal -> expressions.map { "${returnVal} : ${it}" }.joinToString(" & ") }.joinToString(" & ")
+        val parameterExpressions = returnVals.map { returnVal -> expressions.map { "${returnVal} <: ${it}" }.joinToString(" & ") }.joinToString(" & ")
         builder.append("{${returnVals.joinToString(", ")} | ${paramdecls} & ${decls} & ${parameterExpressions}}")
         definitions.add(builder.toString())
     }
@@ -112,7 +112,7 @@ class BTranslation(spec: AlloySpecification) {
         } else {
             builder.append("${pdec.name}(${pdec.decls.map { it.name }.joinToString(", ")}) == ")
         }
-        val decls = pdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val decls = pdec.decls.map { "${it.name} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
         builder.append(decls)
         val blocks = pdec.expressions.map { translateExpression(it) }.joinToString(" & ")
         if (blocks.isEmpty().not()) {
@@ -233,7 +233,7 @@ class BTranslation(spec: AlloySpecification) {
             OVERRIDE -> symbol = "<+"
             DOM_RESTR -> symbol = "<|"
             RAN_RESTR -> symbol = "|>"
-            IN -> symbol = ":"
+            IN -> symbol = "<:"
             EQUAL -> symbol = "="
             INTERSECTION -> symbol = "/\\"
             UNION -> symbol = "\\/"
@@ -275,7 +275,7 @@ class BTranslation(spec: AlloySpecification) {
         } else if(je.left.type == BINARY && je.right.type == UNARY) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
         } else if (je.left.type == UNARY && je.right.type == BINARY) {
-            return "${translateExpression(je.right)}[{${translateExpression(je.left)}}]"
+            return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
         }
         throw UnsupportedOperationException("join not supported this way")
     }
@@ -284,6 +284,6 @@ class BTranslation(spec: AlloySpecification) {
             decls.map { d -> d.name }.joinToString(", ")
 
     private fun translateDeclsExprList(decls: List<Decl>) =
-            decls.map { d -> "${d.name} : ${translateExpression(d.expression)}" }.joinToString(" & ")
+            decls.map { d -> "${d.name} <: ${translateExpression(d.expression)}" }.joinToString(" & ")
 }
 
