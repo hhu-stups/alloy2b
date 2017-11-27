@@ -192,6 +192,7 @@ class BTranslation(spec: AlloySpecification) {
                 is BinaryOperatorExpression -> translateExpression(e)
                 is UnaryOperatorExpression -> translateExpression(e)
                 is LetExpression -> translateExpression(e)
+                is BoxJoinExpression -> translateExpression(e)
                 else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
             }
 
@@ -215,6 +216,11 @@ class BTranslation(spec: AlloySpecification) {
         builder.append(le.expressions.map { it -> "${translateExpression(it)}" }.joinToString(" & "))
         builder.append(" END")
         return builder.toString()
+    }
+
+    private fun translateExpression(bje: BoxJoinExpression): String {
+        val parameters = bje.right.map { translateExpression(it) }
+        return "${translateExpression(bje.left)}(${parameters.joinToString(", ")})"
     }
 
     private fun translateExpression(qe: BinaryOperatorExpression): String {
