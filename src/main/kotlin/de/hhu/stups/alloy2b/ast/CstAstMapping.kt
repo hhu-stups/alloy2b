@@ -70,6 +70,10 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     left.toAst(considerPosition),
                     right.toAst(considerPosition),
                     toPosition(considerPosition))
+            is ImpliesExprContext -> BinaryOperatorExpression(Operator.fromString(this.IMPLIES().text),
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition),
+                    toPosition(considerPosition))
             is BoxJoinExprContext -> BoxJoinExpression(left.toAst(considerPosition),
                     expr().map { it.toAst(considerPosition) },
                     toPosition(considerPosition))

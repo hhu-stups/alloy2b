@@ -244,7 +244,7 @@ class BTranslation(spec: AlloySpecification) {
             LESS_EQUAL -> symbol = "<="
             AND -> symbol = "&"
             OR -> symbol = "or"
-            IMPLIES -> symbol = "=>"
+            IMPLICATION -> symbol = "=>"
             IFF -> symbol = "<=>"
             INVERSE -> symbol = "~"
             CARTESIAN -> symbol = "*"

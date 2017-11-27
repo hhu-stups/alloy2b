@@ -42,10 +42,11 @@ sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
 sigExt             : EXTENDS ref        # extendsExtension
                    | IN ref (PLUS ref)* # inExtension;
 
-expr               : LET letDecl (COMMA letDecl)* blockOrBar             # letExpr// was letDecl,+
+expr               : LET letDecl (COMMA letDecl)* blockOrBar             # letExpr
                    | quant declList blockOrBar                           # quantExpr
                    | unOp expr                                           # unOpExpr
                    | left=expr binOp right=expr                          # binOpExpr
+                   |<assoc=right> left=expr IMPLIES right=expr            # impliesExpr // needed because associativity differs
                    | left=expr arrowOp right=expr                        # arrowOpExpr
                    | left=expr NOT? compareOp right=expr                 # compareExpr
                    | exprQuantifier expr                                 # quantifiedExpr
@@ -70,7 +71,7 @@ letDecl            : name EQUAL expr ;
 
 quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
-binOp              : OR | AND | IFF | IMPLIES | PLUS | MINUS | DOT | INTERSECTION | UNION | DIFFERENCE |
+binOp              : OR | AND | IFF | PLUS | MINUS | DOT | INTERSECTION | UNION | DIFFERENCE |
                      DOM_RESTR | RAN_RESTR | OVERRIDE ; // todo: add | "<<" | ">>" | ">>>" ;  // todo: precedence
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;
