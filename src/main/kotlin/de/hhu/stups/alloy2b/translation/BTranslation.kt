@@ -110,7 +110,7 @@ class BTranslation(spec: AlloySpecification) {
         if (pdec.decls.isEmpty()) {
             builder.append("${pdec.name} == ")
         } else {
-            builder.append("${pdec.name}(${pdec.decls.map { it.name }}) == ")
+            builder.append("${pdec.name}(${pdec.decls.map { it.name }.joinToString(", ")}) == ")
         }
         val decls = pdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
         builder.append(decls)
