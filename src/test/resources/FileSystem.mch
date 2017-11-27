@@ -15,6 +15,6 @@ PROPERTIES
     FSObject : Root[closure(contents)] &
     Dir /\ File = {}
 ASSERTIONS
-    not(#(d).(d : Dir => d : (d ; closure1(contents))) &
-    card({d | d : Dir & (d = {} ; parent)}) = 1 &
+    not(#(d).(d : Dir => d : (d ; closure1(contents)))) &
+    card({d | d : Dir & (d ; parent) = {}}) = 1 &
     !(o).(o : FSObject => card({d | d : Dir & o : (d ; contents)}) =< 1)

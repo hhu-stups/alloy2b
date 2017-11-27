@@ -38,6 +38,10 @@ data class BinaryOperatorExpression(val operator: Operator,
                                     val right: Expression,
                                     override val position: Position? = null) : Expression
 
+data class BoxJoinExpression(val left: Expression,
+                             val right: List<Expression>,
+                             override val position: Position? = null) : Expression
+
 data class IdentifierExpression(val name: String,
                                 override val position: Position? = null) : Expression
 
