@@ -215,7 +215,7 @@ class BTranslation(spec: AlloySpecification) {
         builder.append(le.letDecls.map { it -> "${it.name}" }.joinToString(", "))
         builder.append(" BE ")
         builder.append(le.letDecls.map { it -> "${it.name} = ${translateExpression(it.expression)}" }.joinToString(" & "))
-        builder.append(" IN")
+        builder.append(" IN ")
         builder.append(le.expressions.map { it -> "${translateExpression(it)}" }.joinToString(" & "))
         builder.append(" END")
         return builder.toString()
