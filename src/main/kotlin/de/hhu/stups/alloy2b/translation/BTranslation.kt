@@ -96,7 +96,9 @@ class BTranslation(spec: AlloySpecification) {
         val decls = fdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
         val paramdecls = fdec.decls.map { "p_${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
         val returnVals = fdec.decls.map { "p_${it.name}" }                              // todo: name : expr ???
-        builder.append("{${returnVals.joinToString(", ")} | ${paramdecls} & ${decls} & ${fdec.expressions.map { translateExpression(it) }.joinToString(" & ")}}")
+        val expressions = fdec.expressions.map { translateExpression(it) }
+        val parameterExpressions = returnVals.map { returnVal -> expressions.map { "${returnVal} : ${it}" }.joinToString(" & ") }.joinToString(" & ")
+        builder.append("{${returnVals.joinToString(", ")} | ${paramdecls} & ${decls} & ${parameterExpressions}}")
         definitions.add(builder.toString())
     }
 
