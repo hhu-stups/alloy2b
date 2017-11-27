@@ -12,6 +12,9 @@ class BTranslation(spec: AlloySpecification) {
 
     val signatures = mutableListOf<String>()
     val extendingSignatures = mutableMapOf<String, List<String>>();
+
+    val fields = mutableListOf<String>()
+
     val alloyAssertions = mutableMapOf<String, String>();
 
     init {
@@ -96,7 +99,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(sdec: SignatureDeclaration) {
-        signatures.addAll(sdec.names)
+        signatures.addAll(sdec.names) // used to decide how to translate dot join
 
         handleQuantifiersByCardinality(sdec)
 
@@ -140,6 +143,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateFieldDeclarations(decl: Decl, name: String) {
+        fields.add(decl.name); // used to decide how to translate dot join
         if (decl.expression is UnaryOperatorExpression) {
             if (decl.expression.operator == LONE) {
                 // one-to-one mapping, i.e. function
@@ -212,10 +216,10 @@ class BTranslation(spec: AlloySpecification) {
             }
 
     private fun translateJoin(je: BinaryOperatorExpression): String {
-        if (translateExpression(je.left) in signatures) {
-            return "${translateExpression(je.left)}[${translateExpression(je.right)}]"
-        } else if (translateExpression(je.right) in signatures) {
+        if (translateExpression(je.left) in fields) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
+        } else if (translateExpression(je.right) in fields) {
+            return "${translateExpression(je.left)}[${translateExpression(je.right)}]"
         } else {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
         }
