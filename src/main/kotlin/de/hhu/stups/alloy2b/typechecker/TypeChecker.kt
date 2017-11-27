@@ -89,13 +89,13 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: LetExpression): TypeEnvironment {
         val tEnv = expr.letDecls.fold(teIn, {te, decl -> typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED)})
-        return expr.expressions.fold(tEnv, {te, expr -> typeCheckExpr(te, expr)})
+        return expr.expressions.fold(tEnv, {te, e -> typeCheckExpr(te, e)})
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: BoxJoinExpression): TypeEnvironment {
         typeCheckExpr(te, expr.left)
-        expr.right.map { typeCheckExpr(te, it) }
-        if(expr.left.type == BINARY && expr.right.filter { it.type == BINARY }.isNotEmpty()) {
+        expr.parameters.map { typeCheckExpr(te, it) }
+        if(expr.left.type == BINARY && expr.parameters.filter { it.type == BINARY }.isNotEmpty()) {
             expr.type = BINARY
         } else {
             expr.type = UNARY
