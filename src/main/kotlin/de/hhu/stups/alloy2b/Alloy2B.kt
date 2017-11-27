@@ -24,6 +24,7 @@ fun translateToConsole(inputFilePath: String) {
     if (parseResult.root != null) {
         println("Translating ...")
         println(BTranslation((parseResult.root.toAst(false))).getTranslation())
+        return
     }
     println("Parsing failed")
 }

@@ -91,11 +91,11 @@ class BTranslation(spec: AlloySpecification) {
         if (fdec.decls.isEmpty()) {
             builder.append("${fdec.name}")
         } else {
-            builder.append("${fdec.name}(${fdec.decls.map { it.name }}) == ")
+            builder.append("${fdec.name}(${fdec.decls.map { it.name }.joinToString(", ")}) == ")
         }
         val decls = fdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
         val paramdecls = fdec.decls.map { "p_${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
-        val returnVals = fdec.decls.map { "p_${it.name}" }                              // todo: name : expr ???
+        val returnVals = fdec.decls.map { "p_${it.name}" }
         val expressions = fdec.expressions.map { translateExpression(it) }
         val parameterExpressions = returnVals.map { returnVal -> expressions.map { "${returnVal} : ${it}" }.joinToString(" & ") }.joinToString(" & ")
         builder.append("{${returnVals.joinToString(", ")} | ${paramdecls} & ${decls} & ${parameterExpressions}}")
