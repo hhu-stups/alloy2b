@@ -212,9 +212,9 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(le: LetExpression): String {
         val builder = StringBuilder()
         builder.append("LET ")
-        builder.append(le.letDecls.map { it -> "${it.name().text}" }.joinToString(", "))
+        builder.append(le.letDecls.map { it -> "${it.name}" }.joinToString(", "))
         builder.append(" BE ")
-        builder.append(le.letDecls.map { it -> "${it.name().text} = ${translateExpression(it.expr().toAst(false))}" }.joinToString(" & "))
+        builder.append(le.letDecls.map { it -> "${it.name} = ${translateExpression(it.expression)}" }.joinToString(" & "))
         builder.append(" IN")
         builder.append(le.expressions.map { it -> "${translateExpression(it)}" }.joinToString(" & "))
         builder.append(" END")
