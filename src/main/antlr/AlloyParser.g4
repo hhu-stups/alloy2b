@@ -8,7 +8,7 @@ module             : MODULE name ; // was: name ( LSQBRACKET  EXACTLY? name  (CO
 
 open               : PRIVATE? OPEN name ( LSQBRACKET ref RSQBRACKET )? ( AS name )? ; // was ref,+
 
-paragraph          : factDecl | assertDecl | funDecl | cmdDecl | enumDecl | sigDecl ;
+paragraph          : factDecl | assertDecl | funDecl | predDecl | cmdDecl | enumDecl | sigDecl ;
 
 factDecl           : FACT (name)? block ;
 
@@ -16,8 +16,9 @@ assertDecl         : ASSERT (name)? block ;
 
 funDecl            : PRIVATE? FUN (ref DOT)? name LPAREN declList? RPAREN COLON expr block
                    | PRIVATE? FUN (ref DOT)? name LSQBRACKET declList? RSQBRACKET COLON expr block
-                   | PRIVATE? FUN (ref DOT)? name COLON expr block
-                   | PRIVATE? PRED (ref DOT)? name LPAREN declList? RPAREN block
+                   | PRIVATE? FUN (ref DOT)? name COLON expr block ;
+
+predDecl           : PRIVATE? PRED (ref DOT)? name LPAREN declList? RPAREN block
                    | PRIVATE? PRED (ref DOT)? name LSQBRACKET declList? RSQBRACKET block
                    | PRIVATE? PRED (ref DOT)? name block ;
 
@@ -41,25 +42,25 @@ sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
 sigExt             : EXTENDS ref        # extendsExtension
                    | IN ref (PLUS ref)* # inExtension;
 
-expr               : LET letDecl blockOrBar                # letExpr// was letDecl,+
-                   | quant declList blockOrBar             # quantExpr
-                   | unOp expr                             # unOpExpr
-                   | left=expr binOp right=expr            # binOpExpr
-                   | left=expr arrowOp right=expr          # arrowOpExpr
-                   | left=expr NOT? compareOp right=expr   # compareExpr
-                   | expr IMPLIES? expr ELSE expr          # ifExpr
-                   | expr LSQBRACKET expr RSQBRACKET       # blockExpr // was expr,*
-                   | NUMBER                                # numberExpr
-                   | MINUS NUMBER                          # negNumberExpr
-                   | NONE                                  # noneExpr
-                   | IDEN                                  # idenExpr
-                   | UNIV                                  # univExpr
-                   | CAPINT                                # capIntExpr
-                   | SeqInt                                # seqIntExpr
-                   | LPAREN expr RPAREN                    # parenExpr
-                   | AT? name                              # idExpr
-                   | block                                 # blockExpr
-                   | LBRACKET declList blockOrBar RBRACKET # declListExpr
+expr               : LET letDecl (COMMA letDecl)* blockOrBar      # letExpr// was letDecl,+
+                   | quant declList blockOrBar                    # quantExpr
+                   | unOp expr                                    # unOpExpr
+                   | left=expr binOp right=expr                   # binOpExpr
+                   | left=expr arrowOp right=expr                 # arrowOpExpr
+                   | left=expr NOT? compareOp right=expr          # compareExpr
+                   | expr IMPLIES? expr ELSE expr                 # ifExpr
+                   | expr LSQBRACKET expr RSQBRACKET              # blockExpr // was expr,*
+                   | NUMBER                                       # numberExpr
+                   | MINUS NUMBER                                 # negNumberExpr
+                   | NONE                                         # noneExpr
+                   | IDEN                                         # idenExpr
+                   | UNIV                                         # univExpr
+                   | CAPINT                                       # capIntExpr
+                   | SeqInt                                       # seqIntExpr
+                   | LPAREN expr RPAREN                           # parenExpr
+                   | AT? name                                     # idExpr
+                   | block                                        # blockExpr
+                   | LBRACKET declList blockOrBar RBRACKET        # declListExpr
                    ;
 
 decl               : PRIVATE? DISJ? name COLON DISJ? expr ; //was name,+
