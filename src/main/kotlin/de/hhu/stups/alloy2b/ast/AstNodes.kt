@@ -1,5 +1,7 @@
 package de.hhu.stups.alloy2b.ast
 
+import de.hhu.stups.alloy2b.antlr.AlloyParser
+
 interface Node {
     val position: Position?
 }
@@ -41,6 +43,10 @@ data class BinaryOperatorExpression(val operator: Operator,
 data class IdentifierExpression(val name: String,
                                 override val position: Position? = null) : Expression
 
+data class LetExpression(val letDecls: List<AlloyParser.LetDeclContext>,
+                         val expressions: List<Expression>,
+                         override val position: Position? = null) : Expression
+
 data class QuantifiedExpression(val operator: Operator,
                                 val decls: List<Decl>,
                                 val expressions: List<Expression>,
@@ -55,6 +61,11 @@ data class FunDeclaration(val name: String,
                           val decls: List<Decl> = emptyList(),
                           val expressions: List<Expression>,
                           override val position: Position? = null) : Statement
+
+data class PredDeclaration(val name: String,
+                           val decls: List<Decl> = emptyList(),
+                           val expressions: List<Expression>,
+                           override val position: Position? = null) : Statement
 
 data class SignatureDeclaration(val qualifiers: List<Operator> = emptyList(),
                                 val names: List<String>, // a list of strings for definitions like 'sig File, Dir [...]'
