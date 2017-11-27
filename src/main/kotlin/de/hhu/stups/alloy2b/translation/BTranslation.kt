@@ -68,6 +68,7 @@ class BTranslation(spec: AlloySpecification) {
             is SignatureDeclaration -> translate(stmt)
             is FactDeclaration -> translate(stmt)
             is FunDeclaration -> translate(stmt)
+            is PredDeclaration -> translate(stmt)
             else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
         }
     }
@@ -81,7 +82,33 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(fdec: FunDeclaration) {
-        // TODO: how to translate functions?
+        val builder = StringBuilder()
+        if (fdec.decls.isEmpty()) {
+            builder.append("${fdec.name}")
+        } else {
+            builder.append("${fdec.name}(${fdec.decls.map { it.name }}) == ")
+        }
+        val decls = fdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val paramdecls = fdec.decls.map { "p_${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val returnVals = fdec.decls.map { "p_${it.name}" }                              // todo: name : expr ???
+        builder.append("{${returnVals.joinToString(", ")} | ${paramdecls} & ${decls} & ${fdec.expressions.map { translateExpression(it) }.joinToString(" & ")}}")
+        definitions.add(builder.toString())
+    }
+
+    private fun translate(pdec: PredDeclaration) {
+        val builder = StringBuilder()
+        if (pdec.decls.isEmpty()) {
+            builder.append("${pdec.name} == ")
+        } else {
+            builder.append("${pdec.name}(${pdec.decls.map { it.name }}) == ")
+        }
+        val decls = pdec.decls.map { "${it.name} : ${translateExpression(it.expression)}" }.joinToString(" & ")
+        builder.append(decls)
+        val blocks = pdec.expressions.map { translateExpression(it) }.joinToString(" & ")
+        if (blocks.isEmpty().not()) {
+            builder.append(" & ${blocks}")
+        }
+        definitions.add(builder.toString())
     }
 
     private fun translate(stmt: CheckStatement) {
@@ -156,6 +183,7 @@ class BTranslation(spec: AlloySpecification) {
                 is IdentifierExpression -> e.name
                 is BinaryOperatorExpression -> translateExpression(e)
                 is UnaryOperatorExpression -> translateExpression(e)
+                is LetExpression -> translateExpression(e)
                 else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
             }
 
@@ -168,6 +196,18 @@ class BTranslation(spec: AlloySpecification) {
                 LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.map { e -> translateExpression(e) }.joinToString(" & ")}}) =< 1"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
+
+    private fun translateExpression(le: LetExpression): String {
+        val builder = StringBuilder()
+        builder.append("LET ")
+        builder.append(le.letDecls.map { it -> "${it.name().text}" }.joinToString(", "))
+        builder.append(" BE ")
+        builder.append(le.letDecls.map { it -> "${it.name().text} = ${translateExpression(it.expr().toAst(false))}" }.joinToString(" & "))
+        builder.append(" IN")
+        builder.append(le.expressions.map { it -> "${translateExpression(it)}" }.joinToString(" & "))
+        builder.append(" END")
+        return builder.toString()
+    }
 
     private fun translateExpression(qe: BinaryOperatorExpression): String {
         val symbol: String
