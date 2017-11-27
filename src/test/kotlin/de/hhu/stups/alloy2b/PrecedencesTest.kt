@@ -12,7 +12,7 @@ class PrecedencesTest {
     fun boxJoinVsDotJoin() {
         val code = "sig test {} {a.b[c]}"
         val ast = ParserFacade.parse(code).root!!.toAst()
-        val expectedAst = AlloySpecification(declarations=asList(SignatureDeclaration(names=asList("test"), expressions=asList(BoxJoinExpression(left=BinaryOperatorExpression(operator= Operator.JOIN, left=IdentifierExpression(name="a"), right=IdentifierExpression(name="b")), right=asList(BinaryOperatorExpression(operator= Operator.JOIN, left=IdentifierExpression(name="a"), right=IdentifierExpression(name="b")), IdentifierExpression(name="c")))))))
+        val expectedAst = ParserFacade.parse("sig test {} {(a.b)[c]}").root!!.toAst()
         assertEquals(expectedAst, ast)
     }
 
@@ -20,7 +20,7 @@ class PrecedencesTest {
     fun dotJoinAndQuantifier() {
         val code = "assert oneRoot { one d: Dir | no d.parent }"
         val ast = ParserFacade.parse(code).root!!.toAst()
-        val expectedAst = AlloySpecification(declarations=asList(AssertionStatement(name="oneRoot", expressions=asList(QuantifiedExpression(operator=ONE, decls=asList(Decl(name="d", expression=IdentifierExpression(name="Dir"))), expressions=asList(UnaryOperatorExpression(operator=NO, expression=BinaryOperatorExpression(operator= Operator.JOIN, left=IdentifierExpression(name="d"), right=IdentifierExpression(name="parent")))))))))
+        val expectedAst = ParserFacade.parse("assert oneRoot { one d: Dir | no (d.parent) }").root!!.toAst()
         assertEquals(expectedAst, ast)
     }
 }
