@@ -41,7 +41,11 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
                 child.block()?.toAst(considerPosition) ?: asList(child.name(0).toAst(considerPosition)),
                 toPosition(considerPosition))
         is FunDeclContext -> return FunDeclaration(child.name()?.text ?: "",
-                child.declList()?.decl()?.map {it.toAst(considerPosition)} ?: emptyList(),
+                child.declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
+                child.block().expr().map { it.toAst(considerPosition) },
+                toPosition(considerPosition))
+        is PredDeclContext -> return PredDeclaration(child.name()?.text ?: "",
+                child.declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
                 child.block().expr().map { it.toAst(considerPosition) },
                 toPosition(considerPosition))
         else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
@@ -72,6 +76,9 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     toPosition(considerPosition))
             is ArrowOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.arrowOp().text),
                     left.toAst(considerPosition), right.toAst(considerPosition),
+                    toPosition(considerPosition))
+            is LetExprContext -> LetExpression(this.letDecl(),
+                    this.blockOrBar().toAst(considerPosition),
                     toPosition(considerPosition))
             is ParenExprContext -> this.expr().toAst(considerPosition)
             else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
