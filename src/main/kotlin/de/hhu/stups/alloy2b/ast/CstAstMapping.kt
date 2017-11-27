@@ -83,7 +83,7 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
             is ArrowOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.arrowOp().text),
                     left.toAst(considerPosition), right.toAst(considerPosition),
                     toPosition(considerPosition))
-            is LetExprContext -> LetExpression(this.letDecl(),
+            is LetExprContext -> LetExpression(this.letDecl().map { it.toAst(considerPosition) },
                     this.blockOrBar().toAst(considerPosition),
                     toPosition(considerPosition))
             is ParenExprContext -> this.expr().toAst(considerPosition)
@@ -99,6 +99,7 @@ fun BlockOrBarContext.toAst(considerPosition: Boolean = false): List<Expression>
 }
 
 fun DeclContext.toAst(considerPosition: Boolean = false): Decl = Decl(this.name().text, this.expr().toAst(considerPosition))
+fun LetDeclContext.toAst(considerPosition: Boolean = false): Decl = Decl(this.name().text, this.expr().toAst(considerPosition))
 
 class AlloyParseTreeToAstMapper : ParseTreeToAstMapper<SpecificationContext, AlloySpecification> {
     override fun map(parseTreeNode: SpecificationContext): AlloySpecification = parseTreeNode.toAst()

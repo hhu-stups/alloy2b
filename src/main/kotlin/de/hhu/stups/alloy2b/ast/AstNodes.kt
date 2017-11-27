@@ -53,7 +53,7 @@ data class IdentifierExpression(val name: String,
                                 override val position: Position? = null,
                                 override var type: Type? = UNTYPED) : Expression
 
-data class LetExpression(val letDecls: List<AlloyParser.LetDeclContext>,
+data class LetExpression(val letDecls: List<Decl>,
                          val expressions: List<Expression>,
                          override val position: Position? = null,
                          override var type: Type? = UNTYPED) : Expression
