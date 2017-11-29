@@ -32,7 +32,7 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: SignatureDeclaration): TypeEnvironment {
         val tEnv = stmt.names.fold(teIn, { te, name -> te.addType(name, UNARY) })
-        return stmt.decls.fold(tEnv, { te, decl -> decl.names.fold(te, {te, name -> te.addType(name, BINARY) })})
+        return stmt.decls.fold(tEnv, { te, decl -> decl.names.fold(te, { te2, name -> te2.addType(name, BINARY) }) })
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: FactDeclaration): TypeEnvironment =
@@ -40,12 +40,12 @@ class TypeChecker(spec: AlloySpecification) {
 
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: FunDeclaration): TypeEnvironment {
-        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), {te, name -> te.addType(name, decl.expression.type ?: UNTYPED) })})
+        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type ?: UNTYPED) }) })
         return stmt.expressions.fold(tEnv, { te, expr -> typeCheckExpr(te, expr) })
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: PredDeclaration): TypeEnvironment {
-        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), {te, name -> te.addType(name, decl.expression.type ?: UNTYPED) })})
+        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type ?: UNTYPED) }) })
         return stmt.expressions.fold(tEnv, { te, expr -> typeCheckExpr(te, expr) })
     }
 
@@ -59,6 +59,7 @@ class TypeChecker(spec: AlloySpecification) {
                 is BoxJoinExpression -> typeCheckExpr(te, expr)
                 is BlockExpression -> typeCheckExpr(te, expr)
                 is IfExpression -> typeCheckExpr(te, expr)
+                is DeclListExpression -> typeCheckExpr(te, expr)
                 else -> throw UnsupportedOperationException(expr.javaClass.canonicalName)
             }
 
@@ -74,8 +75,11 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression): TypeEnvironment {
-        val tempTe = expr.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), {te, name -> te.addType(name, decl.expression.type ?: UNTYPED) })})
-        return expr.expressions.fold(tempTe, { te, subExpr -> typeCheckExpr(te, subExpr) })
+        return checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
+    }
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: DeclListExpression): TypeEnvironment {
+        return checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: IdentifierExpression): TypeEnvironment {
@@ -114,5 +118,10 @@ class TypeChecker(spec: AlloySpecification) {
             expr.type = UNARY
         }
         return te
+    }
+
+    private fun checkDeclsAndExpressions(teIn: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>): TypeEnvironment {
+        val tempTe = decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type ?: UNTYPED) }) })
+        return expressions.fold(tempTe, { te, subExpr -> typeCheckExpr(te, subExpr) })
     }
 }

@@ -23,8 +23,9 @@ interface Expression : Node {
 // decls
 data class Decl(val names: List<String>, val expression: Expression,
                 override val position: Position? = null) : Node
+
 data class LetDecl(val name: String, val expression: Expression,
-                override val position: Position? = null) : Node
+                   override val position: Position? = null) : Node
 
 // signature extensions
 interface SignatureExtension : Node
@@ -69,8 +70,13 @@ data class BlockExpression(val expressions: List<Expression>,
                            override var type: Type? = UNTYPED) : Expression
 
 data class IfExpression(val ifExpr: Expression, val thenExpr: Expression, val elseExpr: Expression,
-                           override val position: Position? = null,
-                           override var type: Type? = UNTYPED) : Expression
+                        override val position: Position? = null,
+                        override var type: Type? = UNTYPED) : Expression
+
+data class DeclListExpression(val decls: List<Decl>,
+                              val expressions: List<Expression>,
+                              override val position: Position? = null,
+                              override var type: Type? = UNTYPED) : Expression
 
 // statements
 data class FactDeclaration(val name: String,
