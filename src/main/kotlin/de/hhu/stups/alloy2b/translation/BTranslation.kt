@@ -62,7 +62,7 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun addSignatureExtensionIfNotEqual(sig1: String, sig2: String) {
         if (!sig1.equals(sig2)) {
-            properties.add("${sig1} /\\ ${sig2} = {}")
+            properties.add("${sanitizeIdentifier(sig1)} /\\ ${sanitizeIdentifier(sig2)} = {}")
         }
     }
 
@@ -92,11 +92,11 @@ class BTranslation(spec: AlloySpecification) {
     private fun translate(fdec: FunDeclaration) {
         val builder = StringBuilder()
         if (fdec.decls.isEmpty()) {
-            builder.append("${fdec.name}")
+            builder.append("${sanitizeIdentifier(fdec.name)}")
         } else {
-            builder.append("${fdec.name}(${fdec.decls.map { it.name }.joinToString(", ")}) == ")
+            builder.append("${sanitizeIdentifier(fdec.name)}(${fdec.decls.map { sanitizeIdentifier(it.name) }.joinToString(", ")}) == ")
         }
-        val decls = fdec.decls.map { "${it.name} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val decls = fdec.decls.map { "${sanitizeIdentifier(it.name)} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
         val parameterExpressions = fdec.expressions.map { translateExpression(it) }.map { "temp : ${it}" }.joinToString(" & ")
         // represent functions as set comprehensions
         builder.append("{ temp | ${decls} & ${parameterExpressions}}")
@@ -108,14 +108,14 @@ class BTranslation(spec: AlloySpecification) {
         val predCall: String
         val alloyAssertion: String
         if (pdec.decls.isEmpty()) {
-            predCall = "${pdec.name}"
+            predCall = "${sanitizeIdentifier(pdec.name)}"
             alloyAssertion = predCall
         } else {
-            val params = pdec.decls.map { it.name }.joinToString(", ")
-            predCall = "${pdec.name}(${params})"
+            val params = pdec.decls.map { sanitizeIdentifier(it.name) }.joinToString(", ")
+            predCall = "${sanitizeIdentifier(pdec.name)}(${params})"
             alloyAssertion = "#(${params}).(${predCall})"
         }
-        val decls = pdec.decls.map { "${it.name} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
+        val decls = pdec.decls.map { "${sanitizeIdentifier(it.name)} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
         builder.append("${predCall} == ${decls}")
         val blocks = pdec.expressions.map { translateExpression(it) }.joinToString(" & ")
         if (blocks.isEmpty().not()) {
@@ -142,20 +142,20 @@ class BTranslation(spec: AlloySpecification) {
 
         // field declarations are mapped to constants and properties
         sdec.decls.forEach({ d ->
-            constants += d.name
+            constants.add(sanitizeIdentifier(d.name))
             sdec.names.forEach { sdecName -> translateFieldDeclarations(d, sdecName) }
         })
 
         if (sdec.signatureExtension == null) {
             // basic signature -> B set
-            sets.addAll(sdec.names)
+            sets.addAll(sdec.names.map { n -> sanitizeIdentifier(n) })
             return
         }
-        constants.addAll(sdec.names)
+        constants.addAll(sdec.names.map { n-> sanitizeIdentifier(n) })
         when (sdec.signatureExtension) {
             is NameSignatureExtension -> {
                 sdec.names.forEach({
-                    properties.add("${it} <: ${sdec.signatureExtension.name}")
+                    properties.add("${sanitizeIdentifier(it)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
                     extendingSignatures[sdec.signatureExtension.name] =
                             extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + it
                 })
@@ -166,16 +166,16 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun handleQuantifiersByCardinality(sdec: SignatureDeclaration) {
         if (NO in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${it}) = 0") }
+            sdec.names.forEach { properties.add("card(${sanitizeIdentifier(it)}) = 0") }
         }
         if (LONE in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${it}) <= 1") }
+            sdec.names.forEach { properties.add("card(${sanitizeIdentifier(it)}) <= 1") }
         }
         if (ONE in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${it}) = 1") }
+            sdec.names.forEach { properties.add("card(${sanitizeIdentifier(it)}) = 1") }
         }
         if (SOME in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${it}) >= 1") }
+            sdec.names.forEach { properties.add("card(${sanitizeIdentifier(it)}) >= 1") }
         }
     }
 
@@ -184,19 +184,19 @@ class BTranslation(spec: AlloySpecification) {
         if (decl.expression is UnaryOperatorExpression) {
             if (decl.expression.operator == LONE) {
                 // one-to-one mapping, i.e. function
-                properties.add("${decl.name} : ${name} +-> ${translateExpression(decl.expression.expression)}")
+                properties.add("${sanitizeIdentifier(decl.name)} : ${sanitizeIdentifier(name)} +-> ${translateExpression(decl.expression.expression)}")
                 return
             }
-            properties.add("${decl.name} : ${name} <-> ${translateExpression(decl.expression.expression)}")
+            properties.add("${sanitizeIdentifier(decl.name)} : ${sanitizeIdentifier(name)} <-> ${translateExpression(decl.expression.expression)}")
             return
         }
-        properties.add("${decl.name} : ${name} <-> ${translateExpression(decl.expression)}")
+        properties.add("${sanitizeIdentifier(decl.name)} : ${sanitizeIdentifier(name)} <-> ${translateExpression(decl.expression)}")
     }
 
     private fun translateExpression(e: Expression) =
             when (e) {
                 is QuantifiedExpression -> translateExpression(e)
-                is IdentifierExpression -> e.name
+                is IdentifierExpression -> sanitizeIdentifier(e)
                 is BinaryOperatorExpression -> translateExpression(e)
                 is UnaryOperatorExpression -> translateExpression(e)
                 is LetExpression -> translateExpression(e)
@@ -217,9 +217,9 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(le: LetExpression): String {
         val builder = StringBuilder()
         builder.append("LET ")
-        builder.append(le.letDecls.map { it -> "${it.name}" }.joinToString(", "))
+        builder.append(le.letDecls.map { it -> "${sanitizeIdentifier(it.name)}" }.joinToString(", "))
         builder.append(" BE ")
-        builder.append(le.letDecls.map { it -> "${it.name} = ${translateExpression(it.expression)}" }.joinToString(" & "))
+        builder.append(le.letDecls.map { it -> "${sanitizeIdentifier(it.name)} = ${translateExpression(it.expression)}" }.joinToString(" & "))
         builder.append(" IN ")
         builder.append(le.expressions.map { it -> "${translateExpression(it)}" }.joinToString(" & "))
         builder.append(" END")
@@ -286,9 +286,15 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateDeclsIDList(decls: List<Decl>) =
-            decls.map { d -> d.name }.joinToString(", ")
+            decls.map { d -> sanitizeIdentifier(d.name) }.joinToString(", ")
 
     private fun translateDeclsExprList(decls: List<Decl>) =
-            decls.map { d -> "${d.name} <: ${translateExpression(d.expression)}" }.joinToString(" & ")
+            decls.map { d -> "${sanitizeIdentifier(d.name)} <: ${translateExpression(d.expression)}" }.joinToString(" & ")
+
+    private fun sanitizeIdentifier(id: String) =
+            "${id}_"
+
+    private fun sanitizeIdentifier(id: IdentifierExpression) =
+            sanitizeIdentifier(id.name)
 }
 

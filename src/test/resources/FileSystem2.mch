@@ -1,19 +1,19 @@
 MACHINE alloytranslation
 SETS
-    FSObject
+    FSObject_
 CONSTANTS
-    parent, contents, Dir, File, Root
+    parent_, contents_, Dir_, File_, Root_
 PROPERTIES
-    parent : FSObject +-> Dir &
-    contents : Dir <-> FSObject &
-    Dir <: FSObject &
-    File <: FSObject &
-    card(Root) = 1 &
-    Root <: Dir &
-    parent[Root] = {} & parent = contents~ & File \/ Dir = FSObject & FSObject <: closure(contents)[Root] &
-    Dir /\ File = {}
+    parent_ : FSObject_ +-> Dir_ &
+    contents_ : Dir_ <-> FSObject_ &
+    Dir_ <: FSObject_ &
+    File_ <: FSObject_ &
+    card(Root_) = 1 &
+    Root_ <: Dir_ &
+    parent_[Root_] = {} & parent_ = contents_~ & File_ \/ Dir_ = FSObject_ & FSObject_ <: closure(contents_)[Root_] &
+    Dir_ /\ File_ = {}
 ASSERTIONS
-    not(#(d).(d <: Dir & d <: closure1(contents)[d])) &
-    card({d | d <: Dir & parent[d] = {}}) = 1 &
-    !(f).(f <: FSObject => card({d | d <: Dir & f <: contents[d]}) <= 1)
+    not(#(d_).(d_ <: Dir_ & d_ <: closure1(contents_)[d_])) &
+    card({d_ | d_ <: Dir_ & parent_[d_] = {}}) = 1 &
+    !(f_).(f_ <: FSObject_ => card({d_ | d_ <: Dir_ & f_ <: contents_[d_]}) <= 1)
 END
