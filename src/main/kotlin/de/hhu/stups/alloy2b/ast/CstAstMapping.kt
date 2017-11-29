@@ -5,11 +5,6 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import java.util.Arrays.asList
 
-
-interface ParseTreeToAstMapper<in CstNode : ParserRuleContext, out AstNode : Node> {
-    fun map(parseTreeNode: CstNode): AstNode
-}
-
 fun SpecificationContext.toAst(considerPosition: Boolean = false): AlloySpecification =
         AlloySpecification(this.paragraph().map { it.toAst(considerPosition) }, toPosition(considerPosition))
 
@@ -108,7 +103,3 @@ fun BlockOrBarContext.toAst(considerPosition: Boolean = false): List<Expression>
 
 fun DeclContext.toAst(considerPosition: Boolean = false): Decl = Decl(this.name().text, this.expr().toAst(considerPosition))
 fun LetDeclContext.toAst(considerPosition: Boolean = false): Decl = Decl(this.name().text, this.expr().toAst(considerPosition))
-
-class AlloyParseTreeToAstMapper : ParseTreeToAstMapper<SpecificationContext, AlloySpecification> {
-    override fun map(parseTreeNode: SpecificationContext): AlloySpecification = parseTreeNode.toAst()
-}

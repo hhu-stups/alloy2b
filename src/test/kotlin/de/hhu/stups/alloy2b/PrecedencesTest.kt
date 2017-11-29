@@ -2,9 +2,7 @@ package de.hhu.stups.alloy2b
 
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.parsing.ParserFacade
-import de.hhu.stups.alloy2b.ast.Operator.*
 import org.junit.Assert.assertEquals
-import java.util.Arrays.asList
 import org.junit.Test as test
 
 class PrecedencesTest {

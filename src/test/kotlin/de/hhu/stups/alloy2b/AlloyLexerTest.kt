@@ -12,7 +12,7 @@ class AlloyLexerTest {
 
     @test
     fun tokenizeBoxJoin() {
-        assertEquals(listOf("ID", "DOT", "ID","LSQBRACKET","ID","RSQBRACKET","EOF"),
+        assertEquals(listOf("ID", "DOT", "ID", "LSQBRACKET", "ID", "RSQBRACKET", "EOF"),
                 tokens(lexerForCode("a.b[c]")))
     }
 }

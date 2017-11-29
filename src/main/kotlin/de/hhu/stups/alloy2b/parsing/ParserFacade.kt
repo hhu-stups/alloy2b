@@ -1,4 +1,4 @@
-package de.hhu.stups.alloy2b.parsing;
+package de.hhu.stups.alloy2b.parsing
 
 import de.hhu.stups.alloy2b.antlr.AlloyLexer
 import de.hhu.stups.alloy2b.antlr.AlloyParser
@@ -14,9 +14,7 @@ import java.util.*
 
 data class Error(val message: String)
 
-data class ParsingResult(val root: AlloyParser.SpecificationContext?, val errors: List<Error>) {
-    fun isCorrect() = errors.isEmpty() && root != null
-}
+data class ParsingResult(val root: AlloyParser.SpecificationContext?, val errors: List<Error>)
 
 fun String.toStream(charset: Charset = Charsets.UTF_8) = ByteArrayInputStream(toByteArray(charset))
 

@@ -1,6 +1,5 @@
 package de.hhu.stups.alloy2b.ast
 
-import de.hhu.stups.alloy2b.antlr.AlloyParser
 import de.hhu.stups.alloy2b.typechecker.Type
 import de.hhu.stups.alloy2b.typechecker.Type.UNTYPED
 
@@ -12,13 +11,10 @@ data class Point(val line: Int, val column: Int)
 
 data class Position(val start: Point, val end: Point)
 
-fun pos(startLine: Int, startCol: Int, endLine: Int, endCol: Int) =
-        Position(Point(startLine, startCol), Point(endLine, endCol))
-
 data class AlloySpecification(val declarations: List<Statement>,
                               override val position: Position? = null) : Node
 
-interface Statement : Node {}
+interface Statement : Node
 interface Expression : Node {
     var type: Type?
 }
@@ -29,7 +25,7 @@ data class Decl(val name: String, val expression: Expression,
                 override val position: Position? = null) : Node
 
 // signature extensions
-interface SignatureExtension : Node {}
+interface SignatureExtension : Node
 
 data class NameSignatureExtension(val name: String,
                                   override val position: Position? = null) : SignatureExtension

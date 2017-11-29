@@ -9,7 +9,7 @@ import java.util.*
 fun lexerForCode(code: String) = AlloyLexer(CharStreams.fromString(code))
 
 fun lexerForResource(resourceName: String) =
-        AlloyLexer(CharStreams.fromStream(object {}.javaClass.getResourceAsStream("/${resourceName}")))
+        AlloyLexer(CharStreams.fromStream(object {}.javaClass.getResourceAsStream("/$resourceName")))
 
 fun tokens(lexer: AlloyLexer): List<String> {
     val tokens = LinkedList<String>()
@@ -23,12 +23,10 @@ fun tokens(lexer: AlloyLexer): List<String> {
     return tokens
 }
 
-fun parse(lexer: AlloyLexer): AlloyParser.SpecificationContext = AlloyParser(CommonTokenStream(lexer)).specification()
-
 fun parseResource(resourceName: String): AlloyParser.SpecificationContext =
         AlloyParser(CommonTokenStream(lexerForResource(resourceName))).specification()
 
 fun getResourceAsString(resourceName: String): String {
-    val expected = object {}.javaClass.getResourceAsStream("/${resourceName}");
+    val expected = object {}.javaClass.getResourceAsStream("/$resourceName")
     return expected.bufferedReader().use { it.readText() }
 }

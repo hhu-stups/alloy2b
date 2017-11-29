@@ -8,7 +8,7 @@ abstract class ParseTreeElement {
     abstract fun multiLineString(indentation: String = ""): String
 }
 
-class ParseTreeLeaf(val text: String) : ParseTreeElement() {
+class ParseTreeLeaf(private val text: String) : ParseTreeElement() {
     override fun toString(): String {
         return "T[$text]"
     }
@@ -16,8 +16,8 @@ class ParseTreeLeaf(val text: String) : ParseTreeElement() {
     override fun multiLineString(indentation: String): String = "${indentation}T[$text]\n"
 }
 
-class ParseTreeNode(val name: String) : ParseTreeElement() {
-    val children = LinkedList<ParseTreeElement>()
+class ParseTreeNode(private val name: String) : ParseTreeElement() {
+    private val children = LinkedList<ParseTreeElement>()
     fun child(c: ParseTreeElement): ParseTreeNode {
         children.add(c)
         return this
@@ -29,7 +29,7 @@ class ParseTreeNode(val name: String) : ParseTreeElement() {
 
     override fun multiLineString(indentation: String): String {
         val sb = StringBuilder()
-        sb.append("${indentation}$name\n")
+        sb.append("$indentation$name\n")
         children.forEach { c -> sb.append(c.multiLineString(indentation + "  ")) }
         return sb.toString()
     }

@@ -9,19 +9,19 @@ class TranslationTest {
 
     @test
     fun translateFileSystemModel() {
-        val expected = getResourceAsString("FileSystem.mch");
+        val expected = getResourceAsString("FileSystem.mch")
         Assert.assertEquals(expected, BTranslation(parseResource("FileSystem.als").toAst(false)).getTranslation())
     }
 
     @test
     fun translateFileSystemModel2() {
-        val expected = getResourceAsString("FileSystem2.mch");
+        val expected = getResourceAsString("FileSystem2.mch")
         Assert.assertEquals(expected, BTranslation(parseResource("FileSystem2.als").toAst(false)).getTranslation())
     }
 
     @test
     fun translateSelfGrandpas() {
-        val expected = getResourceAsString("SelfGrandpas.mch");
+        val expected = getResourceAsString("SelfGrandpas.mch")
         Assert.assertEquals(expected, BTranslation(parseResource("SelfGrandpas.als").toAst(false)).getTranslation())
     }
 }
