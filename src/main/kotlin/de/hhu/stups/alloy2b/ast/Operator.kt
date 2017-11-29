@@ -33,10 +33,17 @@ enum class Operator {
                     "some" -> SOME
                     "abstract" -> ABSTRACT
                     "=>" -> IMPLICATION
+                    "implies" -> IMPLICATION
+                    "iff" -> IFF
+                    "<=>" -> IFF
                     "->" -> CARTESIAN
                     "->one" -> TOTAL_FUNCTION
                     "->lone" -> PARTIAL_FUNCTION
                     "one->one" -> BIJECTIVE_FUNCTION
+                    "and" -> AND
+                    "&&" -> AND
+                    "or" -> OR
+                    "||" -> OR
                     else -> throw UnsupportedOperationException(op)
                 }
     }
