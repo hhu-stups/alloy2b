@@ -204,9 +204,17 @@ class BTranslation(spec: AlloySpecification) {
                 is UnaryOperatorExpression -> translateExpression(e)
                 is LetExpression -> translateExpression(e)
                 is BoxJoinExpression -> translateExpression(e)
+                is IntegerSetExpression -> "INTEGER"
+                is IntegerCastExpression -> translateExpression(e)
+                is IntegerExpression -> translateExpression(e)
                 else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
             }
 
+    private fun translateExpression(ie: IntegerExpression): String =
+            ie.int.toString()
+
+    private fun translateExpression(ice: IntegerCastExpression): String =
+            translateExpression(ice.expr)
 
     private fun translateExpression(qe: QuantifiedExpression): String =
             when (qe.operator) {

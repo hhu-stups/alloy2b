@@ -60,8 +60,25 @@ class TypeChecker(spec: AlloySpecification) {
                 is BlockExpression -> typeCheckExpr(te, expr)
                 is IfExpression -> typeCheckExpr(te, expr)
                 is DeclListExpression -> typeCheckExpr(te, expr)
+                is IntegerCastExpression -> typeCheckExpr(te, expr)
+                is IntegerExpression -> typeCheckExpr(te, expr)
+                is IntegerSetExpression -> typeCheckExpr(te, expr)
                 else -> throw UnsupportedOperationException(expr.javaClass.canonicalName)
             }
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerCastExpression): TypeEnvironment {
+        expr.type = INTEGER
+        return typeCheckExpr(teIn,expr.expr)
+    }
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerSetExpression): TypeEnvironment {
+        return teIn
+    }
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerExpression): TypeEnvironment {
+        expr.type = INTEGER
+        return teIn
+    }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfExpression): TypeEnvironment {
         typeCheckExpr(teIn, expr.ifExpr)

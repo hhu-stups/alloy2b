@@ -78,6 +78,17 @@ data class DeclListExpression(val decls: List<Decl>,
                               override val position: Position? = null,
                               override var type: Type? = UNTYPED) : Expression
 
+data class IntegerSetExpression(override val position: Position? = null,
+                                override var type: Type? = UNTYPED) : Expression
+
+data class IntegerCastExpression(val expr: Expression,
+                                 override val position: Position? = null,
+                                 override var type: Type? = UNTYPED) : Expression
+
+data class IntegerExpression(val int: Long,
+                             override val position: Position? = null,
+                             override var type: Type? = UNTYPED) : Expression
+
 // statements
 data class FactDeclaration(val name: String,
                            val expressions: List<Expression>,

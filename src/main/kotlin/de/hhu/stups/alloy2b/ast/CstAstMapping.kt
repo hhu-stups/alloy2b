@@ -1,9 +1,11 @@
 package de.hhu.stups.alloy2b.ast
 
 import de.hhu.stups.alloy2b.antlr.AlloyParser.*
+import javafx.beans.binding.NumberExpression
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import java.util.Arrays.asList
+import kotlin.math.exp
 
 fun SpecificationContext.toAst(considerPosition: Boolean = false): AlloySpecification =
         AlloySpecification(this.paragraph().map { it.toAst(considerPosition) }, toPosition(considerPosition))
@@ -93,6 +95,9 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
             is BlockExprContext -> BlockExpression(this.block().expr().map { it.toAst(considerPosition) })
             is IfExprContext -> IfExpression(ifExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), toPosition(considerPosition))
             is DeclListExprContext -> DeclListExpression(declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(), blockOrBar().toAst(considerPosition), toPosition(considerPosition))
+            is CapIntExprContext -> IntegerSetExpression(toPosition(considerPosition))
+            is NumberExprContext -> IntegerExpression(NUMBER().text.toLong(),toPosition(considerPosition))
+            is IntCastExprContext -> IntegerCastExpression(expr().toAst(considerPosition),toPosition(considerPosition))
             else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
         }
 
