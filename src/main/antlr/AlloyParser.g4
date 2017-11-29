@@ -75,7 +75,7 @@ letDecl            : name EQUAL expr ;
 
 quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
-binOp              : AND | OR | IFF | IMPLIES | PLUS | MINUS | INTERSECTION | UNION | DIFFERENCE |
+binOp              : AND | OR | IFF | PLUS | MINUS | INTERSECTION | UNION | DIFFERENCE |
                      DOM_RESTR | RAN_RESTR | OVERRIDE ; // todo: add | "<<" | ">>" | ">>>" ;  // todo: precedence
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;
