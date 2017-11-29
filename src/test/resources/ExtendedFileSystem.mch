@@ -1,3 +1,4 @@
+/*@ generated */
 MACHINE alloytranslation
 SETS
     FSObject_, FileSystem_

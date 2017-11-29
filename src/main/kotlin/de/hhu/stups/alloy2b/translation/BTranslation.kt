@@ -28,6 +28,7 @@ class BTranslation(spec: AlloySpecification) {
     fun getTranslation(): String {
         val builder = StringBuilder()
 
+        builder.appendln("/*@ generated */")
         builder.appendln("MACHINE alloytranslation")
 
         appendIfNotEmpty(builder, sets, ", ", "SETS")

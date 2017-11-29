@@ -1,3 +1,4 @@
+/*@ generated */
 MACHINE alloytranslation
 SETS
     Object_, Name_, DirEntry_
