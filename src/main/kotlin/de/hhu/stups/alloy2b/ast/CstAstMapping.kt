@@ -1,11 +1,9 @@
 package de.hhu.stups.alloy2b.ast
 
 import de.hhu.stups.alloy2b.antlr.AlloyParser.*
-import javafx.beans.binding.NumberExpression
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import java.util.Arrays.asList
-import kotlin.math.exp
 
 fun SpecificationContext.toAst(considerPosition: Boolean = false): AlloySpecification =
         AlloySpecification(this.paragraph().map { it.toAst(considerPosition) }, toPosition(considerPosition))

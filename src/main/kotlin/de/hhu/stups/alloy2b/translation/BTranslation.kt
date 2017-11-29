@@ -112,7 +112,7 @@ class BTranslation(spec: AlloySpecification) {
             predCall = sanitizeIdentifier(pdec.name)
             alloyAssertion = predCall
         } else {
-            val params = pdec.decls.joinToString(", ") { it.names.map { sanitizeIdentifier(it) }.joinToString(",")}
+            val params = pdec.decls.joinToString(", ") { it.names.joinToString(",") { sanitizeIdentifier(it) } }
             predCall = "${sanitizeIdentifier(pdec.name)}($params)"
             alloyAssertion = "#($params).($predCall)"
         }
