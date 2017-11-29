@@ -57,8 +57,21 @@ class TypeChecker(spec: AlloySpecification) {
                 is UnaryOperatorExpression -> typeCheckExpr(te, expr)
                 is LetExpression -> typeCheckExpr(te, expr)
                 is BoxJoinExpression -> typeCheckExpr(te, expr)
+                is BlockExpression -> typeCheckExpr(te, expr)
+                is IfExpression -> typeCheckExpr(te, expr)
                 else -> throw UnsupportedOperationException(expr.javaClass.canonicalName)
             }
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfExpression): TypeEnvironment {
+        typeCheckExpr(teIn, expr.ifExpr)
+        typeCheckExpr(teIn, expr.thenExpr)
+        typeCheckExpr(teIn, expr.elseExpr)
+        return teIn
+    }
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: BlockExpression): TypeEnvironment {
+        return expr.expressions.fold(teIn, { te, subExpr -> typeCheckExpr(te, subExpr) })
+    }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression): TypeEnvironment {
         val tempTe = expr.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), {te, name -> te.addType(name, decl.expression.type ?: UNTYPED) })})
