@@ -4,8 +4,8 @@ SETS
 CONSTANTS
     father, mother, wife, Man, husband, Woman
 DEFINITIONS
-    grandpas(p) == {p_p | p_p : Person & p : Person & p_p : LET parent BE parent = mother \/ father \/ (father ; wife) \/ (mother ; husband) IN parent[parent[p]] /\ Man END} ;
-    ownGrandpa(m) == m : Man & m <: grandpas(m)
+    grandpas(p) == { temp | p <: Person & temp : LET parent BE parent = mother \/ father \/ (father ; wife) \/ (mother ; husband) IN parent[parent[p]] /\ Man END} ;
+    ownGrandpa(m) == m <: Man & m <: grandpas(m)
 PROPERTIES
     father : Person +-> Man &
     mother : Person +-> Woman &
@@ -18,5 +18,5 @@ PROPERTIES
     wife /\ (closure(mother \/ father) ; mother) = {} & husband /\ (closure(mother \/ father) ; father) = {} &
     Man /\ Woman = {}
 ASSERTIONS
-    ownGrandpa(m)
+    #(m).(ownGrandpa(m))
 END
