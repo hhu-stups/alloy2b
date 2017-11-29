@@ -24,10 +24,11 @@ predDecl           : PRIVATE? PRED (ref DOT)? name LPAREN declList? RPAREN block
 
 cmdDecl            : (cmdname=name COLON)? (RUN | CHECK) ( name | block ) scope;
 
-scope              : FOR NUMBER ( EXPECT NUMBER )? // number permits more than just 0 or 1
-                   | FOR NUMBER BUT typescope ( EXPECT NUMBER )? // was typescope,+ // number permits more than just 0 or 1
-                   | FOR typescope ( EXPECT NUMBER )? // was typescope,+ // number permits more than just 0 or 1
-                   | ( EXPECT NUMBER )? ; // number permits more than just 0 or 1
+scope              : FOR NUMBER ( EXPECT NUMBER )?
+                   | FOR NUMBER BUT typescope (COMMA typescope)* ( EXPECT NUMBER )?
+                   | FOR typescope (COMMA typescope)* ( EXPECT NUMBER )?
+                   | ( EXPECT NUMBER )? ; // number after expect permits more than just 0 or 1
+                   // expect ... is alloy 3 syntax anyway (?)
 
 typescope          : EXACTLY? NUMBER (name | INT | SEQ)? ;
 
