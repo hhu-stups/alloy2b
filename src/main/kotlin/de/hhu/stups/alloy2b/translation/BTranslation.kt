@@ -118,7 +118,7 @@ class BTranslation(spec: AlloySpecification) {
         val decls = pdec.decls.map { "${sanitizeIdentifier(it.name)} <: ${translateExpression(it.expression)}" }.joinToString(" & ")
         builder.append("${predCall} == ${decls}")
         val blocks = pdec.expressions.map { translateExpression(it) }.joinToString(" & ")
-        if (blocks.isEmpty().not()) {
+        if (blocks.isNotEmpty()) {
             builder.append(" & ${blocks}")
         }
         definitions.add(builder.toString())
