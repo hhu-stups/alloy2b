@@ -1,7 +1,7 @@
 lexer grammar AlloyLexer;
 
 // whitespace
-NEWLINE            : ('\r\n' | 'r' | '\n') -> skip ;
+NEWLINE            : ('\r\n' | '\r' | '\n') -> skip ;
 WS                 : [\t ]+ -> skip ;
 COMMENT            : ('//' ~( '\r' | '\n' )*
                    | '/*' .*? '*/')
