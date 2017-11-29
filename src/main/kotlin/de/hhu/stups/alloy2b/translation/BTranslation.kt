@@ -282,6 +282,7 @@ class BTranslation(spec: AlloySpecification) {
                 SOME -> "card(${translateExpression(qe.expression)}) >= 1"
                 CARD -> "card(${translateExpression(qe.expression)})"
                 INVERSE -> "${translateExpression(qe.expression)}~"
+                NOT -> "not(${translateExpression(qe.expression)})"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
