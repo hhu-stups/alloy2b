@@ -2,7 +2,7 @@ group 'de.hhu.stups'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.60'
+    ext.kotlin_version = '1.2.0'
 
     repositories {
         mavenCentral()
