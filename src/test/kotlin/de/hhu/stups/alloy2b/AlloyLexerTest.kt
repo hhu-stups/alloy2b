@@ -33,4 +33,10 @@ class AlloyLexerTest {
         assertEquals(listOf("ID", "DOT", "ID", "LSQBRACKET", "ID", "RSQBRACKET", "EOF"),
                 tokens(lexerForCode("a.b[c]")))
     }
+
+    @test
+    fun partOfSudokuModel() {
+        assertEquals(listOf("ALL", "ID", "COLON", "ID", "DASH", "ID", "LSQBRACKET", "ID", "RSQBRACKET", "LSQBRACKET", "ID", "RSQBRACKET", "EQUAL", "ID", "EOF"),
+                tokens(lexerForCode("all r : Row		| array[r][Column]	= Number")))
+    }
 }

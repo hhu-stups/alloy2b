@@ -16,7 +16,7 @@ one sig One, Two, Three, Four, Five, Six,
 sig Board {
 	array : Row -> Column ->one Number
 }{
-	all r : Row		| array[r][Column]	= Number
+    all r : Row		| array[r][Column]	= Number
 	all c : Column	| array[Row][c]		= Number
 
 	array[Row1+Row2+Row3][Col1+Col2+Col3]	= Number

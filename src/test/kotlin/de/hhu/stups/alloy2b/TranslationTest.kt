@@ -45,6 +45,12 @@ class TranslationTest {
         //Assert.assertEquals(expected, BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
     }
 
+    @test
+    fun translateSudoku() {
+        val expected = getResourceAsString("sudoku1.mch")
+        Assert.assertEquals(expected, BTranslation(parseResource("sudoku1.als").toAst(false)).getTranslation())
+    }
+
     @test @Ignore
     fun translateRiverCrossingPuzzle() {
         println(BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
