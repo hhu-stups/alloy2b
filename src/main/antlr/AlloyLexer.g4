@@ -91,7 +91,7 @@ DIFFERENCE         : '-' ;
 GREATER            : '>' ;
 GREATER_EQUAL      : '>=' ;
 LESS               : '<' ;
-LESS_EQUAL         : '=<' ;
+LESS_EQUAL         : '<=' ;
 
 // identifiers
 ID                 : [A-Za-z][A-Za-z0-9_']* ;
