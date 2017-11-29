@@ -11,6 +11,24 @@ class AlloyLexerTest {
     }
 
     @test
+    fun tokenizeLineCommentEmptySignatureDeclaration() {
+        assertEquals(listOf("SIG", "ID", "LBRACKET", "RBRACKET", "EOF"),
+                tokens(lexerForCode("// line comment\nsig SomeName { }")))
+    }
+
+    @test
+    fun tokenizeBlockCommentEmptySignatureDeclaration() {
+        assertEquals(listOf("SIG", "ID", "LBRACKET", "RBRACKET", "EOF"),
+                tokens(lexerForCode("/* block comment */\nsig SomeName { }")))
+    }
+
+    @test
+    fun tokenizeLineCommentSignatureDeclarationWithFields() {
+        assertEquals(listOf("SIG", "ID", "LBRACKET", "ID", "COLON", "LONE", "ID", "RBRACKET", "EOF"),
+                tokens(lexerForCode("// A file system object in the file system\nsig FSObject { parent: lone Dir }")))
+    }
+
+    @test
     fun tokenizeBoxJoin() {
         assertEquals(listOf("ID", "DOT", "ID", "LSQBRACKET", "ID", "RSQBRACKET", "EOF"),
                 tokens(lexerForCode("a.b[c]")))

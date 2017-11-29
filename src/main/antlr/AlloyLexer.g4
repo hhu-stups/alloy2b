@@ -3,7 +3,9 @@ lexer grammar AlloyLexer;
 // whitespace
 NEWLINE            : ('\r\n' | 'r' | '\n') -> skip ;
 WS                 : [\t ]+ -> skip ;
-COMMENT            : '//' ~( '\r' | '\n' )* -> skip ;
+COMMENT            : ('//' ~( '\r' | '\n' )*
+                   | '/*' .*? '*/')
+                   -> skip ;
 
 // keywords
 SIG                : 'sig' ;
