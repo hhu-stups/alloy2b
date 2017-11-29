@@ -3,6 +3,7 @@ package de.hhu.stups.alloy2b
 import de.hhu.stups.alloy2b.ast.toAst
 import de.hhu.stups.alloy2b.translation.BTranslation
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test as test
 
 class TranslationTest {
@@ -37,7 +38,7 @@ class TranslationTest {
         Assert.assertEquals(expected, BTranslation(parseResource("SelfGrandpas.als").toAst(false)).getTranslation())
     }
 
-    @test
+    @test @Ignore
     fun translateRiverCrossingPuzzle() {
         println(BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
         //val expected = getResourceAsString("RiverCrossingPuzzle.mch")
