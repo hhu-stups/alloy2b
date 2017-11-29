@@ -3,14 +3,21 @@ package de.hhu.stups.alloy2b
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.parsing.ParserFacade
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import java.util.Arrays.asList
 import org.junit.Test as test
 
-class MappingTest {
+class AstCstMappingTest {
     @test
     fun mapEmptySignaturDeclaration() {
         val code = "sig FSObject {}"
-        val ast = ParserFacade.parse(code).root!!.toAst()
+
+        val result = ParserFacade.parse(code)
+        val ast = result.root!!.toAst()
+        val errors = result.errors
+
+        assertTrue(errors.isEmpty())
+
         val expectedAst = AlloySpecification(asList(SignatureDeclaration(names = asList("FSObject"))))
         assertEquals(expectedAst, ast)
     }
@@ -18,7 +25,13 @@ class MappingTest {
     @test
     fun mapSimpleSignaturDeclaration() {
         val code = "sig FSObject { parent: lone Dir }"
-        val ast = ParserFacade.parse(code).root!!.toAst()
+
+        val result = ParserFacade.parse(code)
+        val ast = result.root!!.toAst()
+        val errors = result.errors
+
+        assertTrue(errors.isEmpty())
+
         val expectedAst = AlloySpecification(asList(SignatureDeclaration(names = asList("FSObject"), decls = asList(Decl(name = "parent", expression = UnaryOperatorExpression(operator = Operator.LONE, expression = IdentifierExpression(name = "Dir")))))))
         assertEquals(expectedAst, ast)
     }
