@@ -73,24 +73,22 @@ Specification
               Name
                 T[o]
               T[:]
-              BinOpExpr
+              DotJoinExpr
                 IdExpr
                   Name
                     T[d]
-                BinOp
-                  T[.]
+                T[.]
                 IdExpr
                   Name
                     T[contents]
           ExprInBlockOrBar
             T[|]
             CompareExpr
-              BinOpExpr
+              DotJoinExpr
                 IdExpr
                   Name
                     T[o]
-                BinOp
-                  T[.]
+                T[.]
                 IdExpr
                   Name
                     T[parent]
@@ -155,12 +153,11 @@ Specification
               T[FSObject]
           CompareOp
             T[in]
-          BinOpExpr
+          DotJoinExpr
             IdExpr
               Name
                 T[Root]
-            BinOp
-              T[.]
+            T[.]
             UnOpExpr
               UnOp
                 T[*]
@@ -194,12 +191,11 @@ Specification
                   T[d]
               CompareOp
                 T[in]
-              BinOpExpr
+              DotJoinExpr
                 IdExpr
                   Name
                     T[d]
-                BinOp
-                  T[.]
+                T[.]
                 UnOpExpr
                   UnOp
                     T[^]
@@ -238,12 +234,11 @@ Specification
             QuantifiedExpr
               ExprQuantifier
                 T[no]
-              BinOpExpr
+              DotJoinExpr
                 IdExpr
                   Name
                     T[d]
-                BinOp
-                  T[.]
+                T[.]
                 IdExpr
                   Name
                     T[parent]
@@ -295,12 +290,11 @@ Specification
                       T[o]
                   CompareOp
                     T[in]
-                  BinOpExpr
+                  DotJoinExpr
                     IdExpr
                       Name
                         T[d]
-                    BinOp
-                      T[.]
+                    T[.]
                     IdExpr
                       Name
                         T[contents]

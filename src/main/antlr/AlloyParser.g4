@@ -47,6 +47,7 @@ sigExt             : EXTENDS ref        # extendsExtension
 expr               : LET letDecl (COMMA letDecl)* blockOrBar             # letExpr
                    | quant declList blockOrBar                           # quantExpr
                    | unOp expr                                           # unOpExpr
+                   | left=expr DOT right=expr                            # dotJoinExpr
                    | left=expr binOp right=expr                          # binOpExpr
                    |<assoc=right> left=expr IMPLIES right=expr           # impliesExpr // needed because associativity differs
                    | left=expr arrowOp right=expr                        # arrowOpExpr
@@ -73,7 +74,7 @@ letDecl            : name EQUAL expr ;
 
 quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
-binOp              : OR | AND | IFF | PLUS | MINUS | DOT | INTERSECTION | UNION | DIFFERENCE |
+binOp              : OR | AND | IFF | PLUS | MINUS | INTERSECTION | UNION | DIFFERENCE |
                      DOM_RESTR | RAN_RESTR | OVERRIDE ; // todo: add | "<<" | ">>" | ">>>" ;  // todo: precedence
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;

@@ -23,4 +23,12 @@ class PrecedencesTest {
         val expectedAst = ParserFacade.parse("assert oneRoot { one d: Dir | no (d.parent) }").root!!.toAst()
         assertEquals(expectedAst, ast)
     }
+
+    @test
+    fun unionAndDotJoin() {
+        val code = "sig test {} {a + b.c}"
+        val ast = ParserFacade.parse(code).root!!.toAst()
+        val expectedAst = ParserFacade.parse("sig test {} {a + (b.c)}").root!!.toAst()
+        assertEquals(expectedAst, ast)
+    }
 }

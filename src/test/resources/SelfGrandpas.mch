@@ -1,32 +1,22 @@
-MACHINE SelfGrandpas
-
-SETS Person
-
-CONSTANTS Man, Woman, father, mother, wife, husband, m
-
+MACHINE alloytranslation
+SETS
+    Person
+CONSTANTS
+    father, mother, wife, Man, husband, Woman
 DEFINITIONS
-    scope_Person == 4;
-    grandpas(p) == {pe | p : Person & pe : Person & pe : LET parent BE
-    parent = mother \/ father \/ (father ; wife) \/ (mother ; husband)
-    IN (parent ; parent)[{p}] /\ Man END};
-    ownGrandpa(m) == m : Man & m : grandpas(m);
-
+    grandpas(p) == {p_p | p_p : Person & p : Person & p_p : LET parent BE parent = mother \/ father \/ (father ; wife) \/ (mother ; husband) IN parent[parent[p]] /\ Man END} ;
+    ownGrandpa(m) == m : Man & m <: grandpas(m)
 PROPERTIES
+    father : Person +-> Man &
+    mother : Person +-> Woman &
+    wife : Man +-> Woman &
     Man <: Person &
+    husband : Woman +-> Man &
     Woman <: Person &
-    Man /\ Woman = {} &
-    Man \/ Woman = Person &
-    father : Person <-> Man &
-    !(p).(p : Person => card(father[{p}]) <= 1) &
-    mother : Person <-> Woman &
-    !(p).(p : Person => card(mother[{p}]) <= 1) &
-    wife : Man <-> Woman &
-    !(ma).(ma : Man => card(wife[{ma}]) <= 1) &
-    husband : Woman <-> Man &
-    !(w).(w : Woman => card(husband[{w}]) <= 1) &
-    card({p | p : Person & p : closure1(mother \/ father)[{p}]}) = 0 &
+    not(#(p).(p <: Person & p <: closure1(mother \/ father)[p])) &
     wife = husband~ &
-    card(wife /\ (closure(mother \/ father) ; mother)) = 0 &
-    card(husband /\ (closure(mother \/ father) ; father)) = 0 &
+    wife /\ (closure(mother \/ father) ; mother) = {} & husband /\ (closure(mother \/ father) ; father) = {} &
+    Man /\ Woman = {}
+ASSERTIONS
     ownGrandpa(m)
 END
