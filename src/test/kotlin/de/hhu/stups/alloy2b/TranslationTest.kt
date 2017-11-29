@@ -8,15 +8,27 @@ import org.junit.Test as test
 class TranslationTest {
 
     @test
-    fun translateFileSystemModel() {
+    fun translateFileSystem() {
         val expected = getResourceAsString("FileSystem.mch")
         Assert.assertEquals(expected, BTranslation(parseResource("FileSystem.als").toAst(false)).getTranslation())
     }
 
     @test
-    fun translateFileSystemModel2() {
+    fun translateFileSystem2() {
         val expected = getResourceAsString("FileSystem2.mch")
         Assert.assertEquals(expected, BTranslation(parseResource("FileSystem2.als").toAst(false)).getTranslation())
+    }
+
+    @test
+    fun translateFileSystem3() {
+        val expected = getResourceAsString("FileSystem3.mch")
+        Assert.assertEquals(expected, BTranslation(parseResource("FileSystem3.als").toAst(false)).getTranslation())
+    }
+
+    @test
+    fun translateExtendedFileSystem() {
+        val expected = getResourceAsString("ExtendedFileSystem.mch")
+        Assert.assertEquals(expected, BTranslation(parseResource("ExtendedFileSystem.als").toAst(false)).getTranslation())
     }
 
     @test

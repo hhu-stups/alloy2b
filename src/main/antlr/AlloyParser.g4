@@ -69,7 +69,7 @@ expr               : LET letDecl (COMMA letDecl)* blockOrBar             # letEx
                    | LBRACKET declList blockOrBar RBRACKET               # declListExpr
                    ;
 
-decl               : PRIVATE? DISJ? name COLON DISJ? expr ; //was name,+
+decl               : PRIVATE? DISJ? name (COMMA name)* COLON DISJ? expr ;
 
 letDecl            : name EQUAL expr ;
 

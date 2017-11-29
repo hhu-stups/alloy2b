@@ -21,7 +21,9 @@ interface Expression : Node {
 
 
 // decls
-data class Decl(val name: String, val expression: Expression,
+data class Decl(val names: List<String>, val expression: Expression,
+                override val position: Position? = null) : Node
+data class LetDecl(val name: String, val expression: Expression,
                 override val position: Position? = null) : Node
 
 // signature extensions
@@ -51,7 +53,7 @@ data class IdentifierExpression(val name: String,
                                 override val position: Position? = null,
                                 override var type: Type? = UNTYPED) : Expression
 
-data class LetExpression(val letDecls: List<Decl>,
+data class LetExpression(val letDecls: List<LetDecl>,
                          val expressions: List<Expression>,
                          override val position: Position? = null,
                          override var type: Type? = UNTYPED) : Expression

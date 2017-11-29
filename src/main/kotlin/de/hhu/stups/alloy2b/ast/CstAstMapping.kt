@@ -101,5 +101,5 @@ fun BlockOrBarContext.toAst(considerPosition: Boolean = false): List<Expression>
     else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
 }
 
-fun DeclContext.toAst(considerPosition: Boolean = false): Decl = Decl(this.name().text, this.expr().toAst(considerPosition))
-fun LetDeclContext.toAst(considerPosition: Boolean = false): Decl = Decl(this.name().text, this.expr().toAst(considerPosition))
+fun DeclContext.toAst(considerPosition: Boolean = false): Decl = Decl(this.name().map { it.text }, this.expr().toAst(considerPosition))
+fun LetDeclContext.toAst(considerPosition: Boolean = false): LetDecl = LetDecl(this.name().text, this.expr().toAst(considerPosition))

@@ -32,7 +32,7 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: SignatureDeclaration): TypeEnvironment {
         val tEnv = stmt.names.fold(teIn, { te, name -> te.addType(name, UNARY) })
-        return stmt.decls.fold(tEnv, { te, decl -> te.addType(decl.name, BINARY) })
+        return stmt.decls.fold(tEnv, { te, decl -> decl.names.fold(te, {te, name -> te.addType(name, BINARY) })})
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: FactDeclaration): TypeEnvironment =
@@ -40,12 +40,12 @@ class TypeChecker(spec: AlloySpecification) {
 
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: FunDeclaration): TypeEnvironment {
-        val tEnv = stmt.decls.fold(teIn, { te, decl -> typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED) })
+        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), {te, name -> te.addType(name, decl.expression.type ?: UNTYPED) })})
         return stmt.expressions.fold(tEnv, { te, expr -> typeCheckExpr(te, expr) })
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: PredDeclaration): TypeEnvironment {
-        val tEnv = stmt.decls.fold(teIn, { te, decl -> typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED) })
+        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), {te, name -> te.addType(name, decl.expression.type ?: UNTYPED) })})
         return stmt.expressions.fold(tEnv, { te, expr -> typeCheckExpr(te, expr) })
     }
 
@@ -61,7 +61,7 @@ class TypeChecker(spec: AlloySpecification) {
             }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression): TypeEnvironment {
-        val tempTe = expr.decls.fold(teIn, { te, decl -> typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED) })
+        val tempTe = expr.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), {te, name -> te.addType(name, decl.expression.type ?: UNTYPED) })})
         return expr.expressions.fold(tempTe, { te, subExpr -> typeCheckExpr(te, subExpr) })
     }
 
