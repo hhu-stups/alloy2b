@@ -91,7 +91,7 @@ block              : LBRACKET expr* RBRACKET ;
 blockOrBar         : block     # blockInBlockOrBar
                    | DASH expr # exprInBlockOrBar;
 
-name               : ID ; // was (THIS | ID) ( SLASH ID )* ;
+name               : (THIS | ID) ( SLASH ID )* ;
 
 ref                : name # nameRef
                    | UNIV # univRef
