@@ -94,6 +94,6 @@ LESS               : '<' ;
 LESS_EQUAL         : '=<' ;
 
 // identifiers
-ID                 : [A-Za-z][A-Za-z0-9_]* ;
+ID                 : [A-Za-z][A-Za-z0-9_']* ;
 
 NUMBER             : [0-9][0-9]* ;

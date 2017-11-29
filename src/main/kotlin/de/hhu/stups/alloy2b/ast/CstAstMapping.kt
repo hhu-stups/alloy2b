@@ -90,6 +90,8 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     this.blockOrBar().toAst(considerPosition),
                     toPosition(considerPosition))
             is ParenExprContext -> this.expr().toAst(considerPosition)
+            is BlockExprContext -> BlockExpression(this.block().expr().map { it.toAst(considerPosition) })
+            is IfExprContext -> IfExpression(ifExpr.toAst(considerPosition),elseExpr.toAst(considerPosition),elseExpr.toAst(considerPosition),toPosition(considerPosition))
             else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
         }
 
@@ -98,6 +100,7 @@ fun BlockContext.toAst(considerPosition: Boolean = false): List<Expression> =
 
 fun BlockOrBarContext.toAst(considerPosition: Boolean = false): List<Expression> = when (this) {
     is ExprInBlockOrBarContext -> asList(expr().toAst(considerPosition))
+    is BlockInBlockOrBarContext -> this.block().toAst(considerPosition)
     else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
 }
 

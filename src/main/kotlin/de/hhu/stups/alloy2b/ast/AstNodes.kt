@@ -64,6 +64,14 @@ data class QuantifiedExpression(val operator: Operator,
                                 override val position: Position? = null,
                                 override var type: Type? = UNTYPED) : Expression
 
+data class BlockExpression(val expressions: List<Expression>,
+                           override val position: Position? = null,
+                           override var type: Type? = UNTYPED) : Expression
+
+data class IfExpression(val ifExpr: Expression, val thenExpr: Expression, val elseExpr: Expression,
+                           override val position: Position? = null,
+                           override var type: Type? = UNTYPED) : Expression
+
 // statements
 data class FactDeclaration(val name: String,
                            val expressions: List<Expression>,

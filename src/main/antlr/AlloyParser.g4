@@ -45,28 +45,28 @@ sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
 sigExt             : EXTENDS ref        # extendsExtension
                    | IN ref (PLUS ref)* # inExtension;
 
-expr               : LET letDecl (COMMA letDecl)* blockOrBar             # letExpr
-                   | quant declList blockOrBar                           # quantExpr
-                   | unOp expr                                           # unOpExpr
-                   | left=expr DOT right=expr                            # dotJoinExpr
-                   | left=expr binOp right=expr                          # binOpExpr
-                   |<assoc=right> left=expr IMPLIES right=expr           # impliesExpr // needed because associativity differs
-                   | left=expr arrowOp right=expr                        # arrowOpExpr
-                   | left=expr NOT? compareOp right=expr                 # compareExpr
-                   | exprQuantifier expr                                 # quantifiedExpr
-                   | expr IMPLIES? expr ELSE expr                        # ifExpr
-                   | expr LSQBRACKET exprList RSQBRACKET                 # boxJoinExpr
-                   | NUMBER                                              # numberExpr
-                   | MINUS NUMBER                                        # negNumberExpr
-                   | NONE                                                # noneExpr
-                   | IDEN                                                # idenExpr
-                   | UNIV                                                # univExpr
-                   | CAPINT                                              # capIntExpr
-                   | SeqInt                                              # seqIntExpr
-                   | LPAREN expr RPAREN                                  # parenExpr
-                   | AT? name                                            # idExpr
-                   | block                                               # blockExpr
-                   | LBRACKET declList blockOrBar RBRACKET               # declListExpr
+expr               : LET letDecl (COMMA letDecl)* blockOrBar               # letExpr
+                   | quant declList blockOrBar                             # quantExpr
+                   | unOp expr                                             # unOpExpr
+                   | left=expr DOT right=expr                              # dotJoinExpr
+                   | left=expr binOp right=expr                            # binOpExpr
+                   |<assoc=right> left=expr IMPLIES right=expr             # impliesExpr // needed because associativity differs
+                   | left=expr arrowOp right=expr                          # arrowOpExpr
+                   | left=expr NOT? compareOp right=expr                   # compareExpr
+                   | exprQuantifier expr                                   # quantifiedExpr
+                   | ifExpr=expr IMPLIES? thenExpr=expr ELSE elseExpr=expr # ifExpr
+                   | expr LSQBRACKET exprList RSQBRACKET                   # boxJoinExpr
+                   | NUMBER                                                # numberExpr
+                   | MINUS NUMBER                                          # negNumberExpr
+                   | NONE                                                  # noneExpr
+                   | IDEN                                                  # idenExpr
+                   | UNIV                                                  # univExpr
+                   | CAPINT                                                # capIntExpr
+                   | SeqInt                                                # seqIntExpr
+                   | LPAREN expr RPAREN                                    # parenExpr
+                   | AT? name                                              # idExpr
+                   | block                                                 # blockExpr
+                   | LBRACKET declList blockOrBar RBRACKET                 # declListExpr
                    ;
 
 decl               : PRIVATE? DISJ? name (COMMA name)* COLON DISJ? expr ;
