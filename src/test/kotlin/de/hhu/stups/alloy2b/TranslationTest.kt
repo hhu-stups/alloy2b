@@ -38,7 +38,7 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("SelfGrandpas.als").toAst(false)).getTranslation())
     }
 
-    @test
+    @test @Ignore
     fun translateHanoi() {
         println(BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
         //val expected = getResourceAsString("hanoi.mch")
