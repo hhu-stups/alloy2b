@@ -81,7 +81,7 @@ binOp              : AND | OR | IFF | PLUS | MINUS | INTERSECTION | UNION | DIFF
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;
 
-compareOp          : EQUAL | IN | GREATER | GREATER_EQUAL | LESS | LESS_EQUAL ;
+compareOp          : IN | GREATER_EQUAL | GREATER | LESS_EQUAL | LESS | EQUAL ;
 
 unOp               : NOT | SEQ | ITERATION | CLOSURE | INVERSE | CARD;
 
