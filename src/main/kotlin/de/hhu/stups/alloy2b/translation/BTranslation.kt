@@ -291,7 +291,7 @@ class BTranslation(spec: AlloySpecification) {
                 CARD -> "card(${translateExpression(qe.expression)})"
                 INVERSE -> "${translateExpression(qe.expression)}~"
                 NOT -> "not(${translateExpression(qe.expression)})"
-                Operator.SET -> "POW(${translateExpression(qe.expression)})"
+                Operator.SET -> "${translateExpression(qe.expression)}" // TODO: should this be POW?
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -311,17 +311,11 @@ class BTranslation(spec: AlloySpecification) {
         if (je.left.type == RELATION && je.right.type == RELATION) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
         }
-        if (je.left.type == RELATION && je.right.type == Type.SET) {
+        if (je.left.type == RELATION && (je.right.type == Type.SET || je.right.type == Type.SCALAR)) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
         }
-        if (je.left.type == Type.SET && je.right.type == RELATION) {
+        if ((je.left.type == Type.SET || je.left.type == Type.SCALAR) && je.right.type == RELATION) {
             return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
-        }
-        if (je.left.type == Type.SCALAR && je.right.type == RELATION) {
-            return "${translateExpression(je.right)}[{${translateExpression(je.left)}}]"
-        }
-        if (je.left.type == Type.RELATION && je.right.type == SCALAR) {
-            return "{${translateExpression(je.right)}}[${translateExpression(je.left)}]"
         }
         throw UnsupportedOperationException("join not supported this way")
     }
@@ -343,7 +337,11 @@ class BTranslation(spec: AlloySpecification) {
     private fun sanitizeIdentifier(id: String) =
             "${id}_"
 
-    private fun sanitizeIdentifier(id: IdentifierExpression) =
-            sanitizeIdentifier(id.name)
+    private fun sanitizeIdentifier(id: IdentifierExpression): String =
+            if(id.type == SCALAR) {
+                "{${id.name}_}"
+            } else {
+                sanitizeIdentifier(id.name)
+            }
 }
 
