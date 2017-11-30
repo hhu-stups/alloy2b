@@ -152,6 +152,8 @@ class BTranslation(spec: AlloySpecification) {
             sets.addAll(sdec.names.map { n -> sanitizeIdentifier(n) })
             return
         }
+
+        // not a basic signature -> ensure subset relation with extended / extending signatures
         constants.addAll(sdec.names.map { n -> sanitizeIdentifier(n) })
         when (sdec.signatureExtension) {
             is NameSignatureExtension -> {
