@@ -63,7 +63,7 @@ class BTranslation(spec: AlloySpecification) {
         })
         // abstract signatures are exhaustively divided into their subsignatures
         abstractSignatures.forEach({ absSigName ->
-            properties.add("${extendingSignatures.get(absSigName).orEmpty().map { sanitizeIdentifier(it) }.joinToString(" \\/ ")} = ${sanitizeIdentifier(absSigName)}")
+            properties.add("${extendingSignatures[absSigName].orEmpty().joinToString(" \\/ ") { sanitizeIdentifier(it) }} = ${sanitizeIdentifier(absSigName)}")
         })
     }
 
@@ -126,7 +126,7 @@ class BTranslation(spec: AlloySpecification) {
         builder.append("$predCall == $decls")
         val blocks = pdec.expressions.joinToString(" & ") { translateExpression(it) }
         if (blocks.isNotEmpty()) {
-            builder.append(" & $blocks")
+            builder.append(" ${if (decls.isEmpty()) "" else " & "} $blocks")
         }
         definitions.add(builder.toString())
         // add existantially quantified predicate to be used for CheckStatement
@@ -291,7 +291,7 @@ class BTranslation(spec: AlloySpecification) {
                 CARD -> "card(${translateExpression(qe.expression)})"
                 INVERSE -> "${translateExpression(qe.expression)}~"
                 NOT -> "not(${translateExpression(qe.expression)})"
-                Operator.SET -> "${translateExpression(qe.expression)}" // TODO: should this be POW?
+                Operator.SET -> translateExpression(qe.expression) // TODO: should this be POW?
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -329,7 +329,7 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translateDeclExpression(expr: QuantifiedExpression): String =
         when (expr.operator) {
-            ONE -> "${translateExpression(expr.expression)}"
+            ONE -> translateExpression(expr.expression)
             else -> throw UnsupportedOperationException(expr.operator.name)
         }
 
