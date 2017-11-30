@@ -14,7 +14,7 @@ PROPERTIES
     parent_[Root_] = {} & parent_ = contents_~ & File_ \/ Dir_ = FSObject_ & FSObject_ <: closure(contents_)[Root_] &
     Dir_ /\ File_ = {}
 ASSERTIONS
-    card({d_ | d_ <: Dir_ & d_ <: closure1(contents_)[d_]}) = 0 &
-    card({d_ | d_ <: Dir_ & parent_[d_] = {}}) = 1 &
-    !(f_).(f_ <: FSObject_ => card({d_ | d_ <: Dir_ & f_ <: contents_[d_]}) <= 1)
+    card({d_ | d_ : Dir_ & d_ <: closure1(contents_)[{d_}]}) = 0 &
+    card({d_ | d_ : Dir_ & parent_[{d_}] = {}}) = 1 &
+    !(f_).(f_ : FSObject_ => card({d_ | d_ : Dir_ & f_ <: contents_[{d_}]}) <= 1)
 END

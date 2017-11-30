@@ -103,7 +103,7 @@ class BTranslation(spec: AlloySpecification) {
         } else {
             builder.append("${sanitizeIdentifier(fdec.name)}(${fdec.decls.joinToString(", ") { it.names.joinToString(", ") { name -> sanitizeIdentifier(name) } }}) == ")
         }
-        val decls = fdec.decls.joinToString(" & ") { decl -> decl.names.joinToString(" & ") { "${sanitizeIdentifier(it)} <: ${translateExpression(decl.expression)}" } }
+        val decls = translateDeclsExprList(fdec.decls)
         val parameterExpressions = fdec.expressions.map { translateExpression(it) }.joinToString(" & ") { "temp : $it" }
         // represent functions as set comprehensions
         builder.append("{ temp | $decls & $parameterExpressions}")
@@ -122,7 +122,7 @@ class BTranslation(spec: AlloySpecification) {
             predCall = "${sanitizeIdentifier(pdec.name)}($params)"
             alloyAssertion = "#($params).($predCall)"
         }
-        val decls = pdec.decls.joinToString(" & ") { it.names.joinToString(" & ") { name -> "${sanitizeIdentifier(name)} <: ${translateExpression(it.expression)}" } }
+        val decls = translateDeclsExprList(pdec.decls)
         builder.append("$predCall == $decls")
         val blocks = pdec.expressions.joinToString(" & ") { translateExpression(it) }
         if (blocks.isNotEmpty()) {
@@ -330,8 +330,15 @@ class BTranslation(spec: AlloySpecification) {
             decls.joinToString(", ") { it.names.joinToString(", ") { sanitizeIdentifier(it) } }
 
     private fun translateDeclsExprList(decls: List<Decl>): String {
-        return decls.joinToString(" & ") { it.names.joinToString(" & ") { n -> "${sanitizeIdentifier(n)} ${if (it.expression.type == SCALAR) ":" else "<:"} ${translateExpression(it.expression)}" } }
+        return decls.joinToString(" & ") { it.names.joinToString(" & ") { n -> "${sanitizeIdentifier(n)} ${if (it.expression.type == SCALAR) ":" else "<:"} ${translateDeclExpression(it.expression)}" } }
     }
+
+    private fun translateDeclExpression(expr: QuantifiedExpression): String =
+        when (expr.operator) {
+            ONE -> "${translateExpression(expr.expression)}"
+            else -> throw UnsupportedOperationException(expr.operator.name)
+        }
+
 
     private fun sanitizeIdentifier(id: String) =
             "${id}_"
