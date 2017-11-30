@@ -113,6 +113,6 @@ fun DeclContext.toAst(considerPosition: Boolean = false): Decl {
     if(!(expr is QuantifiedExpression)) {
         expr = QuantifiedExpression(Operator.ONE,expr,expr.position)
     }
-    return Decl(this.name().map { it.text }, expr)
+    return Decl(this.name().map { IdentifierExpression(it.text,it.toPosition(considerPosition)) }, expr)
 }
-fun LetDeclContext.toAst(considerPosition: Boolean = false): LetDecl = LetDecl(this.name().text, this.expr().toAst(considerPosition))
+fun LetDeclContext.toAst(considerPosition: Boolean = false): LetDecl = LetDecl(IdentifierExpression(this.name().text,this.toPosition(considerPosition)), this.expr().toAst(considerPosition))

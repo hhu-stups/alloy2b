@@ -194,7 +194,7 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translateFieldDeclarations(decl: Decl, name: String) {
         decl.names.map {
-            fields.add(it) // used to decide how to translate dot join
+            fields.add(it.name) // used to decide how to translate dot join
 
             if (decl.expression.operator == LONE) {
                 // one-to-one mapping, i.e. function

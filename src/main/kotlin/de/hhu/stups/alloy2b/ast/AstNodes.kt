@@ -21,10 +21,10 @@ interface Expression : Node {
 
 
 // decls
-data class Decl(val names: List<String>, val expression: QuantifiedExpression,
+data class Decl(val names: List<IdentifierExpression>, val expression: QuantifiedExpression,
                 override val position: Position? = null) : Node
 
-data class LetDecl(val name: String, val expression: Expression,
+data class LetDecl(val name: IdentifierExpression, val expression: Expression,
                    override val position: Position? = null) : Node
 
 // signature extensions
