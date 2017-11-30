@@ -68,8 +68,9 @@ class TypeChecker(spec: AlloySpecification) {
             }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression): TypeEnvironment {
-        return typeCheckExpr(teIn, expr.expression)
-
+        val nte = typeCheckExpr(teIn, expr.expression)
+        expr.type = expr.expression.type
+        return nte
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerCastExpression): TypeEnvironment {
@@ -128,7 +129,8 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: LetExpression): TypeEnvironment {
-        val tEnv = expr.letDecls.fold(teIn, { te, decl -> typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED) })
+        val tEnv = expr.letDecls.fold(teIn, { te, decl ->
+            typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED) })
         return expr.expressions.fold(tEnv, { te, e -> typeCheckExpr(te, e) })
     }
 
