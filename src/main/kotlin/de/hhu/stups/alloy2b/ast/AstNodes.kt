@@ -59,7 +59,7 @@ data class LetExpression(val letDecls: List<LetDecl>,
                          override val position: Position? = null,
                          override var type: Type? = UNTYPED) : Expression
 
-data class QuantifiedExpression(val operator: Operator,
+data class QuantifierExpression(val operator: Operator,
                                 val decls: List<Decl>,
                                 val expressions: List<Expression>,
                                 override val position: Position? = null,

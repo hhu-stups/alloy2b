@@ -209,7 +209,7 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translateExpression(e: Expression) =
             when (e) {
-                is QuantifiedExpression -> translateExpression(e)
+                is QuantifierExpression -> translateExpression(e)
                 is IdentifierExpression -> sanitizeIdentifier(e)
                 is BinaryOperatorExpression -> translateExpression(e)
                 is UnaryOperatorExpression -> translateExpression(e)
@@ -227,7 +227,7 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(ice: IntegerCastExpression): String =
             translateExpression(ice.expr)
 
-    private fun translateExpression(qe: QuantifiedExpression): String =
+    private fun translateExpression(qe: QuantifierExpression): String =
             when (qe.operator) {
                 ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }})"
                 NO -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) = 0"

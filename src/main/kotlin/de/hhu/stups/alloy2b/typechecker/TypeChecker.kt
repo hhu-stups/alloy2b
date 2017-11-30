@@ -51,7 +51,7 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: Expression) =
             when (expr) {
-                is QuantifiedExpression -> typeCheckExpr(te, expr)
+                is QuantifierExpression -> typeCheckExpr(te, expr)
                 is IdentifierExpression -> typeCheckExpr(te, expr)
                 is BinaryOperatorExpression -> typeCheckExpr(te, expr)
                 is UnaryOperatorExpression -> typeCheckExpr(te, expr)
@@ -91,7 +91,7 @@ class TypeChecker(spec: AlloySpecification) {
         return expr.expressions.fold(teIn, { te, subExpr -> typeCheckExpr(te, subExpr) })
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression): TypeEnvironment {
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifierExpression): TypeEnvironment {
         return checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
     }
 
