@@ -150,7 +150,7 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun checkDeclsAndExpressions(teIn: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>): TypeEnvironment {
-        val tempTe = decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name.name, decl.expression.type) }) })
+        val tempTe = decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> name.type = decl.expression.type; te2.addType(name.name, decl.expression.type) }) })
         return expressions.fold(tempTe, { te, subExpr -> typeCheckExpr(te, subExpr) })
     }
 }

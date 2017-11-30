@@ -321,10 +321,10 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateDeclsIDList(decls: List<Decl>) =
-            decls.joinToString(", ") { it.names.joinToString(", ") { sanitizeIdentifier(it) } }
+            decls.joinToString(", ") { it.names.joinToString(", ") { sanitizeIdentifier(it.name) } } // sanitizing string instead of identifier expression avoids set expansion to {id}
 
     private fun translateDeclsExprList(decls: List<Decl>): String {
-        return decls.joinToString(" & ") { it.names.joinToString(" & ") { n -> "${sanitizeIdentifier(n)} ${if (it.expression.type == SCALAR) ":" else "<:"} ${translateDeclExpression(it.expression)}" } }
+        return decls.joinToString(" & ") { it.names.joinToString(" & ") { n -> "${sanitizeIdentifier(n)} <: ${translateDeclExpression(it.expression)}" } }
     }
 
     private fun translateDeclExpression(expr: QuantifiedExpression): String =
