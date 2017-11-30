@@ -63,7 +63,8 @@ class BTranslation(spec: AlloySpecification) {
         })
         // abstract signatures are exhaustively divided into their subsignatures
         abstractSignatures.forEach({ absSigName ->
-            properties.add("${extendingSignatures.get(absSigName).orEmpty().map { sanitizeIdentifier(it) }.joinToString(" \\/ ")} = ${sanitizeIdentifier(absSigName)}")})
+            properties.add("${extendingSignatures.get(absSigName).orEmpty().map { sanitizeIdentifier(it) }.joinToString(" \\/ ")} = ${sanitizeIdentifier(absSigName)}")
+        })
     }
 
     private fun addSignatureExtensionIfNotEqual(sig1: String, sig2: String) {
@@ -100,7 +101,7 @@ class BTranslation(spec: AlloySpecification) {
         if (fdec.decls.isEmpty()) {
             builder.append(sanitizeIdentifier(fdec.name))
         } else {
-            builder.append("${sanitizeIdentifier(fdec.name)}(${fdec.decls.joinToString(", ") { it.names.joinToString(", "){name -> sanitizeIdentifier(name)} }}) == ")
+            builder.append("${sanitizeIdentifier(fdec.name)}(${fdec.decls.joinToString(", ") { it.names.joinToString(", ") { name -> sanitizeIdentifier(name) } }}) == ")
         }
         val decls = fdec.decls.joinToString(" & ") { decl -> decl.names.joinToString(" & ") { "${sanitizeIdentifier(it)} <: ${translateExpression(decl.expression)}" } }
         val parameterExpressions = fdec.expressions.map { translateExpression(it) }.joinToString(" & ") { "temp : $it" }
@@ -121,7 +122,7 @@ class BTranslation(spec: AlloySpecification) {
             predCall = "${sanitizeIdentifier(pdec.name)}($params)"
             alloyAssertion = "#($params).($predCall)"
         }
-        val decls = pdec.decls.joinToString(" & ") { it.names.joinToString(" & ") {name -> "${sanitizeIdentifier(name)} <: ${translateExpression(it.expression)}" }}
+        val decls = pdec.decls.joinToString(" & ") { it.names.joinToString(" & ") { name -> "${sanitizeIdentifier(name)} <: ${translateExpression(it.expression)}" } }
         builder.append("$predCall == $decls")
         val blocks = pdec.expressions.joinToString(" & ") { translateExpression(it) }
         if (blocks.isNotEmpty()) {
@@ -309,10 +310,18 @@ class BTranslation(spec: AlloySpecification) {
         }
         if (je.left.type == RELATION && je.right.type == RELATION) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
-        } else if (je.left.type == RELATION && je.right.type == Type.SET) {
+        }
+        if (je.left.type == RELATION && je.right.type == Type.SET) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
-        } else if (je.left.type == Type.SET && je.right.type == RELATION) {
+        }
+        if (je.left.type == Type.SET && je.right.type == RELATION) {
             return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
+        }
+        if (je.left.type == Type.SCALAR && je.right.type == RELATION) {
+            return "${translateExpression(je.right)}[{${translateExpression(je.left)}}]"
+        }
+        if (je.left.type == Type.RELATION && je.right.type == SCALAR) {
+            return "{${translateExpression(je.right)}}[${translateExpression(je.left)}]"
         }
         throw UnsupportedOperationException("join not supported this way")
     }
@@ -320,8 +329,9 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateDeclsIDList(decls: List<Decl>) =
             decls.joinToString(", ") { it.names.joinToString(", ") { sanitizeIdentifier(it) } }
 
-    private fun translateDeclsExprList(decls: List<Decl>) =
-            decls.joinToString(" & ") { it.names.joinToString(" & ") {n -> "${sanitizeIdentifier(n)} <: ${translateExpression(it.expression)}" }}
+    private fun translateDeclsExprList(decls: List<Decl>): String {
+        return decls.joinToString(" & ") { it.names.joinToString(" & ") { n -> "${sanitizeIdentifier(n)} ${if (it.expression.type == SCALAR) ":" else "<:"} ${translateExpression(it.expression)}" } }
+    }
 
     private fun sanitizeIdentifier(id: String) =
             "${id}_"
