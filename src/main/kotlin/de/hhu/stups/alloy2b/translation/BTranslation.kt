@@ -13,6 +13,7 @@ class BTranslation(spec: AlloySpecification) {
     private val assertions = mutableListOf<String>()
 
     private val signatures = mutableListOf<String>()
+    private val abstractSignatures = mutableListOf<String>()
     private val extendingSignatures = mutableMapOf<String, List<String>>()
 
     private val fields = mutableListOf<String>()
@@ -59,6 +60,9 @@ class BTranslation(spec: AlloySpecification) {
                 }
             }
         })
+        // abstract signatures are exhaustively divided into their subsignatures
+        abstractSignatures.forEach({ absSigName ->
+            properties.add("${extendingSignatures.get(absSigName).orEmpty().map { sanitizeIdentifier(it) }.joinToString(" \\/ ")} = ${sanitizeIdentifier(absSigName)}")})
     }
 
     private fun addSignatureExtensionIfNotEqual(sig1: String, sig2: String) {
@@ -138,6 +142,10 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translate(sdec: SignatureDeclaration) {
         signatures.addAll(sdec.names) // used to decide how to translate dot join
+
+        if (sdec.qualifiers.contains(ABSTRACT)) {
+            abstractSignatures.addAll(sdec.names)
+        }
 
         handleQuantifiersByCardinality(sdec)
 

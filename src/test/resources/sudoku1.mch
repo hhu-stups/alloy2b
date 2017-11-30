@@ -168,7 +168,10 @@ PROPERTIES
     Six_ /\ Nine_ = {} &
     Seven_ /\ Eight_ = {} &
     Seven_ /\ Nine_ = {} &
-    Eight_ /\ Nine_ = {}
+    Eight_ /\ Nine_ = {} &
+    Row1_ \/ Row2_ \/ Row3_ \/ Row4_ \/ Row5_ \/ Row6_ \/ Row7_ \/ Row8_ \/ Row9_ = Row_ &
+    Col1_ \/ Col2_ \/ Col3_ \/ Col4_ \/ Col5_ \/ Col6_ \/ Col7_ \/ Col8_ \/ Col9_ = Column_ &
+    One_ \/ Two_ \/ Three_ \/ Four_ \/ Five_ \/ Six_ \/ Seven_ \/ Eight_ \/ Nine_ = Number_
 ASSERTIONS
     card(Board_) >= 1 &
     card(Board_) = 1

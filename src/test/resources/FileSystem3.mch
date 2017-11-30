@@ -20,7 +20,8 @@ PROPERTIES
     name_ : DirEntry_ <-> Name_ &
     contents_ : DirEntry_ <-> Object_ &
     File_ /\ Dir_ = {} &
-    Root_ /\ Cur_ = {}
+    Root_ /\ Cur_ = {} &
+    File_ \/ Dir_ = Object_
 ASSERTIONS
     OneParent_buggyVersion_ => NoDirAliases_ &
     OneParent_correctVersion_ => NoDirAliases_
