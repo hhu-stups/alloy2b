@@ -194,7 +194,7 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateFieldDeclarations(decl: Decl, name: String) {
         decl.names.map {
             fields.add(it) // used to decide how to translate dot join
-            if (decl.expression is UnaryOperatorExpression) {
+            if (decl.expression is QuantifiedExpression) {
                 if (decl.expression.operator == LONE) {
                     // one-to-one mapping, i.e. function
                     properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} +-> ${translateExpression(decl.expression.expression)}")
@@ -218,6 +218,7 @@ class BTranslation(spec: AlloySpecification) {
                 is IntegerSetExpression -> "INTEGER"
                 is IntegerCastExpression -> translateExpression(e)
                 is IntegerExpression -> translateExpression(e)
+                is QuantifiedExpression -> translateExpression(e)
                 else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
             }
 
@@ -288,13 +289,19 @@ class BTranslation(spec: AlloySpecification) {
             when (qe.operator) {
                 CLOSURE -> "closure(${translateExpression(qe.expression)})"
                 CLOSURE1 -> "closure1(${translateExpression(qe.expression)})"
+                CARD -> "card(${translateExpression(qe.expression)})"
+                INVERSE -> "${translateExpression(qe.expression)}~"
+                NOT -> "not(${translateExpression(qe.expression)})"
+                Operator.SET -> "POW(${translateExpression(qe.expression)})"
+                else -> throw UnsupportedOperationException(qe.operator.name)
+            }
+
+    private fun translateExpression(qe: QuantifiedExpression): String =
+            when (qe.operator) {
                 NO -> "${translateExpression(qe.expression)} = {}"
                 ONE -> "card(${translateExpression(qe.expression)}) = 1"
                 LONE -> "card(${translateExpression(qe.expression)}) <= 1"
                 SOME -> "card(${translateExpression(qe.expression)}) >= 1"
-                CARD -> "card(${translateExpression(qe.expression)})"
-                INVERSE -> "${translateExpression(qe.expression)}~"
-                NOT -> "not(${translateExpression(qe.expression)})"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 

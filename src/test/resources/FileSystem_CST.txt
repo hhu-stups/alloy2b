@@ -33,8 +33,8 @@ Specification
           Name
             T[contents]
           T[:]
-          QuantifiedExpr
-            ExprQuantifier
+          UnOpExpr
+            UnOp
               T[set]
             IdExpr
               Name

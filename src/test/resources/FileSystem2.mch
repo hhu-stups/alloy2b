@@ -6,7 +6,7 @@ CONSTANTS
     parent_, contents_, Dir_, File_, Root_
 PROPERTIES
     parent_ : FSObject_ +-> Dir_ &
-    contents_ : Dir_ <-> FSObject_ &
+    contents_ : Dir_ <-> POW(FSObject_) &
     Dir_ <: FSObject_ &
     File_ <: FSObject_ &
     card(Root_) = 1 &

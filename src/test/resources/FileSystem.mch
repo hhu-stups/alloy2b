@@ -6,7 +6,7 @@ CONSTANTS
     parent_, contents_, Dir_, File_, Root_
 PROPERTIES
     parent_ : FSObject_ +-> Dir_ &
-    contents_ : Dir_ <-> FSObject_ &
+    contents_ : Dir_ <-> POW(FSObject_) &
     Dir_ <: FSObject_ &
     File_ <: FSObject_ &
     !(d_, o_).(d_ <: Dir_ & o_ <: contents_[d_] => parent_[o_] = d_) &

@@ -83,9 +83,9 @@ arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SE
 
 compareOp          : IN | GREATER_EQUAL | GREATER | LESS_EQUAL | LESS | EQUAL ;
 
-unOp               : NOT | SEQ | ITERATION | CLOSURE | INVERSE | CARD;
+unOp               : NOT | SEQ | ITERATION | CLOSURE | INVERSE | CARD | SET;
 
-exprQuantifier     : NO | SOME | LONE | ONE | SET;
+exprQuantifier     : NO | SOME | LONE | ONE;
 
 block              : LBRACKET expr* RBRACKET ;
 

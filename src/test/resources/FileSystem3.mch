@@ -10,7 +10,7 @@ DEFINITIONS
     NoDirAliases_ ==  & !(o_).(o_ <: Dir_ => card(contents_~[o_]) <= 1)
 PROPERTIES
     File_ <: Object_ &
-    entries_ : Dir_ <-> DirEntry_ &
+    entries_ : Dir_ <-> POW(DirEntry_) &
     parent_ : Dir_ +-> Dir_ &
     Dir_ <: Object_ &
     card(Root_) = 1 &

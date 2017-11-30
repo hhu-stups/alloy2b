@@ -58,7 +58,7 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
             is UnOpExprContext -> UnaryOperatorExpression(Operator.fromString(this.unOp().text),
                     expr().toAst(considerPosition),
                     toPosition(considerPosition))
-            is QuantifiedExprContext -> UnaryOperatorExpression(Operator.fromString(this.exprQuantifier().text),
+            is QuantifiedExprContext -> QuantifiedExpression(Operator.fromString(this.exprQuantifier().text),
                     expr().toAst(considerPosition),
                     toPosition(considerPosition))
             is BinOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.binOp().text),

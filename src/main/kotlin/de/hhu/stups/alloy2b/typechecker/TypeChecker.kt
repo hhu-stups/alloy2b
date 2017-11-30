@@ -63,12 +63,18 @@ class TypeChecker(spec: AlloySpecification) {
                 is IntegerCastExpression -> typeCheckExpr(te, expr)
                 is IntegerExpression -> typeCheckExpr(te, expr)
                 is IntegerSetExpression -> typeCheckExpr(te, expr)
+                is QuantifiedExpression -> typeCheckExpr(te, expr)
                 else -> throw UnsupportedOperationException(expr.javaClass.canonicalName)
             }
 
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression): TypeEnvironment {
+        return typeCheckExpr(teIn, expr.expression)
+
+    }
+
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerCastExpression): TypeEnvironment {
         expr.type = INTEGER
-        return typeCheckExpr(teIn,expr.expr)
+        return typeCheckExpr(teIn, expr.expr)
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerSetExpression): TypeEnvironment {
