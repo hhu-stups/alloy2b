@@ -31,8 +31,8 @@ class TypeChecker(spec: AlloySpecification) {
             stmt.expressions.fold(teIn, { te, expr -> typeCheckExpr(te, expr) })
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: SignatureDeclaration): TypeEnvironment {
-        val tEnv = stmt.names.fold(teIn, { te, name -> te.addType(name, UNARY) })
-        return stmt.decls.fold(tEnv, { te, decl -> decl.names.fold(te, { te2, name -> te2.addType(name, BINARY) }) })
+        val tEnv = stmt.names.fold(teIn, { te, name -> te.addType(name, SET) })
+        return stmt.decls.fold(tEnv, { te, decl -> decl.names.fold(te, { te2, name -> te2.addType(name, RELATION) }) })
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: FactDeclaration): TypeEnvironment =
@@ -107,10 +107,10 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(te: TypeEnvironment, expr: BinaryOperatorExpression): TypeEnvironment {
         typeCheckExpr(te, expr.left)
         typeCheckExpr(te, expr.right)
-        if (expr.left.type == BINARY && expr.right.type == BINARY) {
-            expr.type = BINARY
+        if (expr.left.type == RELATION && expr.right.type == RELATION) {
+            expr.type = RELATION
         } else {
-            expr.type = UNARY
+            expr.type = SET
         }
         return te
     }
@@ -129,10 +129,10 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(te: TypeEnvironment, expr: BoxJoinExpression): TypeEnvironment {
         typeCheckExpr(te, expr.left)
         expr.parameters.map { typeCheckExpr(te, it) }
-        if (expr.left.type == BINARY && expr.parameters.any { it.type == BINARY }) {
-            expr.type = BINARY
+        if (expr.left.type == RELATION && expr.parameters.any { it.type == RELATION }) {
+            expr.type = RELATION
         } else {
-            expr.type = UNARY
+            expr.type = SET
         }
         return te
     }

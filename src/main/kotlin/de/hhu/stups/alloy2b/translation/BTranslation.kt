@@ -2,6 +2,7 @@ package de.hhu.stups.alloy2b.translation
 
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.ast.Operator.*
+import de.hhu.stups.alloy2b.typechecker.Type
 import de.hhu.stups.alloy2b.typechecker.Type.*
 import de.hhu.stups.alloy2b.typechecker.TypeChecker
 
@@ -301,11 +302,11 @@ class BTranslation(spec: AlloySpecification) {
         if (je.left.type == UNTYPED || je.right.type == UNTYPED) {
             throw UnsupportedOperationException("missing types in join translation")
         }
-        if (je.left.type == BINARY && je.right.type == BINARY) {
+        if (je.left.type == RELATION && je.right.type == RELATION) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
-        } else if (je.left.type == BINARY && je.right.type == UNARY) {
+        } else if (je.left.type == RELATION && je.right.type == Type.SET) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
-        } else if (je.left.type == UNARY && je.right.type == BINARY) {
+        } else if (je.left.type == Type.SET && je.right.type == RELATION) {
             return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
         }
         throw UnsupportedOperationException("join not supported this way")
