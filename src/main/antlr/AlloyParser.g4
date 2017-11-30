@@ -46,7 +46,7 @@ sigExt             : EXTENDS ref        # extendsExtension
                    | IN ref (PLUS ref)* # inExtension;
 
 expr               : LET letDecl (COMMA letDecl)* blockOrBar               # letExpr
-                   | quant declList blockOrBar                             # quantExpr
+                   | quant declList blockOrBar                             # quantifierExpr
                    | unOp expr                                             # unOpExpr
                    | left=expr DOT right=expr                              # dotJoinExpr
                    | left=expr binOp right=expr                            # binOpExpr

@@ -57,7 +57,7 @@ Specification
       T[fact]
       Block
         T[{]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[all]
           DeclList
@@ -172,7 +172,7 @@ Specification
         T[acyclic]
       Block
         T[{]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[no]
           DeclList
@@ -218,7 +218,7 @@ Specification
         T[oneRoot]
       Block
         T[{]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[one]
           DeclList
@@ -258,7 +258,7 @@ Specification
         T[oneLocation]
       Block
         T[{]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[all]
           DeclList
@@ -271,7 +271,7 @@ Specification
                   T[FSObject]
           ExprInBlockOrBar
             T[|]
-            QuantExpr
+            QuantifierExpr
               Quant
                 T[lone]
               DeclList

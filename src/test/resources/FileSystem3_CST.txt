@@ -37,7 +37,7 @@ Specification
       T[}]
       Block
         T[{]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[some]
           DeclList
@@ -133,7 +133,7 @@ Specification
                 T[@]
                 Name
                   T[entries]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[all]
           DeclList
@@ -313,7 +313,7 @@ Specification
         T[OneParent_buggyVersion]
       Block
         T[{]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[all]
           DeclList
@@ -351,7 +351,7 @@ Specification
         T[OneParent_correctVersion]
       Block
         T[{]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[all]
           DeclList
@@ -406,7 +406,7 @@ Specification
         T[NoDirAliases]
       Block
         T[{]
-        QuantExpr
+        QuantifierExpr
           Quant
             T[all]
           DeclList
