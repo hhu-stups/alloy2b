@@ -194,16 +194,14 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateFieldDeclarations(decl: Decl, name: String) {
         decl.names.map {
             fields.add(it) // used to decide how to translate dot join
-            if (decl.expression is QuantifiedExpression) {
-                if (decl.expression.operator == LONE) {
-                    // one-to-one mapping, i.e. function
-                    properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} +-> ${translateExpression(decl.expression.expression)}")
-                    return
-                }
-                properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} <-> ${translateExpression(decl.expression.expression)}")
+
+            if (decl.expression.operator == LONE) {
+                // one-to-one mapping, i.e. function
+                properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} +-> ${translateExpression(decl.expression.expression)}")
                 return
             }
-            properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} <-> ${translateExpression(decl.expression)}")
+            properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} <-> ${translateExpression(decl.expression.expression)}")
+            return
         }
     }
 
