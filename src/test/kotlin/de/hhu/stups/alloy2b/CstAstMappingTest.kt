@@ -7,7 +7,7 @@ import org.junit.Assert.assertTrue
 import java.util.Arrays.asList
 import org.junit.Test as test
 
-class AstCstMappingTest {
+class CstAstMappingTest {
     @test
     fun mapEmptySignaturDeclaration() {
         val code = "sig FSObject {}"
