@@ -40,12 +40,12 @@ class TypeChecker(spec: AlloySpecification) {
 
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: FunDeclaration): TypeEnvironment {
-        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type ?: UNTYPED) }) })
+        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type) }) })
         return stmt.expressions.fold(tEnv, { te, expr -> typeCheckExpr(te, expr) })
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: PredDeclaration): TypeEnvironment {
-        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type ?: UNTYPED) }) })
+        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type) }) })
         return stmt.expressions.fold(tEnv, { te, expr -> typeCheckExpr(te, expr) })
     }
 
@@ -134,7 +134,7 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: LetExpression): TypeEnvironment {
         val tEnv = expr.letDecls.fold(teIn, { te, decl ->
-            typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type ?: UNTYPED) })
+            typeCheckExpr(te, decl.expression).addType(decl.name, decl.expression.type) })
         return expr.expressions.fold(tEnv, { te, e -> typeCheckExpr(te, e) })
     }
 
@@ -150,7 +150,7 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun checkDeclsAndExpressions(teIn: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>): TypeEnvironment {
-        val tempTe = decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type ?: UNTYPED) }) })
+        val tempTe = decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name, decl.expression.type) }) })
         return expressions.fold(tempTe, { te, subExpr -> typeCheckExpr(te, subExpr) })
     }
 }
