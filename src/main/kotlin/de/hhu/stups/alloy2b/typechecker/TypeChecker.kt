@@ -13,7 +13,7 @@ class TypeChecker(spec: AlloySpecification) {
         spec.declarations.fold(TypeEnvironment(), { te, dec -> typeCheck(te, dec) })
     }
 
-    private fun typeCheck(te: TypeEnvironment, stmt: Statement) =
+    private fun typeCheck(te: TypeEnvironment, stmt: Statement): TypeEnvironment =
             when (stmt) {
                 is CheckStatement -> typeCheck(te, stmt)
                 is AssertionStatement -> typeCheck(te, stmt)
@@ -24,29 +24,38 @@ class TypeChecker(spec: AlloySpecification) {
                 else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
             }
 
-    private fun typeCheck(teIn: TypeEnvironment, stmt: CheckStatement) =
-            stmt.expressions.fold(teIn, { te, expr -> typeCheckExpr(te, expr) })
+    private fun typeCheck(teIn: TypeEnvironment, stmt: CheckStatement): TypeEnvironment {
+        stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
+        return teIn
+    }
 
-    private fun typeCheck(teIn: TypeEnvironment, stmt: AssertionStatement): TypeEnvironment =
-            stmt.expressions.fold(teIn, { te, expr -> typeCheckExpr(te, expr) })
+
+    private fun typeCheck(teIn: TypeEnvironment, stmt: AssertionStatement): TypeEnvironment {
+        stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
+        return teIn
+    }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: SignatureDeclaration): TypeEnvironment {
         val tEnv = stmt.names.fold(teIn, { te, name -> te.addType(name, SET) })
         return stmt.decls.fold(tEnv, { te, decl -> decl.names.fold(te, { te2, name -> te2.addType(name.name, RELATION) }) })
     }
 
-    private fun typeCheck(teIn: TypeEnvironment, stmt: FactDeclaration): TypeEnvironment =
-            stmt.expressions.fold(teIn, { te, expr -> typeCheckExpr(te, expr) })
+    private fun typeCheck(teIn: TypeEnvironment, stmt: FactDeclaration): TypeEnvironment {
+        stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
+        return teIn
+    }
 
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: FunDeclaration): TypeEnvironment {
-        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name.name, decl.expression.type) }) })
-        return stmt.expressions.fold(tEnv, { te, expr -> typeCheckExpr(te, expr) })
+        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(te, { te2, name -> typeCheckExpr(te, decl.expression); te2.addType(name.name, decl.expression.type) }) })
+        stmt.expressions.forEach { expr -> typeCheckExpr(tEnv, expr) }
+        return tEnv
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: PredDeclaration): TypeEnvironment {
-        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> te2.addType(name.name, decl.expression.type) }) })
-        return stmt.expressions.fold(tEnv, { te, expr -> typeCheckExpr(te, expr) })
+        val tEnv = stmt.decls.fold(teIn, { te, decl -> decl.names.fold(te, { te2, name -> typeCheckExpr(te, decl.expression); te2.addType(name.name, decl.expression.type) }) })
+        stmt.expressions.forEach { expr -> typeCheckExpr(tEnv, expr) }
+        return tEnv
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: Expression) =
@@ -67,55 +76,50 @@ class TypeChecker(spec: AlloySpecification) {
                 else -> throw UnsupportedOperationException(expr.javaClass.canonicalName)
             }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression): TypeEnvironment {
-        val nte = typeCheckExpr(teIn, expr.expression)
-        if(expr.operator == Operator.ONE) {
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression) {
+        typeCheckExpr(teIn, expr.expression)
+        if (expr.operator == Operator.ONE) {
             expr.type = SCALAR
         } else {
             expr.type = expr.expression.type
         }
-        return nte
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerCastExpression): TypeEnvironment {
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerCastExpression) {
         expr.type = INTEGER
-        return typeCheckExpr(teIn, expr.expr)
+        typeCheckExpr(teIn, expr.expr)
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerSetExpression): TypeEnvironment {
-        return teIn
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerSetExpression) {
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerExpression): TypeEnvironment {
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerExpression) {
         expr.type = INTEGER
-        return teIn
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfExpression): TypeEnvironment {
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfExpression) {
         typeCheckExpr(teIn, expr.ifExpr)
         typeCheckExpr(teIn, expr.thenExpr)
         typeCheckExpr(teIn, expr.elseExpr)
-        return teIn
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: BlockExpression): TypeEnvironment {
-        return expr.expressions.fold(teIn, { te, subExpr -> typeCheckExpr(te, subExpr) })
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: BlockExpression) {
+        expr.expressions.forEach {subExpr -> typeCheckExpr(teIn, subExpr) }
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifierExpression): TypeEnvironment {
-        return checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifierExpression) {
+        checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: DeclListExpression): TypeEnvironment {
-        return checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: DeclListExpression) {
+        checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
     }
 
-    private fun typeCheckExpr(te: TypeEnvironment, expr: IdentifierExpression): TypeEnvironment {
+    private fun typeCheckExpr(te: TypeEnvironment, expr: IdentifierExpression) {
         expr.type = te.lookupType(expr)
-        return te
     }
 
-    private fun typeCheckExpr(te: TypeEnvironment, expr: BinaryOperatorExpression): TypeEnvironment {
+    private fun typeCheckExpr(te: TypeEnvironment, expr: BinaryOperatorExpression) {
         typeCheckExpr(te, expr.left)
         typeCheckExpr(te, expr.right)
         if (expr.left.type == RELATION && expr.right.type == RELATION) {
@@ -123,22 +127,21 @@ class TypeChecker(spec: AlloySpecification) {
         } else {
             expr.type = SET
         }
-        return te
     }
 
-    private fun typeCheckExpr(te: TypeEnvironment, expr: UnaryOperatorExpression): TypeEnvironment {
+    private fun typeCheckExpr(te: TypeEnvironment, expr: UnaryOperatorExpression) {
         typeCheckExpr(te, expr.expression)
         expr.type = expr.expression.type
-        return te
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: LetExpression): TypeEnvironment {
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: LetExpression) {
         val tEnv = expr.letDecls.fold(teIn, { te, decl ->
-            typeCheckExpr(te, decl.expression).addType(decl.name.name, decl.expression.type) })
-        return expr.expressions.fold(tEnv, { te, e -> typeCheckExpr(te, e) })
+            typeCheckExpr(te, decl.expression); te.addType(decl.name.name, decl.expression.type)
+        })
+        expr.expressions.forEach { typeCheckExpr(tEnv, it) }
     }
 
-    private fun typeCheckExpr(te: TypeEnvironment, expr: BoxJoinExpression): TypeEnvironment {
+    private fun typeCheckExpr(te: TypeEnvironment, expr: BoxJoinExpression) {
         typeCheckExpr(te, expr.left)
         expr.parameters.map { typeCheckExpr(te, it) }
         if (expr.left.type == RELATION && expr.parameters.any { it.type == RELATION }) {
@@ -146,11 +149,10 @@ class TypeChecker(spec: AlloySpecification) {
         } else {
             expr.type = SET
         }
-        return te
     }
 
-    private fun checkDeclsAndExpressions(teIn: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>): TypeEnvironment {
-        val tempTe = decls.fold(teIn, { te, decl -> decl.names.fold(typeCheckExpr(te, decl.expression), { te2, name -> name.type = decl.expression.type; te2.addType(name.name, decl.expression.type) }) })
-        return expressions.fold(tempTe, { te, subExpr -> typeCheckExpr(te, subExpr) })
+    private fun checkDeclsAndExpressions(teIn: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>) {
+        val localTe = decls.fold(teIn, { te, decl -> decl.names.fold(te, { te2, name -> typeCheckExpr(te, decl.expression); name.type = decl.expression.type; te2.addType(name.name, decl.expression.type) }) })
+        expressions.forEach { subExpr -> typeCheckExpr(localTe, subExpr) }
     }
 }
