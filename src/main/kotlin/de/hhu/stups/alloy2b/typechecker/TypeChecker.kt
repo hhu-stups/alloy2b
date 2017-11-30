@@ -69,7 +69,11 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression): TypeEnvironment {
         val nte = typeCheckExpr(teIn, expr.expression)
-        expr.type = expr.expression.type
+        if(expr.operator == Operator.ONE) {
+            expr.type = SCALAR
+        } else {
+            expr.type = expr.expression.type
+        }
         return nte
     }
 
