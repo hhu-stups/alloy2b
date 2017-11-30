@@ -307,7 +307,7 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translateJoin(je: BinaryOperatorExpression): String {
         if (je.left.type == UNTYPED || je.right.type == UNTYPED) {
-            throw UnsupportedOperationException("missing types in join translation")
+            throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
         }
         if (je.left.type == RELATION && je.right.type == RELATION) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
