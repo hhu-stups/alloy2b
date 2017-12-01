@@ -1,7 +1,6 @@
 package de.hhu.stups.alloy2b.ast
 
 import de.hhu.stups.alloy2b.typechecker.Type
-import de.hhu.stups.alloy2b.typechecker.Type.UNTYPED
 
 interface Node {
     val position: Position?
@@ -37,62 +36,62 @@ data class NameSignatureExtension(val name: String,
 data class UnaryOperatorExpression(val operator: Operator,
                                    val expression: Expression,
                                    override val position: Position? = null,
-                                   override var type: Type = UNTYPED) : Expression
+                                   override var type: Type = Type()) : Expression
 
 data class BinaryOperatorExpression(val operator: Operator,
                                     val left: Expression,
                                     val right: Expression,
                                     override val position: Position? = null,
-                                    override var type: Type = UNTYPED) : Expression
+                                    override var type: Type = Type()) : Expression
 
 data class BoxJoinExpression(val left: Expression,
                              val parameters: List<Expression>,
                              override val position: Position? = null,
-                             override var type: Type = UNTYPED) : Expression
+                             override var type: Type = Type()) : Expression
 
 data class IdentifierExpression(val name: String,
                                 override val position: Position? = null,
-                                override var type: Type = UNTYPED) : Expression
+                                override var type: Type = Type()) : Expression
 
 data class LetExpression(val letDecls: List<LetDecl>,
                          val expressions: List<Expression>,
                          override val position: Position? = null,
-                         override var type: Type = UNTYPED) : Expression
+                         override var type: Type = Type()) : Expression
 
 data class QuantifiedExpression(val operator: Operator,
                                 val expression: Expression,
                                 override val position: Position? = null,
-                                override var type: Type = UNTYPED) : Expression
+                                override var type: Type = Type()) : Expression
 
 data class QuantifierExpression(val operator: Operator,
                                 val decls: List<Decl>,
                                 val expressions: List<Expression>,
                                 override val position: Position? = null,
-                                override var type: Type = UNTYPED) : Expression
+                                override var type: Type = Type()) : Expression
 
 data class BlockExpression(val expressions: List<Expression>,
                            override val position: Position? = null,
-                           override var type: Type = UNTYPED) : Expression
+                           override var type: Type = Type()) : Expression
 
 data class IfExpression(val ifExpr: Expression, val thenExpr: Expression, val elseExpr: Expression,
                         override val position: Position? = null,
-                        override var type: Type = UNTYPED) : Expression
+                        override var type: Type = Type()) : Expression
 
 data class DeclListExpression(val decls: List<Decl>,
                               val expressions: List<Expression>,
                               override val position: Position? = null,
-                              override var type: Type = UNTYPED) : Expression
+                              override var type: Type = Type()) : Expression
 
 data class IntegerSetExpression(override val position: Position? = null,
-                                override var type: Type = UNTYPED) : Expression
+                                override var type: Type = Type()) : Expression
 
 data class IntegerCastExpression(val expr: Expression,
                                  override val position: Position? = null,
-                                 override var type: Type = UNTYPED) : Expression
+                                 override var type: Type = Type()) : Expression
 
 data class IntegerExpression(val int: Long,
                              override val position: Position? = null,
-                             override var type: Type = UNTYPED) : Expression
+                             override var type: Type = Type()) : Expression
 
 // statements
 data class FactDeclaration(val name: String,

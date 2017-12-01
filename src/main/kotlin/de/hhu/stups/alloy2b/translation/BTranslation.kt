@@ -3,8 +3,9 @@ package de.hhu.stups.alloy2b.translation
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.ast.Operator.*
 import de.hhu.stups.alloy2b.typechecker.Type
-import de.hhu.stups.alloy2b.typechecker.Type.*
+import de.hhu.stups.alloy2b.typechecker.Types.*
 import de.hhu.stups.alloy2b.typechecker.TypeChecker
+import de.hhu.stups.alloy2b.typechecker.Types
 
 class BTranslation(spec: AlloySpecification) {
     private val sets = mutableListOf<String>()
@@ -305,19 +306,19 @@ class BTranslation(spec: AlloySpecification) {
             }
 
     private fun translateJoin(je: BinaryOperatorExpression): String {
-        if (je.left.type == UNTYPED || je.right.type == UNTYPED) {
+        if (je.left.type.untyped() || je.right.type.untyped()) {
             throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
         }
-        if (je.left.type == RELATION && je.right.type == RELATION) {
+        if (je.left.type.currentType == RELATION && je.right.type.currentType == RELATION) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
         }
-        if (je.left.type == RELATION && (je.right.type == Type.SET || je.right.type == Type.SCALAR)) {
+        if (je.left.type.currentType == RELATION && (je.right.type.currentType == Types.SET || je.right.type.currentType == Types.SCALAR)) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
         }
-        if ((je.left.type == Type.SET || je.left.type == Type.SCALAR) && je.right.type == RELATION) {
+        if ((je.left.type.currentType == Types.SET || je.left.type.currentType == Types.SCALAR) && je.right.type.currentType == RELATION) {
             return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
         }
-        throw UnsupportedOperationException("join not supported this way")
+        throw UnsupportedOperationException("join not supported this way: ${je.left} . ${je.right}")
     }
 
     private fun translateDeclsIDList(decls: List<Decl>) =
@@ -338,7 +339,7 @@ class BTranslation(spec: AlloySpecification) {
             "${id}_"
 
     private fun sanitizeIdentifier(id: IdentifierExpression): String =
-            if(id.type == SCALAR) {
+            if(id.type.currentType == SCALAR) {
                 "{${id.name}_}"
             } else {
                 sanitizeIdentifier(id.name)
