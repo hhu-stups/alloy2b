@@ -45,13 +45,15 @@ class TypeChecker(spec: AlloySpecification) {
 
 
     private fun typeCheck(te: TypeEnvironment, stmt: FunDeclaration) {
-        stmt.decls.forEach { decl -> decl.names.forEach { name -> name.type.setType(SET); te.addType(name.name, SET); typeCheckExpr(te, decl.expression) }}
-        stmt.expressions.forEach { expr -> typeCheckExpr(te, expr) }
+        val localTe = te.copy()
+        stmt.decls.forEach { decl -> decl.names.forEach { name -> name.type.setType(SET); localTe.addType(name.name, SET); typeCheckExpr(localTe, decl.expression) }}
+        stmt.expressions.forEach { expr -> typeCheckExpr(localTe, expr) }
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration) {
-        stmt.decls.forEach { decl -> decl.names.forEach { name -> name.type.setType(SET); te.addType(name.name, SET); typeCheckExpr(te, decl.expression) }}
-        stmt.expressions.forEach { expr -> typeCheckExpr(te, expr) }
+        val localTe = te.copy()
+        stmt.decls.forEach { decl -> decl.names.forEach { name -> name.type.setType(SET); localTe.addType(name.name, SET); typeCheckExpr(localTe, decl.expression) }}
+        stmt.expressions.forEach { expr -> typeCheckExpr(localTe, expr) }
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: Expression) =
