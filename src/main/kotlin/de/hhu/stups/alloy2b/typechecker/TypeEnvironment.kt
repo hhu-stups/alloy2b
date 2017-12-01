@@ -17,5 +17,5 @@ class TypeEnvironment(val types: MutableMap<String, Type> = mutableMapOf()) {
             addType(id,type.currentType)
 
     fun copy(): TypeEnvironment =
-            TypeEnvironment(types)
+            TypeEnvironment(types.toMutableMap())
 }

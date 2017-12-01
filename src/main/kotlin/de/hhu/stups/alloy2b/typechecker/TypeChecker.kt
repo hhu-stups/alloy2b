@@ -45,12 +45,12 @@ class TypeChecker(spec: AlloySpecification) {
 
 
     private fun typeCheck(te: TypeEnvironment, stmt: FunDeclaration) {
-        stmt.decls.forEach { decl -> decl.names.forEach { name -> typeCheckExpr(te, decl.expression); te.addType(name.name, decl.expression.type) } }
+        stmt.decls.forEach { decl -> decl.names.forEach { name -> name.type.setType(SET); te.addType(name.name, SET); typeCheckExpr(te, decl.expression) }}
         stmt.expressions.forEach { expr -> typeCheckExpr(te, expr) }
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration) {
-        stmt.decls.forEach { decl -> decl.names.forEach { name -> typeCheckExpr(te, decl.expression); te.addType(name.name, decl.expression.type) } }
+        stmt.decls.forEach { decl -> decl.names.forEach { name -> name.type.setType(SET); te.addType(name.name, SET); typeCheckExpr(te, decl.expression) }}
         stmt.expressions.forEach { expr -> typeCheckExpr(te, expr) }
     }
 
