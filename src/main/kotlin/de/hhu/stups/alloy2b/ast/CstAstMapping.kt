@@ -94,8 +94,10 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
             is IfExprContext -> IfExpression(ifExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), toPosition(considerPosition))
             is DeclListExprContext -> DeclListExpression(declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(), blockOrBar().toAst(considerPosition), toPosition(considerPosition))
             is CapIntExprContext -> IntegerSetExpression(toPosition(considerPosition))
-            is NumberExprContext -> IntegerExpression(NUMBER().text.toLong(),toPosition(considerPosition))
-            is IntCastExprContext -> IntegerCastExpression(expr().toAst(considerPosition),toPosition(considerPosition))
+            is NumberExprContext -> IntegerExpression(NUMBER().text.toLong(), toPosition(considerPosition))
+            is IntCastExprContext -> IntegerCastExpression(expr().toAst(considerPosition), toPosition(considerPosition))
+            is IdenExprContext -> IdentityExpression(toPosition(considerPosition))
+            is UnivExprContext -> UnivExpression(toPosition(considerPosition))
             else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
         }
 
@@ -110,9 +112,10 @@ fun BlockOrBarContext.toAst(considerPosition: Boolean = false): List<Expression>
 
 fun DeclContext.toAst(considerPosition: Boolean = false): Decl {
     var expr = expr().toAst(considerPosition)
-    if(!(expr is QuantifiedExpression)) {
-        expr = QuantifiedExpression(Operator.ONE,expr,expr.position)
+    if (!(expr is QuantifiedExpression)) {
+        expr = QuantifiedExpression(Operator.ONE, expr, expr.position)
     }
-    return Decl(this.name().map { IdentifierExpression(it.text,it.toPosition(considerPosition)) }, expr)
+    return Decl(this.name().map { IdentifierExpression(it.text, it.toPosition(considerPosition)) }, expr)
 }
-fun LetDeclContext.toAst(considerPosition: Boolean = false): LetDecl = LetDecl(IdentifierExpression(this.name().text,this.toPosition(considerPosition)), this.expr().toAst(considerPosition))
+
+fun LetDeclContext.toAst(considerPosition: Boolean = false): LetDecl = LetDecl(IdentifierExpression(this.name().text, this.toPosition(considerPosition)), this.expr().toAst(considerPosition))

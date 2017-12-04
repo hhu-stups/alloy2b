@@ -2,10 +2,10 @@ package de.hhu.stups.alloy2b.translation
 
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.ast.Operator.*
-import de.hhu.stups.alloy2b.typechecker.Type
-import de.hhu.stups.alloy2b.typechecker.Types.*
+import de.hhu.stups.alloy2b.typechecker.Relation
+import de.hhu.stups.alloy2b.typechecker.Scalar
+import de.hhu.stups.alloy2b.typechecker.Set
 import de.hhu.stups.alloy2b.typechecker.TypeChecker
-import de.hhu.stups.alloy2b.typechecker.Types
 
 class BTranslation(spec: AlloySpecification) {
     private val sets = mutableListOf<String>()
@@ -219,8 +219,20 @@ class BTranslation(spec: AlloySpecification) {
                 is IntegerCastExpression -> translateExpression(e)
                 is IntegerExpression -> translateExpression(e)
                 is QuantifiedExpression -> translateExpression(e)
+                is IdentityExpression -> translateExpression(e)
+                is UnivExpression -> translateExpression(e)
                 else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
             }
+
+    private fun translateExpression(ue: UnivExpression): String {
+        // TODO
+        return ""
+    }
+
+    private fun translateExpression(ie: IdentityExpression): String {
+        // TODO
+        return ""
+    }
 
     private fun translateExpression(ie: IntegerExpression): String =
             ie.int.toString()
@@ -306,16 +318,15 @@ class BTranslation(spec: AlloySpecification) {
             }
 
     private fun translateJoin(je: BinaryOperatorExpression): String {
-        if (je.left.type.untyped() || je.right.type.untyped()) {
-            throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
+        if (je.left.type.untyped() || je.right.type.untyped()) { throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
         }
-        if (je.left.type.currentType == RELATION && je.right.type.currentType == RELATION) {
+        if (je.left.type.currentType is Relation && je.right.type.currentType is Relation) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
         }
-        if (je.left.type.currentType == RELATION && (je.right.type.currentType == Types.SET || je.right.type.currentType == Types.SCALAR)) {
+        if (je.left.type.currentType is Relation && (je.right.type.currentType is Set || je.right.type.currentType is Scalar)) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
         }
-        if ((je.left.type.currentType == Types.SET || je.left.type.currentType == Types.SCALAR) && je.right.type.currentType == RELATION) {
+        if ((je.left.type.currentType is Set || je.left.type.currentType is Scalar) && je.right.type.currentType is Relation) {
             return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
         }
         throw UnsupportedOperationException("join not supported this way: ${je.left} . ${je.right}")
@@ -329,17 +340,17 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateDeclExpression(expr: QuantifiedExpression): String =
-        when (expr.operator) {
-            ONE -> translateExpression(expr.expression)
-            else -> throw UnsupportedOperationException(expr.operator.name)
-        }
+            when (expr.operator) {
+                ONE -> translateExpression(expr.expression)
+                else -> throw UnsupportedOperationException(expr.operator.name)
+            }
 
 
     private fun sanitizeIdentifier(id: String) =
             "${id}_"
 
     private fun sanitizeIdentifier(id: IdentifierExpression): String =
-            if(id.type.currentType == SCALAR) {
+            if (id.type.currentType is Scalar) {
                 "{${id.name}_}"
             } else {
                 sanitizeIdentifier(id.name)
