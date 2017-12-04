@@ -46,6 +46,11 @@ class TranslationTest {
     }
 
     @test
+    fun translateGraphIso() {
+        println(BTranslation(parseResource("graphiso.als").toAst(false)).getTranslation())
+    }
+
+    @test
     fun translateQueens() {
         val expected = getResourceAsString("queens.mch")
         assertEquals(expected, BTranslation(parseResource("queens.als").toAst(false)).getTranslation())
