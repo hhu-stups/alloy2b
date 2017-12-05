@@ -90,7 +90,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(stmt: AssertionStatement) {
-        alloyAssertions[stmt.name] = stmt.expressions.joinToString(" & ") { e -> translateExpression(e) }
+        alloyAssertions[stmt.name] = "/* ${stmt.name} */ " + stmt.expressions.joinToString(" & ") { e -> translateExpression(e) }
     }
 
     private fun translate(fdec: FactDeclaration) {
@@ -183,6 +183,11 @@ class BTranslation(spec: AlloySpecification) {
             }
             else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)
         }
+
+        // attached list of expressions leads
+        sdec.expressions.forEach({
+            properties.add("/* from signature declaration */ ${translateExpression(it)}")
+        })
     }
 
     private fun handleQuantifiersByCardinality(sdec: SignatureDeclaration) {

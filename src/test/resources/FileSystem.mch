@@ -13,10 +13,11 @@ PROPERTIES
     File_ \/ Dir_ = FSObject_ &
     card(Root_) = 1 &
     Root_ <: Dir_ &
+    /* from signature declaration */ parent_ = {} &
     FSObject_ <: closure(contents_)[Root_] &
     Dir_ /\ File_ = {}
 ASSERTIONS
-    card({d_ | {d_} <: Dir_ & {d_} <: closure1(contents_)[{d_}]}) = 0 &
-    card({d_ | {d_} <: Dir_ & parent_[{d_}] = {}}) = 1 &
-    !(o_).({o_} <: FSObject_ => card({d_ | {d_} <: Dir_ & {o_} <: contents_[{d_}]}) <= 1)
+    /* acyclic */ card({d_ | {d_} <: Dir_ & {d_} <: closure1(contents_)[{d_}]}) = 0 &
+    /* oneRoot */ card({d_ | {d_} <: Dir_ & parent_[{d_}] = {}}) = 1 &
+    /* oneLocation */ !(o_).({o_} <: FSObject_ => card({d_ | {d_} <: Dir_ & {o_} <: contents_[{d_}]}) <= 1)
 END
