@@ -51,7 +51,7 @@ class TranslationTest {
         //Assert.assertEquals(expected, BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
     }
 
-    @test
+    @test @Ignore
     fun translateGraphIso() {
         println(BTranslation(parseResource("graphiso.als").toAst(false)).getTranslation())
     }

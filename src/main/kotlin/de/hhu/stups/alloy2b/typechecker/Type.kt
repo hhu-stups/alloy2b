@@ -44,4 +44,12 @@ data class Scalar(val subType: ExplicitType) : ExplicitType
 
 class Integer : ExplicitType
 
-class Untyped : ExplicitType
+class Untyped : ExplicitType {
+    override fun toString(): String {
+        return "UNTYPED"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is Untyped
+    }
+}
