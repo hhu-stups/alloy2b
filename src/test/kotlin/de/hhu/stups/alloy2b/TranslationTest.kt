@@ -7,6 +7,12 @@ import org.junit.Ignore
 import org.junit.Test as test
 
 class TranslationTest {
+    @test @Ignore
+    fun translateCrewAlloc() {
+        println(BTranslation(parseResource("crewalloc.als").toAst(false)).getTranslation())
+        //val expected = getResourceAsString("hanoi.mch")
+        //Assert.assertEquals(expected, BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
+    }
 
     @test
     fun translateFileSystem() {

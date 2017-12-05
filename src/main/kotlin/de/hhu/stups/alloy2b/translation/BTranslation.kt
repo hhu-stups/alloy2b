@@ -167,11 +167,18 @@ class BTranslation(spec: AlloySpecification) {
         // not a basic signature -> ensure subset relation with extended / extending signatures
         constants.addAll(sdec.names.map { n -> sanitizeIdentifier(n) })
         when (sdec.signatureExtension) {
-            is NameSignatureExtension -> {
+            is ExtendsSignatureExtension -> {
                 sdec.names.forEach({
                     properties.add("${sanitizeIdentifier(it)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
                     extendingSignatures[sdec.signatureExtension.name] =
                             extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + it
+                })
+            }
+            is InSignatureExtension -> {
+                sdec.names.forEach({sdecName ->
+                    sdec.signatureExtension.names.forEach({extensionName ->
+                            properties.add("${sanitizeIdentifier(extensionName)} <: ${sanitizeIdentifier(sdecName)}")
+                    })
                 })
             }
             else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)

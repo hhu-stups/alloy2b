@@ -48,7 +48,8 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
 }
 
 fun SigExtContext.toAst(considerPosition: Boolean = false): SignatureExtension = when (this) {
-    is ExtendsExtensionContext -> NameSignatureExtension(this.ref().text, toPosition(considerPosition))
+    is ExtendsExtensionContext -> ExtendsSignatureExtension(this.ref().text, toPosition(considerPosition))
+    is InExtensionContext -> InSignatureExtension(this.ref().map { it.text }, toPosition(considerPosition))
     else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
 }
 

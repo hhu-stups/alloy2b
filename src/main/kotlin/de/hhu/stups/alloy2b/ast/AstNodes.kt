@@ -30,8 +30,10 @@ data class LetDecl(val name: IdentifierExpression, val expression: Expression,
 // signature extensions
 interface SignatureExtension : Node
 
-data class NameSignatureExtension(val name: String,
-                                  override val position: Position? = null) : SignatureExtension
+data class ExtendsSignatureExtension(val name: String,
+                                     override val position: Position? = null) : SignatureExtension
+data class InSignatureExtension(val names: List<String>,
+                                override val position: Position? = null) : SignatureExtension
 
 // expressions
 data class UnaryOperatorExpression(val operator: Operator,
