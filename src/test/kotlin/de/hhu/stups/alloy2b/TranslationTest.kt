@@ -26,7 +26,7 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("FileSystem2.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
     fun translateFileSystem3() {
         val expected = getResourceAsString("FileSystem3.mch")
         assertEquals(expected, BTranslation(parseResource("FileSystem3.als").toAst(false)).getTranslation())
