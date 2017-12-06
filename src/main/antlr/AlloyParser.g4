@@ -49,13 +49,13 @@ expr               : LET letDecl (COMMA letDecl)* blockOrBar               # let
                    | quant declList blockOrBar                             # quantifierExpr
                    | unOp expr                                             # unOpExpr
                    | left=expr DOT right=expr                              # dotJoinExpr
+                   | expr LSQBRACKET exprList RSQBRACKET                   # boxJoinExpr
                    | left=expr binOp right=expr                            # binOpExpr
                    |<assoc=right> left=expr IMPLIES right=expr             # impliesExpr // needed because associativity differs
                    | left=expr arrowOp right=expr                          # arrowOpExpr
                    | left=expr NOT? compareOp right=expr                   # compareExpr
                    | exprQuantifier expr                                   # quantifiedExpr
                    | ifExpr=expr IMPLIES? thenExpr=expr ELSE elseExpr=expr # ifExpr
-                   | expr LSQBRACKET exprList RSQBRACKET                   # boxJoinExpr
                    | INT LSQBRACKET expr RSQBRACKET                        # intCastExpr
                    | NUMBER                                                # numberExpr
                    | MINUS NUMBER                                          # negNumberExpr
@@ -79,7 +79,7 @@ quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
 logicalOperator    : AND | OR | IFF ;
 
-binOp              : AND | OR | IFF | PLUS | MINUS | INTERSECTION | UNION | DIFFERENCE |
+binOp              : PLUS | MINUS | INTERSECTION | UNION | DIFFERENCE |
                      DOM_RESTR | RAN_RESTR | OVERRIDE ; // todo: add | "<<" | ">>" | ">>>" ;  // todo: precedence
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;
