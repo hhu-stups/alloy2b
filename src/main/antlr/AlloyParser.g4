@@ -66,6 +66,7 @@ expr               : LET letDecl (COMMA letDecl)* blockOrBar               # let
                    | SeqInt                                                # seqIntExpr
                    | LPAREN expr RPAREN                                    # parenExpr
                    | AT? name                                              # idExpr
+                   | left=expr logicalOperator right=expr                  # logicalOpExpr
                    | block                                                 # blockExpr
                    | LBRACKET declList blockOrBar RBRACKET                 # declListExpr
                    ;
@@ -75,6 +76,8 @@ decl               : PRIVATE? DISJ? name (COMMA name)* COLON DISJ? expr ;
 letDecl            : name EQUAL expr ;
 
 quant              : ALL | NO | SOME | LONE | ONE | SUM ;
+
+logicalOperator    : AND | OR | IFF ;
 
 binOp              : AND | OR | IFF | PLUS | MINUS | INTERSECTION | UNION | DIFFERENCE |
                      DOM_RESTR | RAN_RESTR | OVERRIDE ; // todo: add | "<<" | ">>" | ">>>" ;  // todo: precedence
