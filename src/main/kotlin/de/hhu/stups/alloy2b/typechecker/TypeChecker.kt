@@ -17,7 +17,7 @@ class TypeChecker(spec: AlloySpecification) {
             when (stmt) {
                 is CheckStatement -> typeCheck(te, stmt)
                 is AssertionStatement -> typeCheck(te, stmt)
-                is SignatureDeclaration -> typeCheck(te, stmt)
+                is SignatureDeclarations -> typeCheck(te, stmt)
                 is FactDeclaration -> typeCheck(te, stmt)
                 is FunDeclaration -> typeCheck(te, stmt)
                 is PredDeclaration -> typeCheck(te, stmt)
@@ -33,16 +33,18 @@ class TypeChecker(spec: AlloySpecification) {
         stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
     }
 
+    private fun typeCheck(teIn: TypeEnvironment, stmt:SignatureDeclarations) {
+        stmt.signatures.forEach( {declaration -> typeCheck(teIn, declaration)})
+    }
+
     private fun typeCheck(te: TypeEnvironment, stmt: SignatureDeclaration) {
-        stmt.names.forEach { name -> te.addType(name, Set(Signature(name))) }
+        te.addType(stmt.name.name, Set(Signature(stmt.name.name)))
+
         stmt.decls.forEach { decl ->
             decl.names.forEach { idExpr ->
                 run {
-                    if (stmt.names.size > 1) {
-                        throw UnsupportedOperationException()
-                    }
                     typeCheckExpr(te, decl.expression)
-                    val type = Relation(Set(Signature(stmt.names[0])), decl.expression.expression.type.currentType)
+                    val type = Relation(Set(Signature(stmt.name.name)), decl.expression.expression.type.currentType)
                     idExpr.type.setType(type)
                     te.addType(idExpr.name, type)
                 }

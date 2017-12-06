@@ -81,7 +81,7 @@ class BTranslation(spec: AlloySpecification) {
         when (stmt) {
             is CheckStatement -> translate(stmt)
             is AssertionStatement -> translate(stmt)
-            is SignatureDeclaration -> translate(stmt)
+            is SignatureDeclarations -> translate(stmt)
             is FactDeclaration -> translate(stmt)
             is FunDeclaration -> translate(stmt)
             is PredDeclaration -> translate(stmt)
@@ -143,11 +143,15 @@ class BTranslation(spec: AlloySpecification) {
         })
     }
 
+    private fun translate(sdec: SignatureDeclarations) {
+        sdec.signatures.forEach {translate(it)}
+    }
+
     private fun translate(sdec: SignatureDeclaration) {
-        signatures.addAll(sdec.names) // used to decide how to translate dot join
+        signatures.add(sdec.name.name) // used to decide how to translate dot join
 
         if (sdec.qualifiers.contains(ABSTRACT)) {
-            abstractSignatures.addAll(sdec.names)
+            abstractSignatures.add(sdec.name.name)
         }
 
         handleQuantifiersByCardinality(sdec)
@@ -155,30 +159,26 @@ class BTranslation(spec: AlloySpecification) {
         // field declarations are mapped to constants and properties
         sdec.decls.forEach({ d ->
             d.names.map { constants.add(sanitizeIdentifier(it)) }
-            sdec.names.forEach { sdecName -> translateFieldDeclarations(d, sdecName) }
+            translateFieldDeclarations(d, sdec.name.name)
         })
 
         if (sdec.signatureExtension == null) {
             // basic signature -> B set
-            sets.addAll(sdec.names.map { n -> sanitizeIdentifier(n) })
+            sets.add(sanitizeIdentifier(sdec.name))
             return
         }
 
         // not a basic signature -> ensure subset relation with extended / extending signatures
-        constants.addAll(sdec.names.map { n -> sanitizeIdentifier(n) })
+        constants.add(sanitizeIdentifier(sdec.name))
         when (sdec.signatureExtension) {
             is ExtendsSignatureExtension -> {
-                sdec.names.forEach({
-                    properties.add("${sanitizeIdentifier(it)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
+                    properties.add("${sanitizeIdentifier(sdec.name)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
                     extendingSignatures[sdec.signatureExtension.name] =
-                            extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + it
-                })
+                            extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name.name
             }
             is InSignatureExtension -> {
-                sdec.names.forEach({sdecName ->
                     sdec.signatureExtension.names.forEach({extensionName ->
-                            properties.add("${sanitizeIdentifier(extensionName)} <: ${sanitizeIdentifier(sdecName)}")
-                    })
+                            properties.add("${sanitizeIdentifier(extensionName)} <: ${sanitizeIdentifier(sdec.name)}")
                 })
             }
             else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)
@@ -192,16 +192,16 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun handleQuantifiersByCardinality(sdec: SignatureDeclaration) {
         if (NO in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${sanitizeIdentifier(it)}) = 0") }
+            properties.add("card(${sanitizeIdentifier(sdec.name.name)}) = 0")
         }
         if (LONE in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${sanitizeIdentifier(it)}) <= 1") }
+            properties.add("card(${sanitizeIdentifier(sdec.name.name)}) <= 1")
         }
         if (ONE in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${sanitizeIdentifier(it)}) = 1") }
+            properties.add("card(${sanitizeIdentifier(sdec.name.name)}) = 1")
         }
         if (SOME in sdec.qualifiers) {
-            sdec.names.forEach { properties.add("card(${sanitizeIdentifier(it)}) >= 1") }
+            properties.add("card(${sanitizeIdentifier(sdec.name.name)}) >= 1")
         }
     }
 

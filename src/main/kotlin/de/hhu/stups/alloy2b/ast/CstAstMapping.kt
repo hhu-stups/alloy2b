@@ -16,7 +16,7 @@ fun ParserRuleContext.toPosition(considerPosition: Boolean): Position? {
     return if (considerPosition) Position(start.startPoint(), stop.endPoint()) else null
 }
 
-fun NameContext.toAst(considerPosition: Boolean = false): Expression =
+fun NameContext.toAst(considerPosition: Boolean = false): IdentifierExpression =
         IdentifierExpression(this.text, toPosition(considerPosition))
 
 fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
@@ -25,10 +25,10 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
         is FactDeclContext -> return FactDeclaration(child.name()?.text ?: "",
                 child.block().expr().map { it.toAst(considerPosition) },
                 toPosition(considerPosition))
-        is SigDeclContext -> return SignatureDeclaration(child.sigQual().map { Operator.fromString(it.text) },
-                child.name()?.map({ it.text }) ?: emptyList(), child.sigExt()?.toAst(considerPosition),
+        is SigDeclContext -> return SignatureDeclarations(child.name().map { SignatureDeclaration(child.sigQual().map { Operator.fromString(it.text) },
+                it.toAst(considerPosition), child.sigExt()?.toAst(considerPosition),
                 child.declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
-                child.block()?.expr()?.map { it.toAst(considerPosition) } ?: emptyList(), toPosition(considerPosition))
+                child.block()?.expr()?.map { it.toAst(considerPosition) } ?: emptyList(), toPosition(considerPosition)) })
         is AssertDeclContext -> return AssertionStatement(child.name()?.text ?: "",
                 child.block().toAst(considerPosition),
                 toPosition(considerPosition))
