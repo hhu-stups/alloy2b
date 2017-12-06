@@ -156,6 +156,10 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(te: TypeEnvironment, expr: BinaryOperatorExpression) {
         typeCheckExpr(te, expr.left)
         typeCheckExpr(te, expr.right)
+        if (expr.right is IdentityExpression) run {
+            expr.right.type.setType(expr.left.type.currentType)
+            return
+        }
         val exprRightType = expr.right.type.currentType
         if (expr.left is UnivExpression && exprRightType is Relation) {
             expr.type.setType(Set(exprRightType.leftType))
@@ -167,7 +171,7 @@ class TypeChecker(spec: AlloySpecification) {
             return
         }
         if (expr.left.type.currentType is Relation && expr.right.type.currentType is Relation) {
-            expr.type.setType(Relation(expr.left.type, expr.right.type))
+            expr.type.setType(expr.left.type.currentType)
             return
         }
         expr.type.setType(Set(expr.left.type))
