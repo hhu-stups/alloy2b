@@ -114,7 +114,7 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression) {
         typeCheckExpr(teIn, expr.expression)
         if (expr.operator == Operator.ONE) {
-            expr.type = Type(Scalar(expr.expression.type.currentType))
+            expr.type = Type(Scalar(expr.expression.type))
         } else {
             expr.type = expr.expression.type
         }

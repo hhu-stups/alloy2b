@@ -40,7 +40,7 @@ data class Set(val subType: ExplicitType) : ExplicitType
 
 data class Relation(val leftType: ExplicitType, val rightType: ExplicitType) : ExplicitType
 
-data class Scalar(val subType: ExplicitType) : ExplicitType
+data class Scalar(val subType: Type) : ExplicitType
 
 class Integer : ExplicitType
 
