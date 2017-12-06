@@ -50,6 +50,10 @@ class TypeChecker(spec: AlloySpecification) {
                 }
             }
         }
+
+        if(stmt.expression != null) {
+            typeCheckExpr(te, stmt.expression)
+        }
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: FactDeclaration) {
