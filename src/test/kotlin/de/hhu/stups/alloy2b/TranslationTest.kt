@@ -39,6 +39,12 @@ class TranslationTest {
     }
 
     @test
+    fun translatePeano() {
+        val expected = getResourceAsString("Peano.mch")
+        assertEquals(expected, BTranslation(parseResource("Peano.als").toAst(false)).getTranslation())
+    }
+
+    @test
     fun translateSelfGrandpas() {
         val expected = getResourceAsString("SelfGrandpas.mch")
         assertEquals(expected, BTranslation(parseResource("SelfGrandpas.als").toAst(false)).getTranslation())
