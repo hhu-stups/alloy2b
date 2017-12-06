@@ -240,10 +240,14 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(ie: IdentityExpression): String {
-        if(ie.type.untyped()) {
-            throw UnsupportedOperationException("identity is untyped")
+        if (ie.type.untyped()) {
+            throw UnsupportedOperationException("Identity is untyped.")
         }
-        return "id(${translateType(ie.type)})"
+        val ieType = ie.type.currentType
+        if (ieType is Relation) {
+            return "id(${translateType(ieType.leftType)})"
+        }
+        throw UnsupportedOperationException("Identity is wrongly typed.")
     }
 
     private fun translateExpression(ie: IntegerExpression): String =
@@ -377,11 +381,12 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translateType(type: Type): String {
         val eType = type.currentType
-        when(eType) {
+        return when (eType) {
             is Signature -> sanitizeIdentifier(eType.subType)
-            else -> throw UnsupportedOperationException("cannot translate type to B set: ${eType}")
+            is Relation -> "${translateType(eType.leftType)} <-> ${translateType(eType.rightType)}"
+            is Set -> translateType(eType.subType)
+            else -> throw UnsupportedOperationException("Cannot translate type to B set: ${eType}.")
         }
-        throw UnsupportedOperationException("unreachable")
     }
 }
 
