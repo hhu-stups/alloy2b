@@ -372,10 +372,10 @@ Specification
             T[|]
             ParenExpr
               T[(]
-              QuantifiedExpr
-                ExprQuantifier
-                  T[one]
-                BinOpExpr
+              LogicalOpExpr
+                QuantifiedExpr
+                  ExprQuantifier
+                    T[one]
                   DotJoinExpr
                     IdExpr
                       Name
@@ -384,19 +384,19 @@ Specification
                     IdExpr
                       Name
                         T[parent]
-                  BinOp
-                    T[&&]
-                  QuantifiedExpr
-                    ExprQuantifier
-                      T[one]
-                    DotJoinExpr
-                      IdExpr
-                        Name
-                          T[contents]
-                      T[.]
-                      IdExpr
-                        Name
-                          T[d]
+                LogicalOperator
+                  T[&&]
+                QuantifiedExpr
+                  ExprQuantifier
+                    T[one]
+                  DotJoinExpr
+                    IdExpr
+                      Name
+                        T[contents]
+                    T[.]
+                    IdExpr
+                      Name
+                        T[d]
               T[)]
         T[}]
   Paragraph
