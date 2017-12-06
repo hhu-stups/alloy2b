@@ -83,6 +83,10 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     left.toAst(considerPosition),
                     right.toAst(considerPosition),
                     toPosition(considerPosition))
+            is LogicalOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.logicalOperator().text),
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition),
+                    toPosition(considerPosition))
             is ImpliesExprContext -> BinaryOperatorExpression(Operator.fromString(this.IMPLIES().text),
                     left.toAst(considerPosition),
                     right.toAst(considerPosition),
