@@ -1,7 +1,6 @@
 package de.hhu.stups.alloy2b.ast
 
 import de.hhu.stups.alloy2b.antlr.AlloyParser.*
-import de.hhu.stups.alloy2b.typechecker.Untyped
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import java.util.Arrays.asList
