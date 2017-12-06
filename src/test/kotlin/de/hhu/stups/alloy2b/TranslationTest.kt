@@ -7,11 +7,10 @@ import org.junit.Ignore
 import org.junit.Test as test
 
 class TranslationTest {
-    @test @Ignore
+    @test
     fun translateCrewAlloc() {
-        println(BTranslation(parseResource("crewalloc.als").toAst(false)).getTranslation())
-        //val expected = getResourceAsString("hanoi.mch")
-        //Assert.assertEquals(expected, BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
+        val expected = getResourceAsString("crewalloc.mch")
+        assertEquals(expected, BTranslation(parseResource("crewalloc.als").toAst(false)).getTranslation())
     }
 
     @test
@@ -50,14 +49,16 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("SelfGrandpas.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
+    @Ignore
     fun translateHanoi() {
         println(BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
         //val expected = getResourceAsString("hanoi.mch")
         //Assert.assertEquals(expected, BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
+    @Ignore
     fun translateGraphIso() {
         println(BTranslation(parseResource("graphiso.als").toAst(false)).getTranslation())
     }
@@ -74,7 +75,8 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("sudoku1.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
+    @Ignore
     fun translateRiverCrossingPuzzle() {
         println(BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
         //val expected = getResourceAsString("RiverCrossingPuzzle.mch")

@@ -6,7 +6,7 @@ CONSTANTS
     File_, entries_, parent_, Dir_, Root_, Cur_, name_, contents_
 DEFINITIONS
     OneParent_buggyVersion_ ==   !(d_).({d_} <: Dir_ - Root_ => card(parent_[{d_}]) = 1) ;
-    OneParent_correctVersion_ ==   !(d_).({d_} <: Dir_ - Root_ => card(parent_[{d_}] & card(contents_~[{d_}]) = 1) = 1) ;
+    OneParent_correctVersion_ ==   !(d_).({d_} <: Dir_ - Root_ => card(parent_[{d_}]) = 1 & card(contents_~[{d_}]) = 1) ;
     NoDirAliases_ ==   !(o_).({o_} <: Dir_ => card(contents_~[{o_}]) <= 1)
 PROPERTIES
     File_ <: Object_ &
