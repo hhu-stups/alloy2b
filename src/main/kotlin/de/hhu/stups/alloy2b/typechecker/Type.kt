@@ -52,4 +52,8 @@ class Untyped : ExplicitType {
     override fun equals(other: Any?): Boolean {
         return other is Untyped
     }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
 }

@@ -144,7 +144,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(sdec: SignatureDeclarations) {
-        sdec.signatures.forEach {translate(it)}
+        sdec.signatures.forEach { translate(it) }
     }
 
     private fun translate(sdec: SignatureDeclaration) {
@@ -172,20 +172,20 @@ class BTranslation(spec: AlloySpecification) {
         constants.add(sanitizeIdentifier(sdec.name))
         when (sdec.signatureExtension) {
             is ExtendsSignatureExtension -> {
-                    properties.add("${sanitizeIdentifier(sdec.name)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
-                    extendingSignatures[sdec.signatureExtension.name] =
-                            extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name.name
+                properties.add("${sanitizeIdentifier(sdec.name)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
+                extendingSignatures[sdec.signatureExtension.name] =
+                        extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name.name
             }
             is InSignatureExtension -> {
-                    sdec.signatureExtension.names.forEach({extensionName ->
-                            properties.add("${sanitizeIdentifier(extensionName)} <: ${sanitizeIdentifier(sdec.name)}")
+                sdec.signatureExtension.names.forEach({ extensionName ->
+                    properties.add("${sanitizeIdentifier(extensionName)} <: ${sanitizeIdentifier(sdec.name)}")
                 })
             }
             else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)
         }
 
         // attached list of expressions leads
-        if(sdec.expression != null) {
+        if (sdec.expression != null) {
             properties.add("/* from signature declaration */ ${translateExpression(sdec.expression)}")
         }
     }
@@ -330,7 +330,14 @@ class BTranslation(spec: AlloySpecification) {
             }
 
     private fun translateJoin(je: BinaryOperatorExpression): String {
-        if (je.left.type.untyped() || je.right.type.untyped()) { throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
+        if (je.left is UnivExpression) {
+            return "dom(${translateExpression(je.right)})"
+        }
+        if (je.right is UnivExpression) {
+            return "ran(${translateExpression(je.left)})"
+        }
+        if (je.left.type.untyped() || je.right.type.untyped()) {
+            throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
         }
         if (je.left.type.currentType is Relation && je.right.type.currentType is Relation) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"

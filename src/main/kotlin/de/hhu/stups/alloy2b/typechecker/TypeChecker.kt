@@ -33,8 +33,8 @@ class TypeChecker(spec: AlloySpecification) {
         stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
     }
 
-    private fun typeCheck(teIn: TypeEnvironment, stmt:SignatureDeclarations) {
-        stmt.signatures.forEach( {declaration -> typeCheck(teIn, declaration)})
+    private fun typeCheck(teIn: TypeEnvironment, stmt: SignatureDeclarations) {
+        stmt.signatures.forEach({ declaration -> typeCheck(teIn, declaration) })
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: SignatureDeclaration) {
@@ -51,7 +51,7 @@ class TypeChecker(spec: AlloySpecification) {
             }
         }
 
-        if(stmt.expression != null) {
+        if (stmt.expression != null) {
             typeCheckExpr(te, stmt.expression)
         }
     }
@@ -158,12 +158,14 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(te: TypeEnvironment, expr: BinaryOperatorExpression) {
         typeCheckExpr(te, expr.left)
         typeCheckExpr(te, expr.right)
-        if (expr.left is UnivExpression) {
-            expr.type.setType(Set(expr.right.type.currentType))
+        val exprRightType = expr.right.type.currentType
+        if (expr.left is UnivExpression && exprRightType is Relation) {
+            expr.type.setType(Set(exprRightType.leftType))
             return
         }
-        if (expr.right is UnivExpression) {
-            expr.type.setType(Set(expr.left.type.currentType))
+        val exprLeftType = expr.left.type.currentType
+        if (expr.right is UnivExpression && exprLeftType is Relation) {
+            expr.type.setType(Set(exprLeftType.rightType))
             return
         }
         if (expr.left.type.currentType is Relation && expr.right.type.currentType is Relation) {
