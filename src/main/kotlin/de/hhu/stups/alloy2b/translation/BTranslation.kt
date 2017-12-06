@@ -2,10 +2,8 @@ package de.hhu.stups.alloy2b.translation
 
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.ast.Operator.*
-import de.hhu.stups.alloy2b.typechecker.Relation
-import de.hhu.stups.alloy2b.typechecker.Scalar
+import de.hhu.stups.alloy2b.typechecker.*
 import de.hhu.stups.alloy2b.typechecker.Set
-import de.hhu.stups.alloy2b.typechecker.TypeChecker
 
 class BTranslation(spec: AlloySpecification) {
     private val sets = mutableListOf<String>()
@@ -242,8 +240,10 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(ie: IdentityExpression): String {
-        // TODO
-        return ""
+        if(ie.type.untyped()) {
+            throw UnsupportedOperationException("identity is untyped")
+        }
+        return "id(${translateType(ie.type)})"
     }
 
     private fun translateExpression(ie: IntegerExpression): String =
@@ -374,5 +374,14 @@ class BTranslation(spec: AlloySpecification) {
             } else {
                 sanitizeIdentifier(id.name)
             }
+
+    private fun translateType(type: Type): String {
+        val eType = type.currentType
+        when(eType) {
+            is Signature -> sanitizeIdentifier(eType.subType)
+            else -> throw UnsupportedOperationException("cannot translate type to B set: ${eType}")
+        }
+        throw UnsupportedOperationException("unreachable")
+    }
 }
 
