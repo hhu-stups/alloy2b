@@ -38,13 +38,13 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: SignatureDeclaration) {
-        te.addType(stmt.name.name, Set(Signature(stmt.name.name)))
+        te.addType(stmt.name.name, Set(Type(Signature(stmt.name.name))))
 
         stmt.decls.forEach { decl ->
             decl.names.forEach { idExpr ->
                 run {
                     typeCheckExpr(te, decl.expression)
-                    val type = Relation(Set(Signature(stmt.name.name)), decl.expression.expression.type.currentType)
+                    val type = Relation(Type(Set(Type(Signature(stmt.name.name)))), decl.expression.expression.type)
                     idExpr.type.setType(type)
                     te.addType(idExpr.name, type)
                 }
@@ -62,33 +62,31 @@ class TypeChecker(spec: AlloySpecification) {
 
 
     private fun typeCheck(te: TypeEnvironment, stmt: FunDeclaration) {
-        val localTe = te.copy()
         stmt.decls.forEach { decl ->
             decl.names.forEach { idExpr ->
                 run {
-                    val type = Set(Signature(idExpr.name))
+                    val type = Set(Type(Signature(idExpr.name)))
                     idExpr.type.setType(type)
-                    localTe.addType(idExpr.name, type)
-                    typeCheckExpr(localTe, decl.expression)
+                    te.addLocalType(idExpr.name, type)
+                    typeCheckExpr(te, decl.expression)
                 }
             }
         }
-        stmt.expressions.forEach { expr -> typeCheckExpr(localTe, expr) }
+        stmt.expressions.forEach { expr -> typeCheckExpr(te, expr) }
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration) {
-        val localTe = te.copy()
         stmt.decls.forEach { decl ->
             decl.names.forEach { idExpr ->
                 run {
-                    val type = Set(Signature(idExpr.name))
+                    val type = Set(Type(Signature(idExpr.name)))
                     idExpr.type.setType(type)
-                    localTe.addType(idExpr.name, type)
-                    typeCheckExpr(localTe, decl.expression)
+                    te.addLocalType(idExpr.name, type)
+                    typeCheckExpr(te, decl.expression)
                 }
             }
         }
-        stmt.expressions.forEach { expr -> typeCheckExpr(localTe, expr) }
+        stmt.expressions.forEach { expr -> typeCheckExpr(te, expr) }
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: Expression) =
@@ -126,7 +124,7 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerSetExpression) {
-        expr.type = Type(Set(Integer()))
+        expr.type = Type(Set(Type(Integer())))
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerExpression) {
@@ -159,18 +157,18 @@ class TypeChecker(spec: AlloySpecification) {
         typeCheckExpr(te, expr.left)
         typeCheckExpr(te, expr.right)
         if (expr.left is UnivExpression) {
-            expr.type.setType(Set(expr.right.type.currentType))
+            expr.type.setType(Set(expr.right.type))
             return
         }
         if (expr.right is UnivExpression) {
-            expr.type.setType(Set(expr.left.type.currentType))
+            expr.type.setType(Set(expr.left.type))
             return
         }
         if (expr.left.type.currentType is Relation && expr.right.type.currentType is Relation) {
-            expr.type.setType(Relation(expr.left.type.currentType, expr.right.type.currentType))
+            expr.type.setType(Relation(expr.left.type, expr.right.type))
             return
         }
-        expr.type.setType(Set(expr.left.type.currentType))
+        expr.type.setType(Set(expr.left.type))
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: UnaryOperatorExpression) {
@@ -180,7 +178,7 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: LetExpression) {
         expr.letDecls.forEach { decl ->
-            typeCheckExpr(te, decl.expression); te.addType(decl.name.name, decl.expression.type.currentType)
+            typeCheckExpr(te, decl.expression); te.addType(decl.name.name, decl.expression.type)
         }
         expr.expressions.forEach { typeCheckExpr(te, it) }
     }
@@ -189,16 +187,15 @@ class TypeChecker(spec: AlloySpecification) {
         typeCheckExpr(te, expr.left)
         expr.parameters.map { typeCheckExpr(te, it) }
         if (expr.left.type.currentType is Relation && expr.parameters.any { it.type.currentType is Relation }) {
-            expr.type.setType(Relation(expr.left.type.currentType, expr.left.type.currentType))
+            expr.type.setType(Relation(expr.left.type, expr.left.type))
             return
         }
-        expr.type.setType(Set(expr.left.type.currentType))
+        expr.type.setType(Set(expr.left.type))
     }
 
     private fun checkDeclsAndExpressions(te: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>) {
-        val localTe = te.copy()
-        decls.forEach { decl -> decl.names.forEach { name -> typeCheckExpr(localTe, decl.expression); name.type = decl.expression.type; localTe.addType(name.name, decl.expression.type.currentType) } }
-        expressions.forEach { subExpr -> typeCheckExpr(localTe, subExpr) }
+        decls.forEach { decl -> decl.names.forEach { name -> typeCheckExpr(te, decl.expression); name.type = decl.expression.type; te.addLocalType(name.name, decl.expression.type) } }
+        expressions.forEach { subExpr -> typeCheckExpr(te, subExpr) }
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IdentityExpression) {

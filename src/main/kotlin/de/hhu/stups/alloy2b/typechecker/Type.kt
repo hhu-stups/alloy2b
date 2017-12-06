@@ -36,9 +36,9 @@ class Type(type: ExplicitType = Untyped()) {
 
 data class Signature(val subType: String) : ExplicitType
 
-data class Set(val subType: ExplicitType) : ExplicitType
+data class Set(val subType: Type) : ExplicitType
 
-data class Relation(val leftType: ExplicitType, val rightType: ExplicitType) : ExplicitType
+data class Relation(val leftType: Type, val rightType: Type) : ExplicitType
 
 data class Scalar(val subType: Type) : ExplicitType
 

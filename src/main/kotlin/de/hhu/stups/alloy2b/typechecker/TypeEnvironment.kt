@@ -2,8 +2,12 @@ package de.hhu.stups.alloy2b.typechecker
 
 import de.hhu.stups.alloy2b.ast.IdentifierExpression
 
-class TypeEnvironment(private val types: MutableMap<String, Type> = mutableMapOf()) {
+class TypeEnvironment(private val types: MutableMap<String, Type> = mutableMapOf(), private val localTypes: MutableMap<String,Type> = mutableMapOf()) {
     fun lookupType(id: IdentifierExpression): Type {
+        if (localTypes.containsKey(id.name)) {
+            return localTypes[id.name]!!
+        }
+
         if (types.containsKey(id.name)) {
             return types[id.name]!!
         } else {
@@ -22,6 +26,11 @@ class TypeEnvironment(private val types: MutableMap<String, Type> = mutableMapOf
     fun addType(id: String, type: Type) =
             addType(id, type.currentType)
 
-    fun copy(): TypeEnvironment =
-            TypeEnvironment(types.toMutableMap())
+    fun addLocalType(id: String, type: ExplicitType) {
+        localTypes[id] = Type(type)
+    }
+
+
+    fun addLocalType(id: String, type: Type) =
+            addLocalType(id, type.currentType)
 }
