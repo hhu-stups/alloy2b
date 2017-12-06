@@ -48,4 +48,18 @@ class PrecedencesTest {
         val expectedAst = ParserFacade.parse("sig test {} {a + (b.c)}").root!!.toAst()
         assertEquals(expectedAst, ast)
     }
+
+    @test
+    fun logicalConnectiveAndDotJoin() {
+        val code = "sig test {} {a and b.c}"
+
+        val result = ParserFacade.parse(code)
+        val ast = result.root!!.toAst()
+        val errors = result.errors
+
+        Assert.assertTrue(errors.isEmpty())
+
+        val expectedAst = ParserFacade.parse("sig test {} {a and (b.c)}").root!!.toAst()
+        assertEquals(expectedAst, ast)
+    }
 }
