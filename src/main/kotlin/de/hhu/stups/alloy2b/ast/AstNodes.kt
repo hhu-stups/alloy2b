@@ -133,5 +133,5 @@ data class SignatureDeclaration(val qualifiers: List<Operator> = emptyList(),
                                 val name: IdentifierExpression,
                                 val signatureExtension: SignatureExtension? = null,
                                 val decls: List<Decl> = emptyList(),
-                                val expressions: List<Expression> = emptyList(),
+                                val expression: Expression? = null,
                                 override val position: Position? = null) : Node

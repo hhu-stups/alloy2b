@@ -185,9 +185,9 @@ class BTranslation(spec: AlloySpecification) {
         }
 
         // attached list of expressions leads
-        sdec.expressions.forEach({
-            properties.add("/* from signature declaration */ ${translateExpression(it)}")
-        })
+        if(sdec.expression != null) {
+            properties.add("/* from signature declaration */ ${translateExpression(sdec.expression)}")
+        }
     }
 
     private fun handleQuantifiersByCardinality(sdec: SignatureDeclaration) {

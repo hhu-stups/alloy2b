@@ -1,6 +1,7 @@
 package de.hhu.stups.alloy2b.ast
 
 import de.hhu.stups.alloy2b.antlr.AlloyParser.*
+import de.hhu.stups.alloy2b.typechecker.Untyped
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import java.util.Arrays.asList
@@ -25,10 +26,7 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
         is FactDeclContext -> return FactDeclaration(child.name()?.text ?: "",
                 child.block().expr().map { it.toAst(considerPosition) },
                 toPosition(considerPosition))
-        is SigDeclContext -> return SignatureDeclarations(child.name().map { SignatureDeclaration(child.sigQual().map { Operator.fromString(it.text) },
-                it.toAst(considerPosition), child.sigExt()?.toAst(considerPosition),
-                child.declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
-                child.block()?.expr()?.map { it.toAst(considerPosition) } ?: emptyList(), toPosition(considerPosition)) })
+        is SigDeclContext -> return this.sigDecl().toAst(considerPosition)
         is AssertDeclContext -> return AssertionStatement(child.name()?.text ?: "",
                 child.block().toAst(considerPosition),
                 toPosition(considerPosition))
@@ -45,6 +43,25 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
                 toPosition(considerPosition))
         else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
     }
+}
+
+fun SigDeclContext.toAst(considerPosition: Boolean = false): SignatureDeclarations {
+    val qualifiers = sigQual().map { Operator.fromString(it.text) }
+    val signatureExtensions = sigExt()?.toAst(considerPosition)
+    val decls = declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList()
+
+    return SignatureDeclarations(name().map { SignatureDeclaration(qualifiers,
+            it.toAst(considerPosition), signatureExtensions,
+            decls,
+            quantifiedBlock(it.toAst(considerPosition), block()?.toAst(considerPosition)), toPosition(considerPosition)) })
+}
+
+fun quantifiedBlock(signatureName: IdentifierExpression, block: List<Expression>?): QuantifierExpression? {
+    if(block == null) {
+        return null
+    }
+    val thisDecl = Decl(asList(IdentifierExpression("this")), QuantifiedExpression(Operator.ONE,signatureName))
+    return QuantifierExpression(Operator.ALL,asList(thisDecl),block)
 }
 
 fun SigExtContext.toAst(considerPosition: Boolean = false): SignatureExtension = when (this) {

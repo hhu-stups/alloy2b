@@ -13,7 +13,7 @@ PROPERTIES
     File_ \/ Dir_ = FSObject_ &
     card(Root_) = 1 &
     Root_ <: Dir_ &
-    /* from signature declaration */ parent_ = {} &
+    /* from signature declaration */ !(this_).(this_ <: Root_ => parent_ = {}) &
     FSObject_ <: closure(contents_)[Root_] &
     Dir_ /\ File_ = {}
 ASSERTIONS
