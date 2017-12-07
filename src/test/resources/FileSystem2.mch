@@ -9,9 +9,8 @@ PROPERTIES
     contents_ : Dir_ <-> FSObject_ &
     Dir_ <: FSObject_ &
     File_ <: FSObject_ &
-    card(Root_) = 1 &
-    Root_ <: Dir_ &
-    parent_[Root_] = {} & parent_ = contents_~ & File_ \/ Dir_ = FSObject_ & FSObject_ <: closure(contents_)[Root_] &
+    {Root_} <: Dir_ &
+    parent_[{Root_}] = {} & parent_ = contents_~ & File_ \/ Dir_ = FSObject_ & FSObject_ <: closure(contents_)[{Root_}] &
     Dir_ /\ File_ = {}
 ASSERTIONS
     /* acyclic */ card({d_ | {d_} <: Dir_ & {d_} <: closure1(contents_)[{d_}]}) = 0 &

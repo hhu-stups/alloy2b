@@ -38,7 +38,13 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: SignatureDeclaration) {
-        te.addType(stmt.name.name, Set(Type(Signature(stmt.name.name))))
+        if(stmt.qualifiers.contains(Operator.ONE)) {
+            stmt.name.type.setType(Scalar(Type(Signature(stmt.name.name))))
+            te.addType(stmt.name.name, Scalar(Type(Signature(stmt.name.name))))
+        } else {
+            stmt.name.type.setType(Set(Type(Signature(stmt.name.name))))
+            te.addType(stmt.name.name, Set(Type(Signature(stmt.name.name))))
+        }
 
         stmt.decls.forEach { decl ->
             decl.names.forEach { idExpr ->

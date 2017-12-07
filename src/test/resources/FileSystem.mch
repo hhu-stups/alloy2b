@@ -11,10 +11,9 @@ PROPERTIES
     File_ <: FSObject_ &
     !(d_, o_).({d_} <: Dir_ & {o_} <: contents_[{d_}] => parent_[{o_}] = {d_}) &
     File_ \/ Dir_ = FSObject_ &
-    card(Root_) = 1 &
-    Root_ <: Dir_ &
-    /* from signature declaration */ !(this_).({this_} <: Root_ => parent_ = {}) &
-    FSObject_ <: closure(contents_)[Root_] &
+    {Root_} <: Dir_ &
+    /* from signature declaration */ !(this_).({this_} <: {Root_} => parent_ = {}) &
+    FSObject_ <: closure(contents_)[{Root_}] &
     Dir_ /\ File_ = {}
 ASSERTIONS
     /* acyclic */ card({d_ | {d_} <: Dir_ & {d_} <: closure1(contents_)[{d_}]}) = 0 &

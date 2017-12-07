@@ -5,8 +5,8 @@ SETS
 CONSTANTS
     File_, entries_, parent_, Dir_, Root_, Cur_, name_, contents_
 DEFINITIONS
-    OneParent_buggyVersion_ ==   !(d_).({d_} <: Dir_ - Root_ => card(parent_[{d_}]) = 1) ;
-    OneParent_correctVersion_ ==   !(d_).({d_} <: Dir_ - Root_ => card(parent_[{d_}]) = 1 & card(contents_~[{d_}]) = 1) ;
+    OneParent_buggyVersion_ ==   !(d_).({d_} <: Dir_ - {Root_} => card(parent_[{d_}]) = 1) ;
+    OneParent_correctVersion_ ==   !(d_).({d_} <: Dir_ - {Root_} => card(parent_[{d_}]) = 1 & card(contents_~[{d_}]) = 1) ;
     NoDirAliases_ ==   !(o_).({o_} <: Dir_ => card(contents_~[{o_}]) <= 1)
 PROPERTIES
     File_ <: Object_ &
@@ -14,10 +14,9 @@ PROPERTIES
     entries_ : Dir_ <-> DirEntry_ &
     parent_ : Dir_ +-> Dir_ &
     Dir_ <: Object_ &
-    /* from signature declaration */ !(this_).({this_} <: Dir_ => parent_ = entries_~[contents_~[{this_}]] & !(e1_, e2_).({e1_} <: entries_ & {e2_} <: entries_ => name_[{e1_}] = name_[{e2_}] => {e1_} = {e2_}) & {this_} <: closure1(parent_)[{this_}] & {this_} = Root_ => Root_ <: closure1(parent_)[{this_}]) &
-    card(Root_) = 1 &
-    Root_ <: Dir_ &
-    /* from signature declaration */ !(this_).({this_} <: Root_ => parent_ = {}) &
+    /* from signature declaration */ !(this_).({this_} <: Dir_ => parent_ = entries_~[contents_~[{this_}]] & !(e1_, e2_).({e1_} <: entries_ & {e2_} <: entries_ => name_[{e1_}] = name_[{e2_}] => {e1_} = {e2_}) & {this_} <: closure1(parent_)[{this_}] & {this_} = {Root_} => {Root_} <: closure1(parent_)[{this_}]) &
+    {Root_} <: Dir_ &
+    /* from signature declaration */ !(this_).({this_} <: {Root_} => parent_ = {}) &
     card(Cur_) <= 1 &
     Cur_ <: Dir_ &
     name_ : DirEntry_ <-> Name_ &

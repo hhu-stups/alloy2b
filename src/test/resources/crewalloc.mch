@@ -11,29 +11,20 @@ DEFINITIONS
     everybodyInSchedule_ ==   dom(assign_) = Personell_ ;
     crewAlloc_ ==   allLanguages_ & allSexes_ & scheduleOk_ & everybodyInSchedule_
 PROPERTIES
-    card(french_) = 1 &
-    french_ <: Language_ &
-    card(german_) = 1 &
-    german_ <: Language_ &
-    card(spanish_) = 1 &
-    spanish_ <: Language_ &
+    {french_} <: Language_ &
+    {german_} <: Language_ &
+    {spanish_} <: Language_ &
     speaks_ : Personell_ <-> Language_ &
-    card(tom_) = 1 &
-    tom_ <: Personell_ &
-    card(david_) = 1 &
-    david_ <: Personell_ &
-    card(jeremy_) = 1 &
-    jeremy_ <: Personell_ &
-    card(carol_) = 1 &
-    carol_ <: Personell_ &
-    card(janet_) = 1 &
-    janet_ <: Personell_ &
-    card(tracy_) = 1 &
-    tracy_ <: Personell_ &
+    {tom_} <: Personell_ &
+    {david_} <: Personell_ &
+    {jeremy_} <: Personell_ &
+    {carol_} <: Personell_ &
+    {janet_} <: Personell_ &
+    {tracy_} <: Personell_ &
     Personell_ <: male_ &
     assign_ : Flight_ <-> Personell_ &
-    male_ = tom_ \/ david_ \/ jeremy_ &
-    speaks_ = tom_ * german_ \/ david_ * french_ \/ jeremy_ * german_ \/ carol_ * spanish_ \/ janet_ * french_ \/ tracy_ * spanish_ &
+    male_ = {tom_} \/ {david_} \/ {jeremy_} &
+    speaks_ = {tom_} * {german_} \/ {david_} * {french_} \/ {jeremy_} * {german_} \/ {carol_} * {spanish_} \/ {janet_} * {french_} \/ {tracy_} * {spanish_} &
     french_ /\ german_ = {} &
     french_ /\ spanish_ = {} &
     german_ /\ spanish_ = {} &

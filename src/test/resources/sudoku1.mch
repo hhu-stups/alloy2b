@@ -5,62 +5,35 @@ SETS
 CONSTANTS
     Row1_, Row2_, Row3_, Row4_, Row5_, Row6_, Row7_, Row8_, Row9_, Col1_, Col2_, Col3_, Col4_, Col5_, Col6_, Col7_, Col8_, Col9_, One_, Two_, Three_, Four_, Five_, Six_, Seven_, Eight_, Nine_, array_
 PROPERTIES
-    card(Row1_) = 1 &
-    Row1_ <: Row_ &
-    card(Row2_) = 1 &
-    Row2_ <: Row_ &
-    card(Row3_) = 1 &
-    Row3_ <: Row_ &
-    card(Row4_) = 1 &
-    Row4_ <: Row_ &
-    card(Row5_) = 1 &
-    Row5_ <: Row_ &
-    card(Row6_) = 1 &
-    Row6_ <: Row_ &
-    card(Row7_) = 1 &
-    Row7_ <: Row_ &
-    card(Row8_) = 1 &
-    Row8_ <: Row_ &
-    card(Row9_) = 1 &
-    Row9_ <: Row_ &
-    card(Col1_) = 1 &
-    Col1_ <: Column_ &
-    card(Col2_) = 1 &
-    Col2_ <: Column_ &
-    card(Col3_) = 1 &
-    Col3_ <: Column_ &
-    card(Col4_) = 1 &
-    Col4_ <: Column_ &
-    card(Col5_) = 1 &
-    Col5_ <: Column_ &
-    card(Col6_) = 1 &
-    Col6_ <: Column_ &
-    card(Col7_) = 1 &
-    Col7_ <: Column_ &
-    card(Col8_) = 1 &
-    Col8_ <: Column_ &
-    card(Col9_) = 1 &
-    Col9_ <: Column_ &
-    card(One_) = 1 &
-    One_ <: Number_ &
-    card(Two_) = 1 &
-    Two_ <: Number_ &
-    card(Three_) = 1 &
-    Three_ <: Number_ &
-    card(Four_) = 1 &
-    Four_ <: Number_ &
-    card(Five_) = 1 &
-    Five_ <: Number_ &
-    card(Six_) = 1 &
-    Six_ <: Number_ &
-    card(Seven_) = 1 &
-    Seven_ <: Number_ &
-    card(Eight_) = 1 &
-    Eight_ <: Number_ &
-    card(Nine_) = 1 &
-    Nine_ <: Number_ &
+    {Row1_} <: Row_ &
+    {Row2_} <: Row_ &
+    {Row3_} <: Row_ &
+    {Row4_} <: Row_ &
+    {Row5_} <: Row_ &
+    {Row6_} <: Row_ &
+    {Row7_} <: Row_ &
+    {Row8_} <: Row_ &
+    {Row9_} <: Row_ &
+    {Col1_} <: Column_ &
+    {Col2_} <: Column_ &
+    {Col3_} <: Column_ &
+    {Col4_} <: Column_ &
+    {Col5_} <: Column_ &
+    {Col6_} <: Column_ &
+    {Col7_} <: Column_ &
+    {Col8_} <: Column_ &
+    {Col9_} <: Column_ &
+    {One_} <: Number_ &
+    {Two_} <: Number_ &
+    {Three_} <: Number_ &
+    {Four_} <: Number_ &
+    {Five_} <: Number_ &
+    {Six_} <: Number_ &
+    {Seven_} <: Number_ &
+    {Eight_} <: Number_ &
+    {Nine_} <: Number_ &
     array_ : Board_ <-> Row_ * Column_ --> Number_ &
-    array_[Board_](Row1_)(Col5_) = Five_ & array_[Board_](Row1_)(Col6_) = Two_ & array_[Board_](Row1_)(Col8_) = Four_ & array_[Board_](Row2_)(Col1_) = One_ & array_[Board_](Row2_)(Col3_) = Five_ & array_[Board_](Row2_)(Col4_) = Three_ & array_[Board_](Row3_)(Col2_) = Six_ & array_[Board_](Row3_)(Col9_) = Five_ & array_[Board_](Row4_)(Col3_) = Four_ & array_[Board_](Row4_)(Col6_) = Seven_ & array_[Board_](Row4_)(Col8_) = Nine_ & array_[Board_](Row5_)(Col2_) = Eight_ & array_[Board_](Row5_)(Col4_) = Two_ & array_[Board_](Row5_)(Col6_) = Nine_ & array_[Board_](Row5_)(Col8_) = Five_ & array_[Board_](Row6_)(Col2_) = Nine_ & array_[Board_](Row6_)(Col4_) = Six_ & array_[Board_](Row6_)(Col7_) = Three_ & array_[Board_](Row7_)(Col1_) = Six_ & array_[Board_](Row7_)(Col8_) = Two_ & array_[Board_](Row8_)(Col6_) = Three_ & array_[Board_](Row8_)(Col7_) = Nine_ & array_[Board_](Row8_)(Col9_) = One_ & array_[Board_](Row9_)(Col2_) = Seven_ & array_[Board_](Row9_)(Col4_) = Eight_ & array_[Board_](Row9_)(Col5_) = Two_ &
+    array_[Board_]({Row1_})({Col5_}) = {Five_} & array_[Board_]({Row1_})({Col6_}) = {Two_} & array_[Board_]({Row1_})({Col8_}) = {Four_} & array_[Board_]({Row2_})({Col1_}) = {One_} & array_[Board_]({Row2_})({Col3_}) = {Five_} & array_[Board_]({Row2_})({Col4_}) = {Three_} & array_[Board_]({Row3_})({Col2_}) = {Six_} & array_[Board_]({Row3_})({Col9_}) = {Five_} & array_[Board_]({Row4_})({Col3_}) = {Four_} & array_[Board_]({Row4_})({Col6_}) = {Seven_} & array_[Board_]({Row4_})({Col8_}) = {Nine_} & array_[Board_]({Row5_})({Col2_}) = {Eight_} & array_[Board_]({Row5_})({Col4_}) = {Two_} & array_[Board_]({Row5_})({Col6_}) = {Nine_} & array_[Board_]({Row5_})({Col8_}) = {Five_} & array_[Board_]({Row6_})({Col2_}) = {Nine_} & array_[Board_]({Row6_})({Col4_}) = {Six_} & array_[Board_]({Row6_})({Col7_}) = {Three_} & array_[Board_]({Row7_})({Col1_}) = {Six_} & array_[Board_]({Row7_})({Col8_}) = {Two_} & array_[Board_]({Row8_})({Col6_}) = {Three_} & array_[Board_]({Row8_})({Col7_}) = {Nine_} & array_[Board_]({Row8_})({Col9_}) = {One_} & array_[Board_]({Row9_})({Col2_}) = {Seven_} & array_[Board_]({Row9_})({Col4_}) = {Eight_} & array_[Board_]({Row9_})({Col5_}) = {Two_} &
     Row1_ /\ Row2_ = {} &
     Row1_ /\ Row3_ = {} &
     Row1_ /\ Row4_ = {} &

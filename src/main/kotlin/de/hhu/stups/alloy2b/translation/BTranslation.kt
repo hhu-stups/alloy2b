@@ -167,7 +167,7 @@ class BTranslation(spec: AlloySpecification) {
         }
 
         // not a basic signature -> ensure subset relation with extended / extending signatures
-        constants.add(sanitizeIdentifier(sdec.name))
+        constants.add(sanitizeIdentifier(sdec.name.name)) // use sdec.name.name instead of sdec.name to avoid adding { .. }
         when (sdec.signatureExtension) {
             is ExtendsSignatureExtension -> {
                 properties.add("${sanitizeIdentifier(sdec.name)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
@@ -189,14 +189,13 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun handleQuantifiersByCardinality(sdec: SignatureDeclaration) {
+        // case ONE is handled by introducing a constant for the singleton element
+        // thus, we do not need a cardinality constraint
         if (NO in sdec.qualifiers) {
             properties.add("card(${sanitizeIdentifier(sdec.name.name)}) = 0")
         }
         if (LONE in sdec.qualifiers) {
             properties.add("card(${sanitizeIdentifier(sdec.name.name)}) <= 1")
-        }
-        if (ONE in sdec.qualifiers) {
-            properties.add("card(${sanitizeIdentifier(sdec.name.name)}) = 1")
         }
         if (SOME in sdec.qualifiers) {
             properties.add("card(${sanitizeIdentifier(sdec.name.name)}) >= 1")
