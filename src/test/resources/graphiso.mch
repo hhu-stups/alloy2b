@@ -11,25 +11,16 @@ PROPERTIES
     graph1_ : Node_ <-> Node_ &
     graph2_ : Node_ <-> Node_ &
     p_ : Node_ <-> Node_ &
-    card(a_) = 1 &
-    a_ <: Node_ &
-    card(b_) = 1 &
-    b_ <: Node_ &
-    card(c_) = 1 &
-    c_ <: Node_ &
-    card(d_) = 1 &
-    d_ <: Node_ &
-    card(e_) = 1 &
-    e_ <: Node_ &
-    card(f_) = 1 &
-    f_ <: Node_ &
-    card(g_) = 1 &
-    g_ <: Node_ &
-    card(h_) = 1 &
-    h_ <: Node_ &
-    card(i_) = 1 &
-    i_ <: Node_ &
-    graph1_ = a_ * c_ \/ b_ * c_ \/ c_ * f_ \/ d_ * f_ \/ e_ * f_ \/ h_ * i_ \/ i_ * h_ \/ f_ * f_ \/ g_ * g_ & graph2_ = b_ * e_ \/ c_ * e_ \/ d_ * e_ \/ f_ * d_ \/ g_ * d_ \/ a_ * i_ \/ i_ * a_ \/ e_ * e_ \/ h_ * h_ &
+    {a_} <: Node_ &
+    {b_} <: Node_ &
+    {c_} <: Node_ &
+    {d_} <: Node_ &
+    {e_} <: Node_ &
+    {f_} <: Node_ &
+    {g_} <: Node_ &
+    {h_} <: Node_ &
+    {i_} <: Node_ &
+    graph1_ = {a_} * {c_} \/ {b_} * {c_} \/ {c_} * {f_} \/ {d_} * {f_} \/ {e_} * {f_} \/ {h_} * {i_} \/ {i_} * {h_} \/ {f_} * {f_} \/ {g_} * {g_} & graph2_ = {b_} * {e_} \/ {c_} * {e_} \/ {d_} * {e_} \/ {f_} * {d_} \/ {g_} * {d_} \/ {a_} * {i_} \/ {i_} * {a_} \/ {e_} * {e_} \/ {h_} * {h_} &
     a_ /\ b_ = {} &
     a_ /\ c_ = {} &
     a_ /\ d_ = {} &
