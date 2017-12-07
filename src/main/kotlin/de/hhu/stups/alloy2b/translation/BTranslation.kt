@@ -52,7 +52,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun addSignatureExtensionProperties() {
-        // two signatures extending the same base signature are disjuct
+        // two signatures extending the same base signature are distinct
         extendingSignatures.values.forEach({ signatures ->
             for (i1 in 0 until signatures.size) {
                 for (i2 in i1 until signatures.size) {
@@ -60,16 +60,22 @@ class BTranslation(spec: AlloySpecification) {
                 }
             }
         })
-        // abstract signatures are exhaustively divided into their subsignatures
+        // abstract signatures are exhaustively divided into their sub signatures
         abstractSignatures.forEach({ absSigName ->
             properties.add("${extendingSignatures[absSigName].orEmpty().joinToString(" \\/ ") { sanitizeIdentifier(it) }} = ${sanitizeIdentifier(absSigName)}")
         })
     }
 
     private fun addSignatureExtensionIfNotEqual(sig1: IdentifierExpression, sig2: IdentifierExpression) {
-        if (!sig1.name.equals(sig2.name)) {
-            properties.add("${sanitizeIdentifier(sig1)} /\\ ${sanitizeIdentifier(sig2)} = {}")
+        if (sig1.name == sig2.name) {
+            return
         }
+        if (sig1.type.currentType is Scalar && sig2.type.currentType is Scalar) {
+            // inequality if both are singletons
+            properties.add("${sanitizeIdentifier(sig1.name)} /= ${sanitizeIdentifier(sig2.name)}")
+            return
+        }
+        properties.add("${sanitizeIdentifier(sig1)} /\\ ${sanitizeIdentifier(sig2)} = {}")
     }
 
     /**
@@ -384,7 +390,7 @@ class BTranslation(spec: AlloySpecification) {
             is Signature -> sanitizeIdentifier(eType.subType)
             is Relation -> "${translateType(eType.leftType)} <-> ${translateType(eType.rightType)}"
             is Set -> translateType(eType.subType)
-            else -> throw UnsupportedOperationException("Cannot translate type to B set: ${eType}.")
+            else -> throw UnsupportedOperationException("Cannot translate type to B set: $eType.")
         }
     }
 }
