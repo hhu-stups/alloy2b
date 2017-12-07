@@ -144,7 +144,8 @@ PROPERTIES
     Eight_ /= Nine_ &
     {Row1_} \/ {Row2_} \/ {Row3_} \/ {Row4_} \/ {Row5_} \/ {Row6_} \/ {Row7_} \/ {Row8_} \/ {Row9_} = Row_ &
     {Col1_} \/ {Col2_} \/ {Col3_} \/ {Col4_} \/ {Col5_} \/ {Col6_} \/ {Col7_} \/ {Col8_} \/ {Col9_} = Column_ &
-    {One_} \/ {Two_} \/ {Three_} \/ {Four_} \/ {Five_} \/ {Six_} \/ {Seven_} \/ {Eight_} \/ {Nine_} = Number_
+    {One_} \/ {Two_} \/ {Three_} \/ {Four_} \/ {Five_} \/ {Six_} \/ {Seven_} \/ {Eight_} \/ {Nine_} = Number_ &
+    /* from signature declaration */ !(this_).({this_} <: Board_ => !(r_).({r_} <: Row_ => array_[{this_}]({r_})(Column_) = Number_) & !(c_).({c_} <: Column_ => array_[{this_}](Row_)({c_}) = Number_) & array_[{this_}]({Row1_} \/ {Row2_} \/ {Row3_})({Col1_} \/ {Col2_} \/ {Col3_}) = Number_ & array_[{this_}]({Row1_} \/ {Row2_} \/ {Row3_})({Col4_} \/ {Col5_} \/ {Col6_}) = Number_ & array_[{this_}]({Row1_} \/ {Row2_} \/ {Row3_})({Col7_} \/ {Col8_} \/ {Col9_}) = Number_ & array_[{this_}]({Row4_} \/ {Row5_} \/ {Row6_})({Col1_} \/ {Col2_} \/ {Col3_}) = Number_ & array_[{this_}]({Row4_} \/ {Row5_} \/ {Row6_})({Col4_} \/ {Col5_} \/ {Col6_}) = Number_ & array_[{this_}]({Row4_} \/ {Row5_} \/ {Row6_})({Col7_} \/ {Col8_} \/ {Col9_}) = Number_ & array_[{this_}]({Row7_} \/ {Row8_} \/ {Row9_})({Col1_} \/ {Col2_} \/ {Col3_}) = Number_ & array_[{this_}]({Row7_} \/ {Row8_} \/ {Row9_})({Col4_} \/ {Col5_} \/ {Col6_}) = Number_ & array_[{this_}]({Row7_} \/ {Row8_} \/ {Row9_})({Col7_} \/ {Col8_} \/ {Col9_}) = Number_)
 ASSERTIONS
     card(Board_) >= 1 &
     card(Board_) = 1

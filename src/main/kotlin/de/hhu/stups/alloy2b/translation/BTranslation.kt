@@ -13,8 +13,10 @@ class BTranslation(spec: AlloySpecification) {
     private val assertions = mutableListOf<String>()
 
     private val signatures = mutableListOf<IdentifierExpression>()
+    private val signatureDeclarations = mutableMapOf<IdentifierExpression,SignatureDeclaration>()
     private val abstractSignatures = mutableListOf<IdentifierExpression>()
     private val extendingSignatures = mutableMapOf<IdentifierExpression, List<IdentifierExpression>>()
+    private val parentSignature = mutableMapOf<IdentifierExpression,IdentifierExpression>()
 
     private val fields = mutableListOf<String>()
 
@@ -24,6 +26,7 @@ class BTranslation(spec: AlloySpecification) {
         TypeChecker(spec)
         spec.declarations.forEach({ stmt -> translate(stmt) })
         addSignatureExtensionProperties()
+        addSignatureFieldsExtensionProperties()
     }
 
     fun getTranslation(): String {
@@ -76,6 +79,37 @@ class BTranslation(spec: AlloySpecification) {
             return
         }
         properties.add("${sanitizeIdentifier(sig1)} /\\ ${sanitizeIdentifier(sig2)} = {}")
+    }
+
+    private fun addSignatureFieldsExtensionProperties() {
+        signatureDeclarations.values.forEach({
+            if(it.expression != null){
+                val fieldNames = getFieldNamesOfSignatureHierarchy(it)
+                val nexpr = replaceFieldIdentifiers(it.name.name,fieldNames,it.expression)
+                properties.add("/* from signature declaration */ ${translateExpression(nexpr)}")
+            }
+        })
+    }
+
+    private fun getFieldNamesOfSignatureHierarchy(sig: SignatureDeclaration): List<IdentifierExpression> {
+        val fields = sig.decls.map { it.names }.flatten()
+        if(parentSignature.containsKey(sig.name)) {
+            val parentName = parentSignature.get(sig.name)!! // should exist!
+            val parentSignature = signatureDeclarations[parentName]!!
+            return fields + getFieldNamesOfSignatureHierarchy(parentSignature)
+        }
+        return fields
+    }
+
+    private fun replaceFieldIdentifiers(signatureName: String, fieldNames: List<IdentifierExpression>, expr: Expression): Expression = when(expr) {
+        is IdentifierExpression -> if (fieldNames.contains(expr)) BinaryOperatorExpression(JOIN,IdentifierExpression("this",expr.position,Type(Scalar(Type(Signature(signatureName))))),expr,expr.position,expr.type) else expr
+        is IntegerExpression -> expr
+        is QuantifiedExpression -> QuantifiedExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
+        is QuantifierExpression -> QuantifierExpression(expr.operator,expr.decls,expr.expressions.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
+        is BinaryOperatorExpression -> BinaryOperatorExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.left),replaceFieldIdentifiers(signatureName,fieldNames,expr.right),expr.position,expr.type)
+        is UnaryOperatorExpression -> UnaryOperatorExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
+        is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.left),expr.parameters.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
+        else -> throw UnsupportedOperationException("Missing case in replaceFieldIdentifiers: $expr")
     }
 
     /**
@@ -153,6 +187,7 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translate(sdec: SignatureDeclaration) {
         signatures.add(sdec.name) // used to decide how to translate dot join
+        signatureDeclarations[sdec.name] = sdec
 
         if (sdec.qualifiers.contains(ABSTRACT)) {
             abstractSignatures.add(sdec.name)
@@ -179,18 +214,16 @@ class BTranslation(spec: AlloySpecification) {
                 properties.add("${sanitizeIdentifier(sdec.name)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
                 extendingSignatures[sdec.signatureExtension.name] =
                         extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name
+                parentSignature[sdec.name] = sdec.signatureExtension.name
             }
             is InSignatureExtension -> {
                 sdec.signatureExtension.names.forEach({ extensionName ->
                     properties.add("${sanitizeIdentifier(extensionName)} <: ${sanitizeIdentifier(sdec.name)}")
+                    parentSignature[extensionName] = sdec.name
                 })
+
             }
             else -> throw UnsupportedOperationException(sdec.signatureExtension.javaClass.canonicalName)
-        }
-
-        // attached list of expressions leads
-        if (sdec.expression != null) {
-            properties.add("/* from signature declaration */ ${translateExpression(sdec.expression)}")
         }
     }
 
