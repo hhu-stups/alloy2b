@@ -10,7 +10,7 @@ DEFINITIONS
 PROPERTIES
     graph1_ : Node_ <-> Node_ &
     graph2_ : Node_ <-> Node_ &
-    p_ : Node_ <-> Node_ &
+    p_ : Node_ --> Node_ &
     {a_} <: Node_ &
     {b_} <: Node_ &
     {c_} <: Node_ &

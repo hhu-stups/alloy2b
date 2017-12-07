@@ -213,8 +213,13 @@ class BTranslation(spec: AlloySpecification) {
             fields.add(it.name) // used to decide how to translate dot join
 
             if (decl.expression.operator == LONE) {
-                // one-to-one mapping, i.e. function
+                // one-to-one mapping, i.e. function, LONE = 0 or 1 target
                 properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} +-> ${translateExpression(decl.expression.expression)}")
+                return
+            }
+            if (decl.expression.operator == ONE) {
+                // one-to-one mapping, i.e. function, ONE = exactly 1 target
+                properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} --> ${translateExpression(decl.expression.expression)}")
                 return
             }
             properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} <-> ${translateExpression(decl.expression.expression)}")

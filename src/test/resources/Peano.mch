@@ -7,7 +7,7 @@ CONSTANTS
 DEFINITIONS
     Ordering_(x_,y_) == x_ <: NaturalNumber_ & y_ <: NaturalNumber_  &  succ_[x_] = y_ => predc_[y_] = x_
 PROPERTIES
-    succ_ : NaturalNumber_ <-> NaturalNumber_ &
+    succ_ : NaturalNumber_ --> NaturalNumber_ &
     predc_ : NaturalNumber_ +-> NaturalNumber_ &
     !(x_, y_).({x_} <: NaturalNumber_ & {y_} <: NaturalNumber_ => Ordering_({x_}, {y_}))
 ASSERTIONS

@@ -19,8 +19,8 @@ PROPERTIES
     /* from signature declaration */ !(this_).({this_} <: {Root_} => parent_ = {}) &
     card(Cur_) <= 1 &
     Cur_ <: Dir_ &
-    name_ : DirEntry_ <-> Name_ &
-    contents_ : DirEntry_ <-> Object_ &
+    name_ : DirEntry_ --> Name_ &
+    contents_ : DirEntry_ --> Object_ &
     File_ /\ Dir_ = {} &
     {Root_} /\ Cur_ = {} &
     File_ \/ Dir_ = Object_

@@ -32,7 +32,7 @@ PROPERTIES
     {Seven_} <: Number_ &
     {Eight_} <: Number_ &
     {Nine_} <: Number_ &
-    array_ : Board_ <-> Row_ * Column_ --> Number_ &
+    array_ : Board_ --> Row_ * Column_ --> Number_ &
     array_[Board_]({Row1_})({Col5_}) = {Five_} & array_[Board_]({Row1_})({Col6_}) = {Two_} & array_[Board_]({Row1_})({Col8_}) = {Four_} & array_[Board_]({Row2_})({Col1_}) = {One_} & array_[Board_]({Row2_})({Col3_}) = {Five_} & array_[Board_]({Row2_})({Col4_}) = {Three_} & array_[Board_]({Row3_})({Col2_}) = {Six_} & array_[Board_]({Row3_})({Col9_}) = {Five_} & array_[Board_]({Row4_})({Col3_}) = {Four_} & array_[Board_]({Row4_})({Col6_}) = {Seven_} & array_[Board_]({Row4_})({Col8_}) = {Nine_} & array_[Board_]({Row5_})({Col2_}) = {Eight_} & array_[Board_]({Row5_})({Col4_}) = {Two_} & array_[Board_]({Row5_})({Col6_}) = {Nine_} & array_[Board_]({Row5_})({Col8_}) = {Five_} & array_[Board_]({Row6_})({Col2_}) = {Nine_} & array_[Board_]({Row6_})({Col4_}) = {Six_} & array_[Board_]({Row6_})({Col7_}) = {Three_} & array_[Board_]({Row7_})({Col1_}) = {Six_} & array_[Board_]({Row7_})({Col8_}) = {Two_} & array_[Board_]({Row8_})({Col6_}) = {Three_} & array_[Board_]({Row8_})({Col7_}) = {Nine_} & array_[Board_]({Row8_})({Col9_}) = {One_} & array_[Board_]({Row9_})({Col2_}) = {Seven_} & array_[Board_]({Row9_})({Col4_}) = {Eight_} & array_[Board_]({Row9_})({Col5_}) = {Two_} &
     Row1_ /= Row2_ &
     Row1_ /= Row3_ &

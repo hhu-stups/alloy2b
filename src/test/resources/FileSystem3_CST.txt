@@ -86,8 +86,8 @@ Specification
           Name
             T[entries]
           T[:]
-          UnOpExpr
-            UnOp
+          QuantifiedExpr
+            ExprQuantifier
               T[set]
             IdExpr
               Name
