@@ -12,9 +12,9 @@ class BTranslation(spec: AlloySpecification) {
     private val properties = mutableListOf<String>()
     private val assertions = mutableListOf<String>()
 
-    private val signatures = mutableListOf<String>()
-    private val abstractSignatures = mutableListOf<String>()
-    private val extendingSignatures = mutableMapOf<String, List<String>>()
+    private val signatures = mutableListOf<IdentifierExpression>()
+    private val abstractSignatures = mutableListOf<IdentifierExpression>()
+    private val extendingSignatures = mutableMapOf<IdentifierExpression, List<IdentifierExpression>>()
 
     private val fields = mutableListOf<String>()
 
@@ -32,7 +32,7 @@ class BTranslation(spec: AlloySpecification) {
         builder.appendln("/*@ generated */")
         builder.appendln("MACHINE alloytranslation")
 
-        appendIfNotEmpty(builder, sets, ", ", "SETS")
+        appendIfNotEmpty(builder, sets, "; ", "SETS")
         appendIfNotEmpty(builder, constants, ", ", "CONSTANTS")
         appendIfNotEmpty(builder, definitions, " ;\n    ", "DEFINITIONS")
         appendIfNotEmpty(builder, properties, " &\n    ", "PROPERTIES")
@@ -66,8 +66,8 @@ class BTranslation(spec: AlloySpecification) {
         })
     }
 
-    private fun addSignatureExtensionIfNotEqual(sig1: String, sig2: String) {
-        if (sig1 != sig2) {
+    private fun addSignatureExtensionIfNotEqual(sig1: IdentifierExpression, sig2: IdentifierExpression) {
+        if (!sig1.name.equals(sig2.name)) {
             properties.add("${sanitizeIdentifier(sig1)} /\\ ${sanitizeIdentifier(sig2)} = {}")
         }
     }
@@ -146,10 +146,10 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(sdec: SignatureDeclaration) {
-        signatures.add(sdec.name.name) // used to decide how to translate dot join
+        signatures.add(sdec.name) // used to decide how to translate dot join
 
         if (sdec.qualifiers.contains(ABSTRACT)) {
-            abstractSignatures.add(sdec.name.name)
+            abstractSignatures.add(sdec.name)
         }
 
         handleQuantifiersByCardinality(sdec)
@@ -172,7 +172,7 @@ class BTranslation(spec: AlloySpecification) {
             is ExtendsSignatureExtension -> {
                 properties.add("${sanitizeIdentifier(sdec.name)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
                 extendingSignatures[sdec.signatureExtension.name] =
-                        extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name.name
+                        extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name
             }
             is InSignatureExtension -> {
                 sdec.signatureExtension.names.forEach({ extensionName ->

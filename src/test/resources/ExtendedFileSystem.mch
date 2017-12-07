@@ -1,7 +1,7 @@
 /*@ generated */
 MACHINE alloytranslation
 SETS
-    FSObject_, FileSystem_
+    FSObject_; FileSystem_
 CONSTANTS
     File_, Dir_, live_, root_, parent_, contents_
 DEFINITIONS

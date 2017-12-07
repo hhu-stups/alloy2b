@@ -30,9 +30,9 @@ data class LetDecl(val name: IdentifierExpression, val expression: Expression,
 // signature extensions
 interface SignatureExtension : Node
 
-data class ExtendsSignatureExtension(val name: String,
+data class ExtendsSignatureExtension(val name: IdentifierExpression,
                                      override val position: Position? = null) : SignatureExtension
-data class InSignatureExtension(val names: List<String>,
+data class InSignatureExtension(val names: List<IdentifierExpression>,
                                 override val position: Position? = null) : SignatureExtension
 
 // expressions
@@ -54,7 +54,18 @@ data class BoxJoinExpression(val left: Expression,
 
 data class IdentifierExpression(val name: String,
                                 override val position: Position? = null,
-                                override var type: Type = Type(Untyped())) : Expression
+                                override var type: Type = Type(Untyped())) : Expression {
+    override fun equals(other: Any?): Boolean {
+        if (other is IdentifierExpression) {
+            return name.equals(other.name)
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+}
 
 data class LetExpression(val letDecls: List<LetDecl>,
                          val expressions: List<Expression>,

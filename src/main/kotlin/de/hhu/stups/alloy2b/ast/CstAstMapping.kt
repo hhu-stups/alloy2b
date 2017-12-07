@@ -64,10 +64,13 @@ fun quantifiedBlock(signatureName: IdentifierExpression, block: List<Expression>
 }
 
 fun SigExtContext.toAst(considerPosition: Boolean = false): SignatureExtension = when (this) {
-    is ExtendsExtensionContext -> ExtendsSignatureExtension(this.ref().text, toPosition(considerPosition))
-    is InExtensionContext -> InSignatureExtension(this.ref().map { it.text }, toPosition(considerPosition))
+    is ExtendsExtensionContext -> ExtendsSignatureExtension(this.ref().toAst(considerPosition), toPosition(considerPosition))
+    is InExtensionContext -> InSignatureExtension(this.ref().map { it.toAst(considerPosition) }, toPosition(considerPosition))
     else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
 }
+
+fun RefContext.toAst(considerPosition: Boolean = false) : IdentifierExpression =
+    IdentifierExpression(this.text, toPosition(considerPosition))
 
 fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
         when (this) {

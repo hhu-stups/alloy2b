@@ -1,7 +1,7 @@
 /*@ generated */
 MACHINE alloytranslation
 SETS
-    Object_, Name_, DirEntry_
+    Object_; Name_; DirEntry_
 CONSTANTS
     File_, entries_, parent_, Dir_, Root_, Cur_, name_, contents_
 DEFINITIONS
@@ -22,7 +22,7 @@ PROPERTIES
     name_ : DirEntry_ <-> Name_ &
     contents_ : DirEntry_ <-> Object_ &
     File_ /\ Dir_ = {} &
-    Root_ /\ Cur_ = {} &
+    {Root_} /\ Cur_ = {} &
     File_ \/ Dir_ = Object_
 ASSERTIONS
     OneParent_buggyVersion_ => NoDirAliases_ &

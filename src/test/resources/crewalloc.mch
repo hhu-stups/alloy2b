@@ -1,7 +1,7 @@
 /*@ generated */
 MACHINE alloytranslation
 SETS
-    Language_, Personell_, Flight_
+    Language_; Personell_; Flight_
 CONSTANTS
     french_, german_, spanish_, speaks_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, assign_
 DEFINITIONS
@@ -25,26 +25,26 @@ PROPERTIES
     assign_ : Flight_ <-> Personell_ &
     male_ = {tom_} \/ {david_} \/ {jeremy_} &
     speaks_ = {tom_} * {german_} \/ {david_} * {french_} \/ {jeremy_} * {german_} \/ {carol_} * {spanish_} \/ {janet_} * {french_} \/ {tracy_} * {spanish_} &
-    french_ /\ german_ = {} &
-    french_ /\ spanish_ = {} &
-    german_ /\ spanish_ = {} &
-    tom_ /\ david_ = {} &
-    tom_ /\ jeremy_ = {} &
-    tom_ /\ carol_ = {} &
-    tom_ /\ janet_ = {} &
-    tom_ /\ tracy_ = {} &
-    david_ /\ jeremy_ = {} &
-    david_ /\ carol_ = {} &
-    david_ /\ janet_ = {} &
-    david_ /\ tracy_ = {} &
-    jeremy_ /\ carol_ = {} &
-    jeremy_ /\ janet_ = {} &
-    jeremy_ /\ tracy_ = {} &
-    carol_ /\ janet_ = {} &
-    carol_ /\ tracy_ = {} &
-    janet_ /\ tracy_ = {} &
-    french_ \/ german_ \/ spanish_ = Language_ &
-    tom_ \/ david_ \/ jeremy_ \/ carol_ \/ janet_ \/ tracy_ = Personell_
+    {french_} /\ {german_} = {} &
+    {french_} /\ {spanish_} = {} &
+    {german_} /\ {spanish_} = {} &
+    {tom_} /\ {david_} = {} &
+    {tom_} /\ {jeremy_} = {} &
+    {tom_} /\ {carol_} = {} &
+    {tom_} /\ {janet_} = {} &
+    {tom_} /\ {tracy_} = {} &
+    {david_} /\ {jeremy_} = {} &
+    {david_} /\ {carol_} = {} &
+    {david_} /\ {janet_} = {} &
+    {david_} /\ {tracy_} = {} &
+    {jeremy_} /\ {carol_} = {} &
+    {jeremy_} /\ {janet_} = {} &
+    {jeremy_} /\ {tracy_} = {} &
+    {carol_} /\ {janet_} = {} &
+    {carol_} /\ {tracy_} = {} &
+    {janet_} /\ {tracy_} = {} &
+    {french_} \/ {german_} \/ {spanish_} = Language_ &
+    {tom_} \/ {david_} \/ {jeremy_} \/ {carol_} \/ {janet_} \/ {tracy_} = Personell_
 ASSERTIONS
     crewAlloc_
 END
