@@ -166,6 +166,8 @@ class BTranslation(spec: AlloySpecification) {
         val blocks = pdec.expressions.joinToString(" & ") { translateExpression(it) }
         if (blocks.isNotEmpty()) {
             builder.append(" ${if (decls.isEmpty()) "" else " & "} $blocks")
+        } else {
+            builder.append(" ${if (decls.isEmpty()) "" else " & "} 1=1")
         }
         definitions.add(builder.toString())
         // add existantially quantified predicate to be used for CheckStatement

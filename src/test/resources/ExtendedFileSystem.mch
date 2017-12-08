@@ -5,7 +5,7 @@ SETS
 CONSTANTS
     File_, Dir_, live_, root_, parent_, contents_
 DEFINITIONS
-    example_ == 
+    example_ ==   1=1
 PROPERTIES
     File_ <: FSObject_ &
     Dir_ <: FSObject_ &
