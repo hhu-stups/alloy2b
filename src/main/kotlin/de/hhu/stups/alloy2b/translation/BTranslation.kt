@@ -102,7 +102,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun replaceFieldIdentifiers(signatureName: String, fieldNames: List<IdentifierExpression>, expr: Expression): Expression = when(expr) {
-        is IdentifierExpression -> if (fieldNames.contains(expr)) BinaryOperatorExpression(JOIN,IdentifierExpression("this",expr.position,Type(Scalar(Type(Signature(signatureName))))),expr,expr.position,expr.type) else expr
+        is IdentifierExpression -> if (!expr.name.startsWith("@") && fieldNames.contains(expr)) BinaryOperatorExpression(JOIN,IdentifierExpression("this",expr.position,Type(Scalar(Type(Signature(signatureName))))),expr,expr.position,expr.type) else expr
         is IntegerExpression -> expr
         is QuantifiedExpression -> QuantifiedExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
         is QuantifierExpression -> QuantifierExpression(expr.operator,expr.decls,expr.expressions.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
