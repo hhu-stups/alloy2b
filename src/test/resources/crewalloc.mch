@@ -7,7 +7,7 @@ CONSTANTS
 DEFINITIONS
     allLanguages_ ==   !(f_).({f_} <: Flight_ => speaks_[assign_[{f_}]] = Language_) ;
     allSexes_ ==   !(f_).({f_} <: Flight_ => card(assign_[{f_}] - male_) >= 1 & card(assign_[{f_}] /\ male_) >= 1) ;
-    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => {p_} <: assign_[{f_}] & {p_} <: assign_[next_({f_})] => not({p_} <: assign_[next_(next_({f_}))])) ;
+    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => {p_} <: assign_[{f_}] & {p_} <: assign_[next_(f_)] => not({p_} <: assign_[next_(next_(f_))])) ;
     everybodyInSchedule_ ==   dom(assign_) = Personell_ ;
     crewAlloc_ ==   allLanguages_ & allSexes_ & scheduleOk_ & everybodyInSchedule_
 PROPERTIES

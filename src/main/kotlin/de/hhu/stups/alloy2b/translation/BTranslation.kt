@@ -140,7 +140,7 @@ class BTranslation(spec: AlloySpecification) {
         if (fdec.decls.isEmpty()) {
             builder.append(sanitizeIdentifier(fdec.name))
         } else {
-            builder.append("${sanitizeIdentifier(fdec.name)}(${fdec.decls.joinToString(", ") { it.names.joinToString(", ") { name -> sanitizeIdentifier(name) } }}) == ")
+            builder.append("${sanitizeIdentifier(fdec.name)}(${fdec.decls.joinToString(", ") { it.names.joinToString(", ") { name -> sanitizeIdentifier(name.name) } }}) == ")
         }
         val decls = translateDeclsExprList(fdec.decls)
         val parameterExpressions = fdec.expressions.map { translateExpression(it) }.joinToString(" & ") { "temp : $it" }
@@ -324,7 +324,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(bje: BoxJoinExpression): String {
-        val parameters = bje.parameters.map { translateExpression(it) }
+        val parameters = bje.parameters.map { if (it is IdentifierExpression) sanitizeIdentifier(it.name) else translateExpression(it) }
         return "${translateExpression(bje.left)}(${parameters.joinToString(", ")})"
     }
 

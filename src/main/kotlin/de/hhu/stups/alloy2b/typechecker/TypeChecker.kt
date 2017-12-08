@@ -66,19 +66,8 @@ class TypeChecker(spec: AlloySpecification) {
         stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
     }
 
-
     private fun typeCheck(te: TypeEnvironment, stmt: FunDeclaration) {
-        stmt.decls.forEach { decl ->
-            decl.names.forEach { idExpr ->
-                run {
-                    val type = Set(Type(Signature(idExpr.name)))
-                    idExpr.type.setType(type)
-                    te.addLocalType(idExpr.name, type)
-                    typeCheckExpr(te, decl.expression)
-                }
-            }
-        }
-        stmt.expressions.forEach { expr -> typeCheckExpr(te, expr) }
+        checkDeclsAndExpressions(te,stmt.decls,stmt.expressions)
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration) {
