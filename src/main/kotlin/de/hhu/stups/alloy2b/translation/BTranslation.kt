@@ -104,13 +104,13 @@ class BTranslation(spec: AlloySpecification) {
     private fun replaceFieldIdentifiers(signatureName: String, fieldNames: List<IdentifierExpression>, expr: Expression): Expression = when (expr) {
         is IdentifierExpression -> if (!expr.name.startsWith("@") && fieldNames.contains(expr)) castExpressionIfInteger(BinaryOperatorExpression(JOIN, IdentifierExpression("this", expr.position, Type(Scalar(Type(Signature(signatureName))))), expr, expr.position, expr.type)) else expr
         is IntegerExpression -> expr
-        is QuantifiedExpression -> QuantifiedExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
-        is QuantifierExpression -> QuantifierExpression(expr.operator,expr.decls,expr.expressions.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
-        is BinaryOperatorExpression -> BinaryOperatorExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.left),replaceFieldIdentifiers(signatureName,fieldNames,expr.right),expr.position,expr.type)
-        is UnaryOperatorExpression -> UnaryOperatorExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
-        is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.left),expr.parameters.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
-        is IfExpression -> IfExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.ifExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.thenExpr),expr.position,expr.type)
-        is IfElseExpression -> IfElseExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.ifExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.thenExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.elseExpr),expr.position,expr.type)
+        is QuantifiedExpression -> QuantifiedExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.expression), expr.position, expr.type)
+        is QuantifierExpression -> QuantifierExpression(expr.operator, expr.decls, expr.expressions.map { replaceFieldIdentifiers(signatureName, fieldNames, it) }, expr.position, expr.type)
+        is BinaryOperatorExpression -> BinaryOperatorExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.left), replaceFieldIdentifiers(signatureName, fieldNames, expr.right), expr.position, expr.type)
+        is UnaryOperatorExpression -> UnaryOperatorExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.expression), expr.position, expr.type)
+        is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.left), expr.parameters.map { replaceFieldIdentifiers(signatureName, fieldNames, it) }, expr.position, expr.type)
+        is IfExpression -> IfExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.ifExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.thenExpr), expr.position, expr.type)
+        is IfElseExpression -> IfElseExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.ifExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.thenExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.elseExpr), expr.position, expr.type)
         else -> throw UnsupportedOperationException("Missing case in replaceFieldIdentifiers: $expr")
     }
 
@@ -374,7 +374,7 @@ class BTranslation(spec: AlloySpecification) {
             IN -> symbol = "<:"
             EQUAL -> symbol = "="
             INTERSECTION -> symbol = "/\\"
-            UNION -> symbol = "\\/"
+            UNION -> symbol = if (qe.left.type.currentType is Integer || qe.right.type.currentType is Integer) "+" else "\\/"
             DIFFERENCE -> symbol = "-"
             GREATER -> symbol = ">"
             GREATER_EQUAL -> symbol = ">="
