@@ -94,7 +94,7 @@ class BTranslation(spec: AlloySpecification) {
     private fun getFieldNamesOfSignatureHierarchy(sig: SignatureDeclaration): List<IdentifierExpression> {
         val fields = sig.decls.map { it.names }.flatten()
         if(parentSignature.containsKey(sig.name)) {
-            val parentName = parentSignature.get(sig.name)!! // should exist!
+            val parentName = parentSignature[sig.name]!! // should exist!
             val parentSignature = signatureDeclarations[parentName]!!
             return fields + getFieldNamesOfSignatureHierarchy(parentSignature)
         }
@@ -413,13 +413,15 @@ class BTranslation(spec: AlloySpecification) {
                 else -> throw UnsupportedOperationException(expr.operator.name)
             }
 
-
+    /**
+     * Concatenate underscore to all variables in order to prevent collision with B keywords and replace all ' with _.
+     */
     private fun sanitizeIdentifier(id: String) =
-            "${id}_"
+            "${id.replace("'","_")}_"
 
     private fun sanitizeIdentifier(id: IdentifierExpression): String =
             if (id.type.currentType is Scalar) {
-                "{${id.name}_}"
+                "{${id.name.replace("'","_")}_}"
             } else {
                 sanitizeIdentifier(id.name)
             }
