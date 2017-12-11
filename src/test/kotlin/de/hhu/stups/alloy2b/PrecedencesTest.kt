@@ -22,6 +22,20 @@ class PrecedencesTest {
     }
 
     @test
+    fun danglingElse() {
+        val code = "assert oneRoot { p => q => r else s }"
+
+        val result = ParserFacade.parse(code)
+        val ast = result.root!!.toAst()
+        val errors = result.errors
+
+        Assert.assertTrue(errors.isEmpty())
+
+        val expectedAst = ParserFacade.parse("assert oneRoot { p => (q => r else s) }").root!!.toAst()
+        assertEquals(expectedAst, ast)
+    }
+
+    @test
     fun dotJoinAndQuantifier() {
         val code = "assert oneRoot { one d: Dir | no d.parent }"
 
