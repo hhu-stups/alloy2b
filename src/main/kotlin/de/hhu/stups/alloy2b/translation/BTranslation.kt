@@ -102,7 +102,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun replaceFieldIdentifiers(signatureName: String, fieldNames: List<IdentifierExpression>, expr: Expression): Expression = when (expr) {
-        is IdentifierExpression -> if (!expr.name.startsWith("@") && fieldNames.contains(expr)) BinaryOperatorExpression(JOIN, IdentifierExpression("this", expr.position, Type(Scalar(Type(Signature(signatureName))))), expr, expr.position, expr.type) else expr
+        is IdentifierExpression -> if (!expr.name.startsWith("@") && fieldNames.contains(expr)) castExpressionIfInteger(BinaryOperatorExpression(JOIN, IdentifierExpression("this", expr.position, Type(Scalar(Type(Signature(signatureName))))), expr, expr.position, expr.type)) else expr
         is IntegerExpression -> expr
         is QuantifiedExpression -> QuantifiedExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
         is QuantifierExpression -> QuantifierExpression(expr.operator,expr.decls,expr.expressions.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
@@ -112,6 +112,21 @@ class BTranslation(spec: AlloySpecification) {
         is IfExpression -> IfExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.ifExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.thenExpr),expr.position,expr.type)
         is IfElseExpression -> IfElseExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.ifExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.thenExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.elseExpr),expr.position,expr.type)
         else -> throw UnsupportedOperationException("Missing case in replaceFieldIdentifiers: $expr")
+    }
+
+    /**
+     * Variables that are defined within a signature are joined with 'this' in the signature's facts. If the variable is
+     * an integer we additionally cast the expression.
+     */
+    private fun castExpressionIfInteger(expr: BinaryOperatorExpression): Expression {
+        val type = expr.right.type.currentType
+        if (type is Relation) {
+            val relRightType = type.rightType.currentType
+            if (relRightType is Set && relRightType.subType.currentType is Integer) {
+                return IntegerCastExpression(expr)
+            }
+        }
+        return expr
     }
 
     /**
@@ -418,12 +433,6 @@ class BTranslation(spec: AlloySpecification) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
         }
         if ((jeLeftType is Set || jeLeftType is Scalar) && jeRightType is Relation) {
-            // function call if the right type of the relation is Integer
-            val rightRelationType = jeRightType.rightType.currentType
-            if (rightRelationType is Set && rightRelationType.subType.currentType is Integer) {
-                // replace curly brackets for function call
-                return "${translateExpression(je.right)}(${translateExpression(je.left).replace("{", "").replace("}", "")})"
-            }
             return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
         }
         throw UnsupportedOperationException("join not supported this way: ${je.left} . ${je.right}")
