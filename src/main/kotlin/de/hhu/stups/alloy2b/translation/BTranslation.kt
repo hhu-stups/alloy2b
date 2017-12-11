@@ -13,10 +13,10 @@ class BTranslation(spec: AlloySpecification) {
     private val assertions = mutableListOf<String>()
 
     private val signatures = mutableListOf<IdentifierExpression>()
-    private val signatureDeclarations = mutableMapOf<IdentifierExpression,SignatureDeclaration>()
+    private val signatureDeclarations = mutableMapOf<IdentifierExpression, SignatureDeclaration>()
     private val abstractSignatures = mutableListOf<IdentifierExpression>()
     private val extendingSignatures = mutableMapOf<IdentifierExpression, List<IdentifierExpression>>()
-    private val parentSignature = mutableMapOf<IdentifierExpression,IdentifierExpression>()
+    private val parentSignature = mutableMapOf<IdentifierExpression, IdentifierExpression>()
 
     private val fields = mutableListOf<String>()
 
@@ -83,9 +83,9 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun addSignatureFieldsExtensionProperties() {
         signatureDeclarations.values.forEach({
-            if(it.expression != null){
+            if (it.expression != null) {
                 val fieldNames = getFieldNamesOfSignatureHierarchy(it)
-                val nexpr = replaceFieldIdentifiers(it.name.name,fieldNames,it.expression)
+                val nexpr = replaceFieldIdentifiers(it.name.name, fieldNames, it.expression)
                 properties.add("/* from signature declaration */ ${translateExpression(nexpr)}")
             }
         })
@@ -93,7 +93,7 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun getFieldNamesOfSignatureHierarchy(sig: SignatureDeclaration): List<IdentifierExpression> {
         val fields = sig.decls.map { it.names }.flatten()
-        if(parentSignature.containsKey(sig.name)) {
+        if (parentSignature.containsKey(sig.name)) {
             val parentName = parentSignature[sig.name]!! // should exist!
             val parentSignature = signatureDeclarations[parentName]!!
             return fields + getFieldNamesOfSignatureHierarchy(parentSignature)
@@ -101,14 +101,14 @@ class BTranslation(spec: AlloySpecification) {
         return fields
     }
 
-    private fun replaceFieldIdentifiers(signatureName: String, fieldNames: List<IdentifierExpression>, expr: Expression): Expression = when(expr) {
-        is IdentifierExpression -> if (!expr.name.startsWith("@") && fieldNames.contains(expr)) BinaryOperatorExpression(JOIN,IdentifierExpression("this",expr.position,Type(Scalar(Type(Signature(signatureName))))),expr,expr.position,expr.type) else expr
+    private fun replaceFieldIdentifiers(signatureName: String, fieldNames: List<IdentifierExpression>, expr: Expression): Expression = when (expr) {
+        is IdentifierExpression -> if (!expr.name.startsWith("@") && fieldNames.contains(expr)) BinaryOperatorExpression(JOIN, IdentifierExpression("this", expr.position, Type(Scalar(Type(Signature(signatureName))))), expr, expr.position, expr.type) else expr
         is IntegerExpression -> expr
-        is QuantifiedExpression -> QuantifiedExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
-        is QuantifierExpression -> QuantifierExpression(expr.operator,expr.decls,expr.expressions.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
-        is BinaryOperatorExpression -> BinaryOperatorExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.left),replaceFieldIdentifiers(signatureName,fieldNames,expr.right),expr.position,expr.type)
-        is UnaryOperatorExpression -> UnaryOperatorExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
-        is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.left),expr.parameters.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
+        is QuantifiedExpression -> QuantifiedExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.expression), expr.position, expr.type)
+        is QuantifierExpression -> QuantifierExpression(expr.operator, expr.decls, expr.expressions.map { replaceFieldIdentifiers(signatureName, fieldNames, it) }, expr.position, expr.type)
+        is BinaryOperatorExpression -> BinaryOperatorExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.left), replaceFieldIdentifiers(signatureName, fieldNames, expr.right), expr.position, expr.type)
+        is UnaryOperatorExpression -> UnaryOperatorExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.expression), expr.position, expr.type)
+        is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.left), expr.parameters.map { replaceFieldIdentifiers(signatureName, fieldNames, it) }, expr.position, expr.type)
         else -> throw UnsupportedOperationException("Missing case in replaceFieldIdentifiers: $expr")
     }
 
@@ -379,6 +379,8 @@ class BTranslation(spec: AlloySpecification) {
             }
 
     private fun translateJoin(je: BinaryOperatorExpression): String {
+        val jeRightType = je.right.type.currentType
+        val jeLeftType = je.left.type.currentType
         if (je.left is UnivExpression) {
             return "dom(${translateExpression(je.right)})"
         }
@@ -388,13 +390,19 @@ class BTranslation(spec: AlloySpecification) {
         if (je.left.type.untyped() || je.right.type.untyped()) {
             throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
         }
-        if (je.left.type.currentType is Relation && je.right.type.currentType is Relation) {
+        if (jeLeftType is Relation && jeRightType is Relation) {
             return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
         }
-        if (je.left.type.currentType is Relation && (je.right.type.currentType is Set || je.right.type.currentType is Scalar)) {
+        if (jeLeftType is Relation && (jeRightType is Set || jeRightType is Scalar)) {
             return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
         }
-        if ((je.left.type.currentType is Set || je.left.type.currentType is Scalar) && je.right.type.currentType is Relation) {
+        if ((jeLeftType is Set || jeLeftType is Scalar) && jeRightType is Relation) {
+            // function call if the right type of the relation is Integer
+            val rightRelationType = jeRightType.rightType.currentType
+            if (rightRelationType is Set && rightRelationType.subType.currentType is Integer) {
+                // replace curly brackets for function call
+                return "${translateExpression(je.right)}(${translateExpression(je.left).replace("{", "").replace("}", "")})"
+            }
             return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
         }
         throw UnsupportedOperationException("join not supported this way: ${je.left} . ${je.right}")
@@ -418,11 +426,11 @@ class BTranslation(spec: AlloySpecification) {
      * Concatenate underscore to all variables in order to prevent collision with B keywords and replace all ' with _.
      */
     private fun sanitizeIdentifier(id: String) =
-            "${id.replace("'","_")}_"
+            "${id.replace("'", "_")}_"
 
     private fun sanitizeIdentifier(id: IdentifierExpression): String =
             if (id.type.currentType is Scalar) {
-                "{${id.name.replace("'","_")}_}"
+                "{${id.name.replace("'", "_")}_}"
             } else {
                 sanitizeIdentifier(id.name)
             }
@@ -437,4 +445,5 @@ class BTranslation(spec: AlloySpecification) {
         }
     }
 }
+
 
