@@ -365,7 +365,7 @@ class BTranslation(spec: AlloySpecification) {
                 CARD -> "card(${translateExpression(qe.expression)})"
                 INVERSE -> "${translateExpression(qe.expression)}~"
                 NOT -> "not(${translateExpression(qe.expression)})"
-                Operator.SET -> translateExpression(qe.expression) // TODO: should this be POW?
+                SET -> translateExpression(qe.expression) // TODO: should this be POW?
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -410,6 +410,7 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateDeclExpression(expr: QuantifiedExpression): String =
             when (expr.operator) {
                 ONE -> translateExpression(expr.expression)
+                SET -> translateExpression(expr.expression)
                 else -> throw UnsupportedOperationException(expr.operator.name)
             }
 

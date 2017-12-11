@@ -8,6 +8,12 @@ import org.junit.Test as test
 
 class TranslationTest {
     @test
+    fun translateCards() {
+        val expected = getResourceAsString("cards.mch")
+        assertEquals(expected, BTranslation(parseResource("cards.als").toAst(false)).getTranslation())
+    }
+
+    @test
     fun translateCrewAlloc() {
         val expected = getResourceAsString("crewalloc.mch")
         assertEquals(expected, BTranslation(parseResource("crewalloc.als").toAst(false)).getTranslation())
