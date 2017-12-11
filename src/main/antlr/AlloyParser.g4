@@ -69,6 +69,7 @@ expr               : unOp expr                                                  
 
                    | INT LSQBRACKET expr RSQBRACKET                                       # intCastExpr
                    | INT LPAREN expr RPAREN                                               # intCastExpr
+                   | INT expr                                                             # intCastExpr
                    | NUMBER                                                               # numberExpr
                    | MINUS NUMBER                                                         # negNumberExpr
                    | NONE                                                                 # noneExpr
