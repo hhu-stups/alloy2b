@@ -57,6 +57,7 @@ expr               : LET letDecl (COMMA letDecl)* blockOrBar               # let
                    | exprQuantifier expr                                   # quantifiedExpr
                    | ifExpr=expr IMPLIES? thenExpr=expr ELSE elseExpr=expr # ifExpr
                    | INT LSQBRACKET expr RSQBRACKET                        # intCastExpr
+                   | INT LPAREN expr RPAREN                                # intCastExpr
                    | NUMBER                                                # numberExpr
                    | MINUS NUMBER                                          # negNumberExpr
                    | NONE                                                  # noneExpr
