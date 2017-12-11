@@ -70,7 +70,7 @@ expr               : unOp expr                                                  
                    | INT LSQBRACKET expr RSQBRACKET                                       # intCastExpr
                    | INT LPAREN expr RPAREN                                               # intCastExpr
                    | NUMBER                                                               # numberExpr
-                   | DIFFERENCE NUMBER                                                    # negNumberExpr
+                   | MINUS NUMBER                                                         # negNumberExpr
                    | NONE                                                                 # noneExpr
                    | IDEN                                                                 # idenExpr
                    | UNIV                                                                 # univExpr
@@ -90,7 +90,7 @@ quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
 restrOperator      : DOM_RESTR | RAN_RESTR;
 
-binOp              : UNION | DIFFERENCE ;
+binOp              : PLUS | MINUS;
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;
 
