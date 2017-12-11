@@ -51,6 +51,7 @@ expr               : LET letDecl (COMMA letDecl)* blockOrBar               # let
                    | left=expr DOT right=expr                              # dotJoinExpr
                    | expr LSQBRACKET exprList RSQBRACKET                   # boxJoinExpr
                    | left=expr binOp right=expr                            # binOpExpr
+                   | CARD expr                             # cardExpr
                    |<assoc=right> left=expr IMPLIES right=expr             # impliesExpr // needed because associativity differs
                    | left=expr arrowOp right=expr                          # arrowOpExpr
                    | left=expr NOT? compareOp right=expr                   # compareExpr
@@ -87,7 +88,7 @@ arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SE
 
 compareOp          : IN | GREATER_EQUAL | GREATER | LESS_EQUAL | LESS | EQUAL ;
 
-unOp               : NOT | SEQ | ITERATION | CLOSURE | INVERSE | CARD;
+unOp               : NOT | SEQ | ITERATION | CLOSURE | INVERSE;
 
 exprQuantifier     : NO | SOME | LONE | ONE | SET;
 

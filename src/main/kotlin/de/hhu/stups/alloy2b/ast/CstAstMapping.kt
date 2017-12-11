@@ -122,6 +122,9 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
             is IntCastExprContext -> IntegerCastExpression(expr().toAst(considerPosition), toPosition(considerPosition))
             is IdenExprContext -> IdentityExpression(toPosition(considerPosition))
             is UnivExprContext -> UnivExpression(toPosition(considerPosition))
+            is CardExprContext -> UnaryOperatorExpression(Operator.CARD,
+                    expr().toAst(considerPosition),
+                    toPosition(considerPosition))
             else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
         }
 

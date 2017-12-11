@@ -5,7 +5,7 @@ SETS
 CONSTANTS
     suit_
 DEFINITIONS
-    ThreeOfAKind_(hand_) == hand_ <: Card_  &  suit_[card(hand_)] = 1 & card(hand_) = 3
+    ThreeOfAKind_(hand_) == hand_ <: Card_  &  card(suit_[hand_]) = 1 & card(hand_) = 3
 PROPERTIES
     suit_ : Card_ --> Suit_
 END
