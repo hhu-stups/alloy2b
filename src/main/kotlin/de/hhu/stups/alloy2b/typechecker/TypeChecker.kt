@@ -38,7 +38,7 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: SignatureDeclaration) {
-        if(stmt.qualifiers.contains(Operator.ONE)) {
+        if (stmt.qualifiers.contains(Operator.ONE)) {
             stmt.name.type.setType(Scalar(Type(Signature(stmt.name.name))))
             te.addType(stmt.name.name, Scalar(Type(Signature(stmt.name.name))))
         } else {
@@ -67,11 +67,11 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: FunDeclaration) {
-        checkDeclsAndExpressions(te,stmt.decls,stmt.expressions)
+        checkDeclsAndExpressions(te, stmt.decls, stmt.expressions)
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration) {
-        checkDeclsAndExpressions(te,stmt.decls,stmt.expressions)
+        checkDeclsAndExpressions(te, stmt.decls, stmt.expressions)
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: Expression) =
@@ -108,11 +108,11 @@ class TypeChecker(spec: AlloySpecification) {
         typeCheckExpr(teIn, expr.expr)
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerSetExpression) {
+    private fun typeCheckExpr(@Suppress("UNUSED_PARAMETER") teIn: TypeEnvironment, expr: IntegerSetExpression) {
         expr.type = Type(Set(Type(Integer())))
     }
 
-    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerExpression) {
+    private fun typeCheckExpr(@Suppress("UNUSED_PARAMETER") teIn: TypeEnvironment, expr: IntegerExpression) {
         expr.type = Type(Integer())
     }
 
@@ -189,10 +189,12 @@ class TypeChecker(spec: AlloySpecification) {
         expressions.forEach { subExpr -> typeCheckExpr(te, subExpr) }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IdentityExpression) {
         //
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: UnivExpression) {
         //
     }
