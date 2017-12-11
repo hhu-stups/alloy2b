@@ -104,11 +104,13 @@ class BTranslation(spec: AlloySpecification) {
     private fun replaceFieldIdentifiers(signatureName: String, fieldNames: List<IdentifierExpression>, expr: Expression): Expression = when (expr) {
         is IdentifierExpression -> if (!expr.name.startsWith("@") && fieldNames.contains(expr)) BinaryOperatorExpression(JOIN, IdentifierExpression("this", expr.position, Type(Scalar(Type(Signature(signatureName))))), expr, expr.position, expr.type) else expr
         is IntegerExpression -> expr
-        is QuantifiedExpression -> QuantifiedExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.expression), expr.position, expr.type)
-        is QuantifierExpression -> QuantifierExpression(expr.operator, expr.decls, expr.expressions.map { replaceFieldIdentifiers(signatureName, fieldNames, it) }, expr.position, expr.type)
-        is BinaryOperatorExpression -> BinaryOperatorExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.left), replaceFieldIdentifiers(signatureName, fieldNames, expr.right), expr.position, expr.type)
-        is UnaryOperatorExpression -> UnaryOperatorExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.expression), expr.position, expr.type)
-        is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.left), expr.parameters.map { replaceFieldIdentifiers(signatureName, fieldNames, it) }, expr.position, expr.type)
+        is QuantifiedExpression -> QuantifiedExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
+        is QuantifierExpression -> QuantifierExpression(expr.operator,expr.decls,expr.expressions.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
+        is BinaryOperatorExpression -> BinaryOperatorExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.left),replaceFieldIdentifiers(signatureName,fieldNames,expr.right),expr.position,expr.type)
+        is UnaryOperatorExpression -> UnaryOperatorExpression(expr.operator,replaceFieldIdentifiers(signatureName,fieldNames,expr.expression),expr.position,expr.type)
+        is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.left),expr.parameters.map { replaceFieldIdentifiers(signatureName,fieldNames,it) }, expr.position,expr.type)
+        is IfExpression -> IfExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.ifExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.thenExpr),expr.position,expr.type)
+        is IfElseExpression -> IfElseExpression(replaceFieldIdentifiers(signatureName,fieldNames,expr.ifExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.thenExpr),replaceFieldIdentifiers(signatureName,fieldNames,expr.elseExpr),expr.position,expr.type)
         else -> throw UnsupportedOperationException("Missing case in replaceFieldIdentifiers: $expr")
     }
 
@@ -276,12 +278,17 @@ class BTranslation(spec: AlloySpecification) {
                 is QuantifiedExpression -> translateExpression(e)
                 is IdentityExpression -> translateExpression(e)
                 is UnivExpression -> translateExpression(e)
+                is IfExpression -> translateExpression(e)
                 else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
             }
 
     private fun translateExpression(ue: UnivExpression): String {
         // TODO
         return ""
+    }
+
+    private fun translateExpression(ie: IfExpression): String {
+        return "${translateExpression(ie.ifExpr)} => ${translateExpression(ie.thenExpr)}"
     }
 
     private fun translateExpression(ie: IdentityExpression): String {
@@ -298,8 +305,22 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(ie: IntegerExpression): String =
             ie.int.toString()
 
-    private fun translateExpression(ice: IntegerCastExpression): String =
-            translateExpression(ice.expr)
+    private fun translateExpression(ice: IntegerCastExpression): String {
+        val expr = ice.expr
+        if (expr is BinaryOperatorExpression && expr.operator == JOIN) {
+            val rightExprType = expr.right.type.currentType
+            if (rightExprType is Relation) {
+                // function call if the right type of the relation is Integer
+                val rightRelationType = rightExprType.rightType.currentType
+                if (rightRelationType is Set && rightRelationType.subType.currentType is Integer) {
+                    // replace curly brackets for function call
+                    return "${translateExpression(expr.right)}(${translateExpression(expr.left).replace("{", "").replace("}", "")})"
+                }
+            }
+            throw UnsupportedOperationException("Integer cast of a join not supported this way.")
+        }
+        return translateExpression(ice.expr)
+    }
 
     private fun translateExpression(qe: QuantifierExpression): String =
             when (qe.operator) {

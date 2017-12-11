@@ -85,14 +85,11 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     left.toAst(considerPosition),
                     right.toAst(considerPosition),
                     toPosition(considerPosition))
-            is LogicalOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.logicalOperator().text),
-                    left.toAst(considerPosition),
-                    right.toAst(considerPosition),
-                    toPosition(considerPosition))
-            is ImpliesExprContext -> BinaryOperatorExpression(Operator.fromString(this.IMPLIES().text),
-                    left.toAst(considerPosition),
-                    right.toAst(considerPosition),
-                    toPosition(considerPosition))
+            is ImpliesExprContext -> if (elseExpr != null) {
+                IfElseExpression(ifExpr.toAst(considerPosition),thenExpr.toAst(considerPosition),elseExpr.toAst(considerPosition),toPosition(considerPosition))
+            } else {
+                IfExpression(ifExpr.toAst(considerPosition),thenExpr.toAst(considerPosition),toPosition(considerPosition))
+            }
             is DotJoinExprContext -> BinaryOperatorExpression(Operator.fromString(this.DOT().text),
                     left.toAst(considerPosition),
                     right.toAst(considerPosition),
@@ -115,7 +112,6 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     toPosition(considerPosition))
             is ParenExprContext -> this.expr().toAst(considerPosition)
             is BlockExprContext -> BlockExpression(this.block().expr().map { it.toAst(considerPosition) })
-            is IfExprContext -> IfExpression(ifExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), toPosition(considerPosition))
             is DeclListExprContext -> DeclListExpression(declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(), blockOrBar().toAst(considerPosition), toPosition(considerPosition))
             is CapIntExprContext -> IntegerSetExpression(toPosition(considerPosition))
             is NumberExprContext -> IntegerExpression(NUMBER().text.toLong(), toPosition(considerPosition))
@@ -123,6 +119,16 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
             is IdenExprContext -> IdentityExpression(toPosition(considerPosition))
             is UnivExprContext -> UnivExpression(toPosition(considerPosition))
             is CardExprContext -> UnaryOperatorExpression(Operator.CARD,
+                    expr().toAst(considerPosition),
+                    toPosition(considerPosition))
+            is ConjunctionExprContext -> BinaryOperatorExpression(Operator.AND,
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition),
+                    toPosition(considerPosition))
+            is IntersectionExprContext -> BinaryOperatorExpression(Operator.INTERSECTION,
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition))
+            is NegatedExprContext -> UnaryOperatorExpression(Operator.NOT,
                     expr().toAst(considerPosition),
                     toPosition(considerPosition))
             else -> throw UnsupportedOperationException(this.javaClass.canonicalName)

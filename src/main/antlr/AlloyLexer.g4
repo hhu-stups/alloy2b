@@ -78,8 +78,6 @@ EQUAL              : '=' ;
 DOM_RESTR          : '<:' ;
 RAN_RESTR          : ':>' ;
 OVERRIDE           : '++' ;
-PLUS               : '+' ;
-MINUS              : '-' ;
 IN                 : 'in' ;
 ITERATION          : '*' ;
 CLOSURE            : '^' ;

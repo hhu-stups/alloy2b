@@ -149,7 +149,7 @@ Specification
                   T[entries]
           ExprInBlockOrBar
             T[|]
-            CompareExpr
+            ImpliesExpr
               CompareExpr
                 DotJoinExpr
                   IdExpr
@@ -161,24 +161,24 @@ Specification
                       T[name]
                 CompareOp
                   T[=]
-                ImpliesExpr
-                  DotJoinExpr
-                    IdExpr
-                      Name
-                        T[e2]
-                    T[.]
-                    IdExpr
-                      Name
-                        T[name]
-                  T[=>]
+                DotJoinExpr
                   IdExpr
                     Name
-                      T[e1]
-              CompareOp
-                T[=]
-              IdExpr
-                Name
-                  T[e2]
+                      T[e2]
+                  T[.]
+                  IdExpr
+                    Name
+                      T[name]
+              T[=>]
+              CompareExpr
+                IdExpr
+                  Name
+                    T[e1]
+                CompareOp
+                  T[=]
+                IdExpr
+                  Name
+                    T[e2]
         CompareExpr
           IdExpr
             Name
@@ -198,7 +198,7 @@ Specification
                 T[@]
                 Name
                   T[parent]
-        CompareExpr
+        ImpliesExpr
           CompareExpr
             IdExpr
               Name
@@ -206,28 +206,28 @@ Specification
             T[!]
             CompareOp
               T[=]
-            ImpliesExpr
-              IdExpr
-                Name
-                  T[Root]
-              T[=>]
-              IdExpr
-                Name
-                  T[Root]
-          CompareOp
-            T[in]
-          DotJoinExpr
             IdExpr
               Name
-                T[this]
-            T[.]
-            UnOpExpr
-              UnOp
-                T[^]
+                T[Root]
+          T[=>]
+          CompareExpr
+            IdExpr
+              Name
+                T[Root]
+            CompareOp
+              T[in]
+            DotJoinExpr
               IdExpr
-                T[@]
                 Name
-                  T[parent]
+                  T[this]
+              T[.]
+              UnOpExpr
+                UnOp
+                  T[^]
+                IdExpr
+                  T[@]
+                  Name
+                    T[parent]
         T[}]
   Paragraph
     SigDecl
@@ -372,7 +372,7 @@ Specification
             T[|]
             ParenExpr
               T[(]
-              LogicalOpExpr
+              ConjunctionExpr
                 QuantifiedExpr
                   ExprQuantifier
                     T[one]
@@ -384,8 +384,7 @@ Specification
                     IdExpr
                       Name
                         T[parent]
-                LogicalOperator
-                  T[&&]
+                T[&&]
                 QuantifiedExpr
                   ExprQuantifier
                     T[one]

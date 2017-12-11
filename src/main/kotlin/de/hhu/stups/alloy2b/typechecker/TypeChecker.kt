@@ -84,6 +84,7 @@ class TypeChecker(spec: AlloySpecification) {
                 is BoxJoinExpression -> typeCheckExpr(te, expr)
                 is BlockExpression -> typeCheckExpr(te, expr)
                 is IfExpression -> typeCheckExpr(te, expr)
+                is IfElseExpression -> typeCheckExpr(te, expr)
                 is DeclListExpression -> typeCheckExpr(te, expr)
                 is IntegerCastExpression -> typeCheckExpr(te, expr)
                 is IntegerExpression -> typeCheckExpr(te, expr)
@@ -117,6 +118,11 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfExpression) {
+        typeCheckExpr(teIn, expr.ifExpr)
+        typeCheckExpr(teIn, expr.thenExpr)
+    }
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfElseExpression) {
         typeCheckExpr(teIn, expr.ifExpr)
         typeCheckExpr(teIn, expr.thenExpr)
         typeCheckExpr(teIn, expr.elseExpr)

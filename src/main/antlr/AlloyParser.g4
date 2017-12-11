@@ -45,32 +45,41 @@ sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
 sigExt             : EXTENDS ref        # extendsExtension
                    | IN ref (PLUS ref)* # inExtension;
 
-expr               : LET letDecl (COMMA letDecl)* blockOrBar               # letExpr
-                   | quant declList blockOrBar                             # quantifierExpr
-                   | unOp expr                                             # unOpExpr
-                   | left=expr DOT right=expr                              # dotJoinExpr
-                   | expr LSQBRACKET exprList RSQBRACKET                   # boxJoinExpr
-                   | left=expr binOp right=expr                            # binOpExpr
-                   | CARD expr                             # cardExpr
-                   |<assoc=right> left=expr IMPLIES right=expr             # impliesExpr // needed because associativity differs
-                   | left=expr arrowOp right=expr                          # arrowOpExpr
-                   | left=expr NOT? compareOp right=expr                   # compareExpr
-                   | exprQuantifier expr                                   # quantifiedExpr
-                   | ifExpr=expr IMPLIES? thenExpr=expr ELSE elseExpr=expr # ifExpr
-                   | INT LSQBRACKET expr RSQBRACKET                        # intCastExpr
-                   | INT LPAREN expr RPAREN                                # intCastExpr
-                   | NUMBER                                                # numberExpr
-                   | MINUS NUMBER                                          # negNumberExpr
-                   | NONE                                                  # noneExpr
-                   | IDEN                                                  # idenExpr
-                   | UNIV                                                  # univExpr
-                   | CAPINT                                                # capIntExpr
-                   | SeqInt                                                # seqIntExpr
-                   | LPAREN expr RPAREN                                    # parenExpr
-                   | AT? name                                              # idExpr
-                   | left=expr logicalOperator right=expr                  # logicalOpExpr
-                   | block                                                 # blockExpr
-                   | LBRACKET declList blockOrBar RBRACKET                 # declListExpr
+expr               : unOp expr                                                            # unOpExpr
+                   | left=expr DOT right=expr                                             # dotJoinExpr
+                   | expr LSQBRACKET exprList RSQBRACKET                                  # boxJoinExpr
+                   | left=expr operator=restrOperator right=expr                          # restrictionOpExpr
+                   | left=expr arrowOp right=expr                                         # arrowOpExpr
+                   | left=expr INTERSECTION right=expr                                    # intersectionExpr
+                   | left=expr OVERRIDE right=expr                                        # overrideExpr
+                   | CARD expr                                                            # cardExpr
+                   | left=expr operator=binOp right=expr                                  # binOpExpr
+                   | exprQuantifier expr                                                  # quantifiedExpr
+                   | left=expr NOT? compareOp right=expr                                  # compareExpr
+
+                   | NOT expr                                                             # negatedExpr
+                   | left=expr AND right=expr                                             # conjunctionExpr
+                   |<assoc=right> ifExpr=expr IMPLIES thenExpr=expr (ELSE elseExpr=expr)? # impliesExpr // needed because associativity differs
+
+                   | left=expr IFF right=expr                                             # equalityExpr
+                   | left=expr OR right=expr                                              # disjunctionExpr
+
+                   | LET letDecl (COMMA letDecl)* blockOrBar                              # letExpr
+                   | quant declList blockOrBar                                            # quantifierExpr
+
+                   | INT LSQBRACKET expr RSQBRACKET                                       # intCastExpr
+                   | INT LPAREN expr RPAREN                                               # intCastExpr
+                   | NUMBER                                                               # numberExpr
+                   | DIFFERENCE NUMBER                                                    # negNumberExpr
+                   | NONE                                                                 # noneExpr
+                   | IDEN                                                                 # idenExpr
+                   | UNIV                                                                 # univExpr
+                   | CAPINT                                                               # capIntExpr
+                   | SeqInt                                                               # seqIntExpr
+                   | LPAREN expr RPAREN                                                   # parenExpr
+                   | AT? name                                                             # idExpr
+                   | block                                                                # blockExpr
+                   | LBRACKET declList blockOrBar RBRACKET                                # declListExpr
                    ;
 
 decl               : PRIVATE? DISJ? name (COMMA name)* COLON DISJ? expr ;
@@ -79,16 +88,15 @@ letDecl            : name EQUAL expr ;
 
 quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
-logicalOperator    : AND | OR | IFF ;
+restrOperator      : DOM_RESTR | RAN_RESTR;
 
-binOp              : PLUS | MINUS | INTERSECTION | UNION | DIFFERENCE |
-                     DOM_RESTR | RAN_RESTR | OVERRIDE ; // todo: add | "<<" | ">>" | ">>>" ;  // todo: precedence
+binOp              : UNION | DIFFERENCE ;
 
 arrowOp            : ( SOME | ONE | LONE | SET )? ARROW ( SOME | ONE | LONE | SET )? ;
 
 compareOp          : IN | GREATER_EQUAL | GREATER | LESS_EQUAL | LESS | EQUAL ;
 
-unOp               : NOT | SEQ | ITERATION | CLOSURE | INVERSE;
+unOp               : INVERSE | CLOSURE | ITERATION;
 
 exprQuantifier     : NO | SOME | LONE | ONE | SET;
 

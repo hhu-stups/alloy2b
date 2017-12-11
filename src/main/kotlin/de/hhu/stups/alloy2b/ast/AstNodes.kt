@@ -87,9 +87,13 @@ data class BlockExpression(val expressions: List<Expression>,
                            override val position: Position? = null,
                            override var type: Type = Type(Untyped())) : Expression
 
-data class IfExpression(val ifExpr: Expression, val thenExpr: Expression, val elseExpr: Expression,
+data class IfExpression(val ifExpr: Expression, val thenExpr: Expression,
                         override val position: Position? = null,
                         override var type: Type = Type(Untyped())) : Expression
+
+data class IfElseExpression(val ifExpr: Expression, val thenExpr: Expression, val elseExpr: Expression,
+                            override val position: Position? = null,
+                            override var type: Type = Type(Untyped())) : Expression
 
 data class DeclListExpression(val decls: List<Decl>,
                               val expressions: List<Expression>,
