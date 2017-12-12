@@ -3,7 +3,7 @@ MACHINE alloytranslation
 SETS
     Language_; Personell_; Flight_
 CONSTANTS
-    french_, german_, spanish_, speaks_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, assign_
+    french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_, assign_
 DEFINITIONS
     allLanguages_ ==   !(f_).({f_} <: Flight_ => speaks_[assign_[{f_}]] = Language_) ;
     allSexes_ ==   !(f_).({f_} <: Flight_ => card(assign_[{f_}] - male_) >= 1 & card(assign_[{f_}] /\ male_) >= 1) ;
@@ -14,7 +14,6 @@ PROPERTIES
     {french_} <: Language_ &
     {german_} <: Language_ &
     {spanish_} <: Language_ &
-    speaks_ : Personell_ <-> Language_ &
     {tom_} <: Personell_ &
     {david_} <: Personell_ &
     {jeremy_} <: Personell_ &
@@ -22,7 +21,6 @@ PROPERTIES
     {janet_} <: Personell_ &
     {tracy_} <: Personell_ &
     Personell_ <: male_ &
-    assign_ : Flight_ <-> Personell_ &
     male_ = {tom_} \/ {david_} \/ {jeremy_} &
     speaks_ = {tom_} * {german_} \/ {david_} * {french_} \/ {jeremy_} * {german_} \/ {carol_} * {spanish_} \/ {janet_} * {french_} \/ {tracy_} * {spanish_} &
     french_ /= german_ &
@@ -44,7 +42,9 @@ PROPERTIES
     carol_ /= tracy_ &
     janet_ /= tracy_ &
     {french_} \/ {german_} \/ {spanish_} = Language_ &
-    {tom_} \/ {david_} \/ {jeremy_} \/ {carol_} \/ {janet_} \/ {tracy_} = Personell_
+    {tom_} \/ {david_} \/ {jeremy_} \/ {carol_} \/ {janet_} \/ {tracy_} = Personell_ &
+    speaks_ : Personell_ <-> Language_ &
+    assign_ : Flight_ <-> Personell_
 ASSERTIONS
     crewAlloc_
 END

@@ -3,14 +3,11 @@ MACHINE alloytranslation
 SETS
     Node_
 CONSTANTS
-    graph1_, graph2_, p_, a_, b_, c_, d_, e_, f_, g_, h_, i_
+    a_, b_, c_, d_, e_, f_, g_, h_, i_, graph1_, graph2_, p_
 DEFINITIONS
     permutation_ ==   (p_ ; p_~) <: id(Node_) & dom(p_) = Node_ ;
     isomorph_ ==   permutation_ & !(n_).({n_} <: Node_ => p_[graph1_[{n_}]] = graph2_[p_[{n_}]])
 PROPERTIES
-    graph1_ : Node_ <-> Node_ &
-    graph2_ : Node_ <-> Node_ &
-    p_ : Node_ --> Node_ &
     {a_} <: Node_ &
     {b_} <: Node_ &
     {c_} <: Node_ &
@@ -57,7 +54,10 @@ PROPERTIES
     g_ /= h_ &
     g_ /= i_ &
     h_ /= i_ &
-    {a_} \/ {b_} \/ {c_} \/ {d_} \/ {e_} \/ {f_} \/ {g_} \/ {h_} \/ {i_} = Node_
+    {a_} \/ {b_} \/ {c_} \/ {d_} \/ {e_} \/ {f_} \/ {g_} \/ {h_} \/ {i_} = Node_ &
+    graph1_ : Node_ <-> Node_ &
+    graph2_ : Node_ <-> Node_ &
+    p_ : Node_ --> Node_
 ASSERTIONS
     isomorph_
 END

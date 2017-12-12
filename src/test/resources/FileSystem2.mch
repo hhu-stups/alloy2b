@@ -3,15 +3,15 @@ MACHINE alloytranslation
 SETS
     FSObject_
 CONSTANTS
-    parent_, contents_, Dir_, File_, Root_
+    Dir_, File_, Root_, parent_, contents_
 PROPERTIES
-    parent_ : FSObject_ +-> Dir_ &
-    contents_ : Dir_ <-> FSObject_ &
     Dir_ <: FSObject_ &
     File_ <: FSObject_ &
     {Root_} <: Dir_ &
     parent_[{Root_}] = {} & parent_ = contents_~ & File_ \/ Dir_ = FSObject_ & FSObject_ <: closure(contents_)[{Root_}] &
-    Dir_ /\ File_ = {}
+    Dir_ /\ File_ = {} &
+    parent_ : FSObject_ +-> Dir_ &
+    contents_ : Dir_ <-> FSObject_
 ASSERTIONS
     /* acyclic */ card({d_ | {d_} <: Dir_ & {d_} <: closure1(contents_)[{d_}]}) = 0 &
     /* oneRoot */ card({d_ | {d_} <: Dir_ & parent_[{d_}] = {}}) = 1 &

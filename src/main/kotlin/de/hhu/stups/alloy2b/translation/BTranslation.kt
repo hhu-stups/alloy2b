@@ -89,6 +89,38 @@ class BTranslation(spec: AlloySpecification) {
                 properties.add("/* from signature declaration */ ${translateExpression(nexpr)}")
             }
         })
+
+        // field declarations are mapped to constants and properties
+        signatureDeclarations.values.forEach({
+            val fieldNames = getFieldNamesOfSignatureHierarchy(it)
+            it.decls.forEach({ d ->
+                d.names.map { constants.add(sanitizeIdentifier(it)) }
+                translateFieldDeclarations(d, it.name.name, fieldNames)
+            })
+        })
+    }
+
+    private fun translateFieldDeclarations(decl: Decl, name: String, fieldNames: List<IdentifierExpression>) {
+        decl.names.map {
+            fields.add(it.name) // used to decide how to translate dot join
+            val nexpr = replaceFieldIdentifiers(name,fieldNames,decl.expression.expression)
+
+            val symbol: String =
+            when (decl.expression.operator) {
+                LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
+                ONE -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
+                else -> "<->"
+            }
+
+            if(nexpr == decl.expression.expression){
+                // no this was introduced, avoid quantifier
+                properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} $symbol ${translateExpression(nexpr)}")
+            } else {
+                // this_ needed, add quantifier
+                properties.add("!(this_).({this_} <: ${sanitizeIdentifier(name)} => ${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} $symbol ${translateExpression(nexpr)})")
+            }
+
+        }
     }
 
     private fun getFieldNamesOfSignatureHierarchy(sig: SignatureDeclaration): List<IdentifierExpression> {
@@ -111,6 +143,7 @@ class BTranslation(spec: AlloySpecification) {
         is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.left), expr.parameters.map { replaceFieldIdentifiers(signatureName, fieldNames, it) }, expr.position, expr.type)
         is IfExpression -> IfExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.ifExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.thenExpr), expr.position, expr.type)
         is IfElseExpression -> IfElseExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.ifExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.thenExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.elseExpr), expr.position, expr.type)
+        is IntegerSetExpression -> expr
         else -> throw UnsupportedOperationException("Missing case in replaceFieldIdentifiers: $expr")
     }
 
@@ -219,12 +252,6 @@ class BTranslation(spec: AlloySpecification) {
 
         handleQuantifiersByCardinality(sdec)
 
-        // field declarations are mapped to constants and properties
-        sdec.decls.forEach({ d ->
-            d.names.map { constants.add(sanitizeIdentifier(it)) }
-            translateFieldDeclarations(d, sdec.name.name)
-        })
-
         if (sdec.signatureExtension == null) {
             // basic signature -> B set
             sets.add(sanitizeIdentifier(sdec.name))
@@ -262,25 +289,6 @@ class BTranslation(spec: AlloySpecification) {
         }
         if (SOME in sdec.qualifiers) {
             properties.add("card(${sanitizeIdentifier(sdec.name.name)}) >= 1")
-        }
-    }
-
-    private fun translateFieldDeclarations(decl: Decl, name: String) {
-        decl.names.map {
-            fields.add(it.name) // used to decide how to translate dot join
-
-            if (decl.expression.operator == LONE) {
-                // one-to-one mapping, i.e. function, LONE = 0 or 1 target
-                properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} +-> ${translateExpression(decl.expression.expression)}")
-                return
-            }
-            if (decl.expression.operator == ONE) {
-                // one-to-one mapping, i.e. function, ONE = exactly 1 target
-                properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} --> ${translateExpression(decl.expression.expression)}")
-                return
-            }
-            properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} <-> ${translateExpression(decl.expression.expression)}")
-            return
         }
     }
 
