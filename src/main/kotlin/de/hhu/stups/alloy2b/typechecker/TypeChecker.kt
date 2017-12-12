@@ -84,10 +84,12 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheck(te: TypeEnvironment, stmt: FunDeclaration) {
         checkDeclsAndExpressions(te, stmt.decls, stmt.expressions)
+        te.addType(stmt.name,stmt.expressions.last().type)
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration) {
         checkDeclsAndExpressions(te, stmt.decls, stmt.expressions)
+        te.addType(stmt.name,stmt.expressions.last().type)
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: Expression) =
@@ -154,6 +156,7 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: DeclListExpression) {
         checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
+        expr.type.setType(expr.expressions.last().type.currentType)
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: IdentifierExpression) {
