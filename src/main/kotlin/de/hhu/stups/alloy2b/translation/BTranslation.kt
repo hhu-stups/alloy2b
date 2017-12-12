@@ -140,8 +140,13 @@ class BTranslation(spec: AlloySpecification) {
             is FactDeclaration -> translate(stmt)
             is FunDeclaration -> translate(stmt)
             is PredDeclaration -> translate(stmt)
+            is EnumDeclaration -> translate(stmt)
             else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
         }
+    }
+
+    private fun translate(stmt: EnumDeclaration) {
+        sets.add("${sanitizeIdentifier(stmt.name)} = {${stmt.elements.joinToString(", ") { sanitizeIdentifier(it) }}}")
     }
 
     private fun translate(stmt: AssertionStatement) {
