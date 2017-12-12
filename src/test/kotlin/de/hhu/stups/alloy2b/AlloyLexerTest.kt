@@ -39,4 +39,10 @@ class AlloyLexerTest {
         assertEquals(listOf("ALL", "ID", "COLON", "ID", "DASH", "ID", "LSQBRACKET", "ID", "RSQBRACKET", "LSQBRACKET", "ID", "RSQBRACKET", "EQUAL", "ID", "EOF"),
                 tokens(lexerForCode("all r : Row		| array[r][Column]	= Number")))
     }
+
+    @test
+    fun tokenizeArrorOp(){
+        assertEquals(listOf("ID","COLON","ID","ARROW","LONE","ID","EOF"),
+                tokens(lexerForCode("mother : Person -> lone women")))
+    }
 }
