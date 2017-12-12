@@ -60,7 +60,7 @@ class TranslationTest {
     fun translateHanoi() {
         println(BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
         //val expected = getResourceAsString("hanoi.mch")
-        //Assert.assertEquals(expected, BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
+        //assertEquals(expected, BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
     }
 
     @test
@@ -92,6 +92,12 @@ class TranslationTest {
     fun translateRiverCrossingPuzzle() {
         println(BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
         //val expected = getResourceAsString("RiverCrossingPuzzle.mch")
-        //Assert.assertEquals(expected, BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
+        //assertEquals(expected, BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
+    }
+
+    @test
+    fun translateEnumTest() {
+        val expected = getResourceAsString("EnumTest.mch")
+        assertEquals(expected, BTranslation(parseResource("EnumTest.als").toAst(false)).getTranslation())
     }
 }
