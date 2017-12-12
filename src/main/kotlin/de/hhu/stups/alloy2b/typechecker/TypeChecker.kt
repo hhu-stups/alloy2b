@@ -21,13 +21,18 @@ class TypeChecker(spec: AlloySpecification) {
                 is FactDeclaration -> typeCheck(te, stmt)
                 is FunDeclaration -> typeCheck(te, stmt)
                 is PredDeclaration -> typeCheck(te, stmt)
+                is EnumDeclaration -> typeCheck(te, stmt)
                 else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
             }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun typeCheck(teIn: TypeEnvironment, stmt: EnumDeclaration) {
+        //
+    }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: CheckStatement) {
         stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
     }
-
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: AssertionStatement) {
         stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
