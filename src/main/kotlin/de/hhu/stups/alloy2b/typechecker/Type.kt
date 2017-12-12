@@ -8,8 +8,11 @@ class Type(type: ExplicitType = Untyped()) {
     fun setType(type: ExplicitType) {
         if (currentType is Untyped) {
             currentType = type
-        } else if (currentType != type) {
-            throw UnsupportedOperationException("Type Checking failed")
+        } else if (currentType is Relation && type is Relation) {
+            (currentType as Relation).rightType.setType(type.rightType.currentType)
+            (currentType as Relation).leftType.setType(type.leftType.currentType)
+        } else {
+            throw UnsupportedOperationException("Type Checking failed. Tried to unify $currentType and $type")
         }
     }
 

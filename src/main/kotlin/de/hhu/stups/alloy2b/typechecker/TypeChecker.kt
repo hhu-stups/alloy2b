@@ -1,6 +1,7 @@
 package de.hhu.stups.alloy2b.typechecker
 
 import de.hhu.stups.alloy2b.ast.*
+import de.hhu.stups.alloy2b.ast.Operator.*
 
 class TypeChecker(spec: AlloySpecification) {
 
@@ -10,8 +11,23 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheck(spec: AlloySpecification) {
         val te = TypeEnvironment()
+        // first pass: collect signatures
+        spec.declarations.filter { it is SignatureDeclarations }.forEach{collectSignatureType(te, it as SignatureDeclarations)}
         spec.declarations.forEach { dec -> typeCheck(te, dec) }
     }
+
+    private fun collectSignatureType(te: TypeEnvironment, sdecs: SignatureDeclarations) {
+        sdecs.signatures.forEach({
+            if (it.qualifiers.contains(Operator.ONE)) {
+                it.name.type.setType(Scalar(Type(Signature(it.name.name))))
+                te.addType(it.name.name, Scalar(Type(Signature(it.name.name))))
+            } else {
+                it.name.type.setType(Set(Type(Signature(it.name.name))))
+                te.addType(it.name.name, Set(Type(Signature(it.name.name))))
+            }
+        it.decls.forEach({d -> d.names.forEach({name -> te.addType(name.name,Relation(Type(Untyped()),Type(Untyped())))})})})
+    }
+
 
     private fun typeCheck(te: TypeEnvironment, stmt: Statement) =
             when (stmt) {
@@ -43,13 +59,8 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: SignatureDeclaration) {
-        if (stmt.qualifiers.contains(Operator.ONE)) {
-            stmt.name.type.setType(Scalar(Type(Signature(stmt.name.name))))
-            te.addType(stmt.name.name, Scalar(Type(Signature(stmt.name.name))))
-        } else {
-            stmt.name.type.setType(Set(Type(Signature(stmt.name.name))))
-            te.addType(stmt.name.name, Set(Type(Signature(stmt.name.name))))
-        }
+        // signatures themselves are typed in a first pass
+        // only decls and expressions have to be typed here
 
         stmt.decls.forEach { decl ->
             decl.names.forEach { idExpr ->
@@ -102,7 +113,7 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression) {
         typeCheckExpr(teIn, expr.expression)
-        if (expr.operator == Operator.ONE) {
+        if (expr.operator == ONE) {
             expr.type = Type(Scalar(expr.expression.type))
         } else {
             expr.type = expr.expression.type
@@ -152,6 +163,10 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(te: TypeEnvironment, expr: BinaryOperatorExpression) {
         typeCheckExpr(te, expr.left)
         typeCheckExpr(te, expr.right)
+        if(expr.operator == JOIN) {
+            typeCheckJoinExpr(te, expr)
+            return
+        }
         if (expr.right is IdentityExpression) run {
             expr.right.type.setType(expr.left.type.currentType)
             return
@@ -171,6 +186,24 @@ class TypeChecker(spec: AlloySpecification) {
             return
         }
         expr.type.setType(Set(expr.left.type))
+    }
+
+    private fun typeCheckJoinExpr(te: TypeEnvironment, je: BinaryOperatorExpression) {
+        val jeRightType = je.right.type.currentType
+        val jeLeftType = je.left.type.currentType
+        if (je.left is UnivExpression && jeRightType is Relation) {
+            je.type.setType(jeRightType.rightType.currentType)
+        } else if (je.right is UnivExpression && jeLeftType is Relation) {
+            je.type.setType(jeLeftType.leftType.currentType)
+        } else if (jeLeftType is Relation && jeRightType is Relation) {
+            je.type.setType(Relation(jeLeftType.leftType,jeRightType.rightType))
+        } else if (jeLeftType is Relation && (jeRightType is Set || jeRightType is Scalar)) {
+            je.type.setType(Set(jeLeftType.leftType))
+        } else if ((jeLeftType is Set || jeLeftType is Scalar) && jeRightType is Relation) {
+            je.type.setType(Set(jeRightType.rightType))
+        } else {
+            throw UnsupportedOperationException("join typechecking failed: ${je.left} . ${je.right}")
+        }
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: UnaryOperatorExpression) {
