@@ -118,6 +118,10 @@ data class UnivExpression(override val position: Position? = null,
                           override var type: Type = Type(Untyped())) : Expression
 
 // statements
+data class EnumDeclaration(val name: String,
+                           val elements: List<String>,
+                           override val position: Position? = null) : Statement
+
 data class FactDeclaration(val name: String,
                            val expressions: List<Expression>,
                            override val position: Position? = null) : Statement
