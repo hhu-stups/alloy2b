@@ -40,6 +40,8 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
                 child.declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
                 child.block().expr().map { it.toAst(considerPosition) },
                 toPosition(considerPosition))
+        is EnumDeclContext -> return EnumDeclaration(child.name()?.get(0)?.text ?: "",
+                child.name().subList(1, child.name().size).map { it.text }, toPosition(considerPosition))
         else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
     }
 }
@@ -49,18 +51,20 @@ fun SigDeclContext.toAst(considerPosition: Boolean = false): SignatureDeclaratio
     val signatureExtensions = sigExt()?.toAst(considerPosition)
     val decls = declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList()
 
-    return SignatureDeclarations(name().map { SignatureDeclaration(qualifiers,
-            it.toAst(considerPosition), signatureExtensions,
-            decls,
-            quantifiedBlock(it.toAst(considerPosition), block()?.toAst(considerPosition)), toPosition(considerPosition)) })
+    return SignatureDeclarations(name().map {
+        SignatureDeclaration(qualifiers,
+                it.toAst(considerPosition), signatureExtensions,
+                decls,
+                quantifiedBlock(it.toAst(considerPosition), block()?.toAst(considerPosition)), toPosition(considerPosition))
+    })
 }
 
 fun quantifiedBlock(signatureName: IdentifierExpression, block: List<Expression>?): QuantifierExpression? {
-    if(block == null) {
+    if (block == null) {
         return null
     }
-    val thisDecl = Decl(asList(IdentifierExpression("this")), QuantifiedExpression(Operator.ONE,signatureName))
-    return QuantifierExpression(Operator.ALL,asList(thisDecl),block)
+    val thisDecl = Decl(asList(IdentifierExpression("this")), QuantifiedExpression(Operator.ONE, signatureName))
+    return QuantifierExpression(Operator.ALL, asList(thisDecl), block)
 }
 
 fun SigExtContext.toAst(considerPosition: Boolean = false): SignatureExtension = when (this) {
@@ -69,8 +73,8 @@ fun SigExtContext.toAst(considerPosition: Boolean = false): SignatureExtension =
     else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
 }
 
-fun RefContext.toAst(considerPosition: Boolean = false) : IdentifierExpression =
-    IdentifierExpression(this.text, toPosition(considerPosition))
+fun RefContext.toAst(considerPosition: Boolean = false): IdentifierExpression =
+        IdentifierExpression(this.text, toPosition(considerPosition))
 
 fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
         when (this) {
@@ -86,9 +90,9 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     right.toAst(considerPosition),
                     toPosition(considerPosition))
             is ImpliesExprContext -> if (elseExpr != null) {
-                IfElseExpression(ifExpr.toAst(considerPosition),thenExpr.toAst(considerPosition),elseExpr.toAst(considerPosition),toPosition(considerPosition))
+                IfElseExpression(ifExpr.toAst(considerPosition), thenExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), toPosition(considerPosition))
             } else {
-                IfExpression(ifExpr.toAst(considerPosition),thenExpr.toAst(considerPosition),toPosition(considerPosition))
+                IfExpression(ifExpr.toAst(considerPosition), thenExpr.toAst(considerPosition), toPosition(considerPosition))
             }
             is DotJoinExprContext -> BinaryOperatorExpression(Operator.fromString(this.DOT().text),
                     left.toAst(considerPosition),
