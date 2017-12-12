@@ -4,7 +4,7 @@ options { tokenVocab=AlloyLexer; }
 
 specification      : module? open* paragraph* ;
 
-module             : MODULE name ; // was: name ( LSQBRACKET  EXACTLY? name  (COMMA EXACTLY? NUMBER)* RSQBRACKET )? ;
+module             : MODULE name ( LSQBRACKET  EXACTLY? name  (COMMA EXACTLY? NUMBER)* RSQBRACKET )? ;
 
 open               : PRIVATE? OPEN name ( LSQBRACKET ref RSQBRACKET )? ( AS name )? ; // was ref,+
 
