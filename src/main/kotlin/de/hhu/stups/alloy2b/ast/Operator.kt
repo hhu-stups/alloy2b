@@ -3,7 +3,7 @@ package de.hhu.stups.alloy2b.ast
 enum class Operator {
     LONE, SET, ALL, JOIN, EQUAL, PLUS, INTERSECTION, MINUS, NO, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
     IMPLICATION, IFF, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, CARD, DOM_RESTR, RAN_RESTR, OVERRIDE, ABSTRACT, CARTESIAN,
-    TOTAL_FUNCTION, PARTIAL_FUNCTION, BIJECTIVE_FUNCTION, INVERSE, NOT;
+    TOTAL_FUNCTION, PARTIAL_FUNCTION, BIJECTIVE_FUNCTION, INVERSE, NOT, SEQ;
 
     companion object {
         fun fromString(op: String): Operator =
@@ -46,6 +46,7 @@ enum class Operator {
                     "||" -> OR
                     "!" -> NOT
                     "not" -> NOT
+                    "seq" -> SEQ
                     else -> throw UnsupportedOperationException(op)
                 }
     }

@@ -138,6 +138,10 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     left.toAst(considerPosition),
                     right.toAst(considerPosition),
                     toPosition(considerPosition))
+            is DisjunctionExprContext -> BinaryOperatorExpression(Operator.OR,
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition),
+                    toPosition(considerPosition))
             is IntersectionExprContext -> BinaryOperatorExpression(Operator.INTERSECTION,
                     left.toAst(considerPosition),
                     right.toAst(considerPosition))

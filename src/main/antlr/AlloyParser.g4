@@ -101,7 +101,7 @@ compareOp          : IN | GREATER_EQUAL | GREATER | LESS_EQUAL | LESS | EQUAL ;
 
 unOp               : INVERSE | CLOSURE | ITERATION;
 
-exprQuantifier     : NO | SOME | LONE | ONE | SET;
+exprQuantifier     : NO | SOME | LONE | ONE | SET | SEQ;
 
 block              : LBRACKET expr* RBRACKET ;
 
