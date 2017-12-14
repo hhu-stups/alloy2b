@@ -17,7 +17,7 @@ fun ParserRuleContext.toPosition(considerPosition: Boolean): Position? {
 }
 
 fun OpenContext.toAst(considerPosition: Boolean = false) : OpenStatement =
-        OpenStatement(this.name().map { it.toAst(considerPosition) })
+        OpenStatement(this.name().map { it.toAst(considerPosition) }, this.ref().map { it.toAst(considerPosition) })
 
 fun NameContext.toAst(considerPosition: Boolean = false): IdentifierExpression =
         IdentifierExpression(this.text, toPosition(considerPosition))

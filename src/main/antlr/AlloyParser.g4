@@ -6,7 +6,7 @@ specification      : module? open* paragraph* ;
 
 module             : MODULE name ( LSQBRACKET  EXACTLY? name  (COMMA EXACTLY? NUMBER)* RSQBRACKET )? ;
 
-open               : PRIVATE? OPEN name ( LSQBRACKET ref RSQBRACKET )? ( AS name )? ; // was ref,+
+open               : PRIVATE? OPEN name ( LSQBRACKET ref (COMMA ref)* RSQBRACKET )? ( AS name )? ;
 
 paragraph          : factDecl | assertDecl | funDecl | predDecl | cmdDecl | enumDecl | sigDecl ;
 

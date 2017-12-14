@@ -174,9 +174,24 @@ class BTranslation(spec: AlloySpecification) {
             is FunDeclaration -> translate(stmt)
             is PredDeclaration -> translate(stmt)
             is EnumDeclaration -> translate(stmt)
-            is OpenStatement -> {} // TODO: implement 
+            is OpenStatement -> translate(stmt)
             else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
         }
+    }
+
+    private fun translate(stmt: OpenStatement) {
+        stmt.modules.forEach({
+            if (it.name.equals("util/ordering")) {
+                stmt.refs.forEach({
+                    constants.add("ordering_${sanitizeIdentifier(it)}")
+                    properties.add("ordering_${sanitizeIdentifier(it)} : SEQ(${sanitizeIdentifier(it)})")
+                })
+            } else if (it.name.equals("util/integer")) {
+              // implemented by default
+            } else {
+                throw UnsupportedOperationException("unknown module ${it.name}")
+            }
+        })
     }
 
     private fun translate(stmt: EnumDeclaration) {
@@ -296,7 +311,7 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(e: Expression) =
             when (e) {
                 is QuantifierExpression -> translateExpression(e)
-                is IdentifierExpression -> sanitizeIdentifier(e)
+                is IdentifierExpression -> translateExpression(e)
                 is BinaryOperatorExpression -> translateExpression(e)
                 is UnaryOperatorExpression -> translateExpression(e)
                 is LetExpression -> translateExpression(e)
@@ -316,6 +331,10 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(ue: UnivExpression): String {
         // TODO
         return ""
+    }
+
+    private fun translateExpression(ie: IdentifierExpression): String {
+        return sanitizeIdentifier(ie)
     }
 
     private fun translateExpression(ite: IfElseExpression): String {

@@ -119,6 +119,7 @@ data class UnivExpression(override val position: Position? = null,
 
 // statements
 data class OpenStatement(val modules: List<IdentifierExpression>,
+                         val refs: List<IdentifierExpression>,
                          override val position: Position? = null) : Statement
 
 data class EnumDeclaration(val name: String,
