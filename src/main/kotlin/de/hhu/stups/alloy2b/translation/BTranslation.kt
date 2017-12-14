@@ -334,6 +334,15 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(ie: IdentifierExpression): String {
+        // special cases for identifiers used in ordering
+        if("first".equals(ie.name)) {
+            val subtype = ie.type.currentType as Scalar
+            return "first(ordering_${subtype.subType}_)"
+        }
+        if("last".equals(ie.name)) {
+            val subtype = ie.type.currentType as Scalar
+            return "first(ordering_${subtype.subType}_)"
+        }
         return sanitizeIdentifier(ie)
     }
 

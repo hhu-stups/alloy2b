@@ -3,7 +3,7 @@ MACHINE alloytranslation
 SETS
     Language_; Personell_; Flight_
 CONSTANTS
-    french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_, assign_
+    ordering_Flight_, french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_, assign_
 DEFINITIONS
     allLanguages_ ==   !(f_).({f_} <: Flight_ => speaks_[assign_[{f_}]] = Language_) ;
     allSexes_ ==   !(f_).({f_} <: Flight_ => card(assign_[{f_}] - male_) >= 1 & card(assign_[{f_}] /\ male_) >= 1) ;
@@ -11,6 +11,7 @@ DEFINITIONS
     everybodyInSchedule_ ==   dom(assign_) = Personell_ ;
     crewAlloc_ ==   allLanguages_ & allSexes_ & scheduleOk_ & everybodyInSchedule_
 PROPERTIES
+    ordering_Flight_ : SEQ(Flight_) &
     {french_} <: Language_ &
     {german_} <: Language_ &
     {spanish_} <: Language_ &

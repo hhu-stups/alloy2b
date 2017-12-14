@@ -6,11 +6,24 @@ class Type(type: ExplicitType = Untyped()) {
     var currentType = type
 
     fun setType(type: ExplicitType) {
+        if(type is Untyped) {
+            return
+        }
         if (currentType is Untyped) {
             currentType = type
         } else if (currentType is Relation && type is Relation) {
             (currentType as Relation).rightType.setType(type.rightType.currentType)
             (currentType as Relation).leftType.setType(type.leftType.currentType)
+        } else if (currentType is Scalar && type is Scalar) {
+            (currentType as Scalar).subType.setType(type.subType.currentType)
+            (currentType as Scalar).subType.setType(type.subType.currentType)
+        } else if (currentType is Set && type is Set) {
+            (currentType as Set).subType.setType(type.subType.currentType)
+            (currentType as Set).subType.setType(type.subType.currentType)
+        } else if (currentType is Signature && type is Signature) {
+            if(!(currentType as Signature).subType.equals(type.subType)) {
+                throw UnsupportedOperationException("Type Checking failed. Tried to unify $currentType and $type")
+            }
         } else {
             throw UnsupportedOperationException("Type Checking failed. Tried to unify $currentType and $type")
         }
