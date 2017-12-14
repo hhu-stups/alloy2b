@@ -58,6 +58,6 @@ PROPERTIES
     graph1_ : Node_ <-> Node_ &
     graph2_ : Node_ <-> Node_ &
     p_ : Node_ --> Node_
-ASSERTIONS
-    isomorph_
+OPERATIONS
+    run_isomorph = PRE isomorph_ THEN skip END
 END

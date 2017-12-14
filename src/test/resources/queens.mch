@@ -12,6 +12,6 @@ PROPERTIES
     /* from signature declaration */ !(this_).({this_} <: Queens_ => row_(this_) >= 0 & row_(this_) < card(Queens_) & col_(this_) >= 0 & col_(this_) < card(Queens_)) &
     row_ : Queens_ --> INTEGER &
     col_ : Queens_ --> INTEGER
-ASSERTIONS
-    valid_
+OPERATIONS
+    run_valid = PRE valid_ THEN skip END
 END

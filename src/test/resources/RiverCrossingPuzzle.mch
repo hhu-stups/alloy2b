@@ -25,6 +25,6 @@ PROPERTIES
     eats_ : Object_ <-> Object_ &
     near_ : State_ <-> Object_ &
     far_ : State_ <-> Object_
-ASSERTIONS
-    far_[first(ordering_UNTYPED_)] = Object_
+OPERATIONS
+    run_2 = PRE far_[first(ordering_UNTYPED_)] = Object_ THEN skip END
 END

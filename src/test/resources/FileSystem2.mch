@@ -12,8 +12,8 @@ PROPERTIES
     Dir_ /\ File_ = {} &
     parent_ : FSObject_ +-> Dir_ &
     contents_ : Dir_ <-> FSObject_
-ASSERTIONS
-    /* acyclic */ card({d_ | {d_} <: Dir_ & {d_} <: closure1(contents_)[{d_}]}) = 0 &
-    /* oneRoot */ card({d_ | {d_} <: Dir_ & parent_[{d_}] = {}}) = 1 &
-    /* oneLocation */ !(f_).({f_} <: FSObject_ => card({d_ | {d_} <: Dir_ & {f_} <: contents_[{d_}]}) <= 1)
+OPERATIONS
+    check_acyclic = PRE not(/* acyclic */ card({d_ | {d_} <: Dir_ & {d_} <: closure1(contents_)[{d_}]}) = 0) THEN skip END;
+    check_oneRoot = PRE not(/* oneRoot */ card({d_ | {d_} <: Dir_ & parent_[{d_}] = {}}) = 1) THEN skip END;
+    check_oneLocation = PRE not(/* oneLocation */ !(f_).({f_} <: FSObject_ => card({d_ | {d_} <: Dir_ & {f_} <: contents_[{d_}]}) <= 1)) THEN skip END
 END

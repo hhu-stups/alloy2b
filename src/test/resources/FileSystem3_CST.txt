@@ -434,7 +434,7 @@ Specification
                       T[contents]
         T[}]
   Paragraph
-    CmdDecl
+    CheckStatement
       T[check]
       Block
         T[{]
@@ -453,7 +453,7 @@ Specification
         T[expect]
         T[1]
   Paragraph
-    CmdDecl
+    CheckStatement
       T[check]
       Block
         T[{]

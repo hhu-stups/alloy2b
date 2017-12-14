@@ -25,7 +25,7 @@ PROPERTIES
     parent_ : Dir_ +-> Dir_ &
     name_ : DirEntry_ --> Name_ &
     contents_ : DirEntry_ --> Object_
-ASSERTIONS
-    OneParent_buggyVersion_ => NoDirAliases_ &
-    OneParent_correctVersion_ => NoDirAliases_
+OPERATIONS
+    check_2 = PRE not(OneParent_buggyVersion_ => NoDirAliases_) THEN skip END;
+    check_3 = PRE not(OneParent_correctVersion_ => NoDirAliases_) THEN skip END
 END

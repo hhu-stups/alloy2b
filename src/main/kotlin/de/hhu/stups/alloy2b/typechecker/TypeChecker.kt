@@ -32,6 +32,7 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheck(te: TypeEnvironment, stmt: Statement) =
             when (stmt) {
                 is CheckStatement -> typeCheck(te, stmt)
+                is RunStatement -> typeCheck(te, stmt)
                 is AssertionStatement -> typeCheck(te, stmt)
                 is SignatureDeclarations -> typeCheck(te, stmt)
                 is FactDeclaration -> typeCheck(te, stmt)
@@ -48,6 +49,10 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheck(teIn: TypeEnvironment, stmt: CheckStatement) {
+        stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
+    }
+
+    private fun typeCheck(teIn: TypeEnvironment, stmt: RunStatement) {
         stmt.expressions.forEach { expr -> typeCheckExpr(teIn, expr) }
     }
 

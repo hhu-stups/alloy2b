@@ -151,6 +151,9 @@ data class AssertionStatement(val name: String,
 data class CheckStatement(val name: String, val expressions: List<Expression>,
                           override val position: Position? = null) : Statement
 
+data class RunStatement(val name: String, val expressions: List<Expression>,
+                        override val position: Position? = null) : Statement
+
 // signature declarations
 data class SignatureDeclaration(val qualifiers: List<Operator> = emptyList(),
                                 val name: IdentifierExpression,

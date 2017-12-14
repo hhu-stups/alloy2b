@@ -146,7 +146,7 @@ PROPERTIES
     {One_} \/ {Two_} \/ {Three_} \/ {Four_} \/ {Five_} \/ {Six_} \/ {Seven_} \/ {Eight_} \/ {Nine_} = Number_ &
     /* from signature declaration */ !(this_).({this_} <: Board_ => !(r_).({r_} <: Row_ => array_[{this_}](r_)(Column_) = Number_) & !(c_).({c_} <: Column_ => array_[{this_}](Row_)(c_) = Number_) & array_[{this_}]({Row1_} \/ {Row2_} \/ {Row3_})({Col1_} \/ {Col2_} \/ {Col3_}) = Number_ & array_[{this_}]({Row1_} \/ {Row2_} \/ {Row3_})({Col4_} \/ {Col5_} \/ {Col6_}) = Number_ & array_[{this_}]({Row1_} \/ {Row2_} \/ {Row3_})({Col7_} \/ {Col8_} \/ {Col9_}) = Number_ & array_[{this_}]({Row4_} \/ {Row5_} \/ {Row6_})({Col1_} \/ {Col2_} \/ {Col3_}) = Number_ & array_[{this_}]({Row4_} \/ {Row5_} \/ {Row6_})({Col4_} \/ {Col5_} \/ {Col6_}) = Number_ & array_[{this_}]({Row4_} \/ {Row5_} \/ {Row6_})({Col7_} \/ {Col8_} \/ {Col9_}) = Number_ & array_[{this_}]({Row7_} \/ {Row8_} \/ {Row9_})({Col1_} \/ {Col2_} \/ {Col3_}) = Number_ & array_[{this_}]({Row7_} \/ {Row8_} \/ {Row9_})({Col4_} \/ {Col5_} \/ {Col6_}) = Number_ & array_[{this_}]({Row7_} \/ {Row8_} \/ {Row9_})({Col7_} \/ {Col8_} \/ {Col9_}) = Number_) &
     array_ : Board_ --> Row_ * Column_ --> Number_
-ASSERTIONS
-    card(Board_) >= 1 &
-    card(Board_) = 1
+OPERATIONS
+    run_2 = PRE card(Board_) >= 1 THEN skip END;
+    check_2 = PRE not(card(Board_) = 1) THEN skip END
 END

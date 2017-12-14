@@ -11,6 +11,10 @@ class BTranslation(spec: AlloySpecification) {
     private val definitions = mutableListOf<String>()
     private val properties = mutableListOf<String>()
     private val assertions = mutableListOf<String>()
+    private val operations = mutableListOf<String>()
+
+    private var runCounter = 1
+    private var checkCounter = 1
 
     private val signatures = mutableListOf<IdentifierExpression>()
     private val signatureDeclarations = mutableMapOf<IdentifierExpression, SignatureDeclaration>()
@@ -40,6 +44,7 @@ class BTranslation(spec: AlloySpecification) {
         appendIfNotEmpty(builder, definitions, " ;\n    ", "DEFINITIONS")
         appendIfNotEmpty(builder, properties, " &\n    ", "PROPERTIES")
         appendIfNotEmpty(builder, assertions, " &\n    ", "ASSERTIONS")
+        appendIfNotEmpty(builder, operations, ";\n    ", "OPERATIONS")
 
         builder.appendln("END")
 
@@ -168,6 +173,7 @@ class BTranslation(spec: AlloySpecification) {
     private fun translate(stmt: Statement) {
         when (stmt) {
             is CheckStatement -> translate(stmt)
+            is RunStatement -> translate(stmt)
             is AssertionStatement -> translate(stmt)
             is SignatureDeclarations -> translate(stmt)
             is FactDeclaration -> translate(stmt)
@@ -248,8 +254,17 @@ class BTranslation(spec: AlloySpecification) {
     private fun translate(stmt: CheckStatement) {
         stmt.expressions.forEach({ e ->
             when (e) {
-                is IdentifierExpression -> if (alloyAssertions.containsKey(e.name)) assertions.add(alloyAssertions[e.name].orEmpty())
-                else -> assertions.add(translateExpression(e))
+                is IdentifierExpression -> if (alloyAssertions.containsKey(e.name)) operations.add("check_${e.name} = PRE not(${alloyAssertions[e.name].orEmpty()}) THEN skip END")
+                else -> operations.add("check_${++checkCounter} = PRE not(${translateExpression(e)}) THEN skip END")
+            }
+        })
+    }
+
+    private fun translate(stmt: RunStatement) {
+        stmt.expressions.forEach({ e ->
+            when (e) {
+                is IdentifierExpression -> if (alloyAssertions.containsKey(e.name)) operations.add("run_${e.name} = PRE ${alloyAssertions[e.name].orEmpty()} THEN skip END")
+                else -> operations.add("run_${++runCounter} = PRE ${translateExpression(e)} THEN skip END")
             }
         })
     }

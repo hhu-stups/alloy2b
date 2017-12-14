@@ -32,9 +32,13 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
         is AssertDeclContext -> return AssertionStatement(child.name()?.text ?: "",
                 child.block().toAst(considerPosition),
                 toPosition(considerPosition))
-        is CmdDeclContext -> return CheckStatement(child.cmdname?.text ?: "",
+        is CheckStatementContext -> return CheckStatement(child.cmdname?.text ?: "",
                 child.block()?.toAst(considerPosition) ?: asList(child.name(0).toAst(considerPosition)),
                 toPosition(considerPosition))
+        is RunStatementContext -> return RunStatement(child.cmdname?.text ?: "",
+                child.block()?.toAst(considerPosition) ?: asList(child.name(0).toAst(considerPosition)),
+                toPosition(considerPosition))
+
         is FunDeclContext -> return FunDeclaration(child.name()?.text ?: "",
                 child.declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
                 child.block().expr().map { it.toAst(considerPosition) },

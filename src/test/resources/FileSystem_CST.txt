@@ -204,7 +204,7 @@ Specification
                       T[contents]
         T[}]
   Paragraph
-    CmdDecl
+    CheckStatement
       T[check]
       Name
         T[acyclic]
@@ -244,7 +244,7 @@ Specification
                     T[parent]
         T[}]
   Paragraph
-    CmdDecl
+    CheckStatement
       T[check]
       Name
         T[oneRoot]
@@ -300,7 +300,7 @@ Specification
                         T[contents]
         T[}]
   Paragraph
-    CmdDecl
+    CheckStatement
       T[check]
       Name
         T[oneLocation]

@@ -46,6 +46,6 @@ PROPERTIES
     {tom_} \/ {david_} \/ {jeremy_} \/ {carol_} \/ {janet_} \/ {tracy_} = Personell_ &
     speaks_ : Personell_ <-> Language_ &
     assign_ : Flight_ <-> Personell_
-ASSERTIONS
-    crewAlloc_
+OPERATIONS
+    run_crewAlloc = PRE crewAlloc_ THEN skip END
 END

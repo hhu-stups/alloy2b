@@ -8,7 +8,7 @@ module             : MODULE name ( LSQBRACKET  EXACTLY? name  (COMMA EXACTLY? NU
 
 open               : PRIVATE? OPEN name ( LSQBRACKET ref (COMMA ref)* RSQBRACKET )? ( AS name )? ;
 
-paragraph          : factDecl | assertDecl | funDecl | predDecl | cmdDecl | enumDecl | sigDecl ;
+paragraph          : factDecl | assertDecl | funDecl | predDecl | runStatement | checkStatement | enumDecl | sigDecl ;
 
 factDecl           : FACT (name)? block ;
 
@@ -22,7 +22,9 @@ predDecl           : PRIVATE? PRED (ref DOT)? name LPAREN declList? RPAREN block
                    | PRIVATE? PRED (ref DOT)? name LSQBRACKET declList? RSQBRACKET block
                    | PRIVATE? PRED (ref DOT)? name block ;
 
-cmdDecl            : (cmdname=name COLON)? (RUN | CHECK) ( name | block ) scope;
+runStatement       : (cmdname=name COLON)? RUN ( name | block ) scope;
+
+checkStatement     : (cmdname=name COLON)? CHECK ( name | block ) scope;
 
 scope              : FOR NUMBER ( EXPECT NUMBER )?
                    | FOR NUMBER BUT typescope (COMMA typescope)* ( EXPECT NUMBER )?

@@ -12,6 +12,6 @@ PROPERTIES
     x_ : queen_ --> INTEGER &
     x__ : queen_ --> INTEGER &
     y_ : queen_ --> INTEGER
-ASSERTIONS
-    show_
+OPERATIONS
+    run_show = PRE show_ THEN skip END
 END

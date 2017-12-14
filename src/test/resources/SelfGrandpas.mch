@@ -19,6 +19,6 @@ PROPERTIES
     mother_ : Person_ +-> Woman_ &
     wife_ : Man_ +-> Woman_ &
     husband_ : Woman_ +-> Man_
-ASSERTIONS
-    #(m_).(ownGrandpa_(m_))
+OPERATIONS
+    run_ownGrandpa = PRE #(m_).(ownGrandpa_(m_)) THEN skip END
 END
