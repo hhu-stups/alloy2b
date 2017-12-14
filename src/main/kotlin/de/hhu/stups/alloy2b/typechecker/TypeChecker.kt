@@ -84,12 +84,16 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheck(te: TypeEnvironment, stmt: FunDeclaration) {
         checkDeclsAndExpressions(te, stmt.decls, stmt.expressions)
-        te.addType(stmt.name,stmt.expressions.last().type)
+        if(stmt.expressions.isNotEmpty()) {
+            te.addType(stmt.name, stmt.expressions.last().type)
+        }
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration) {
         checkDeclsAndExpressions(te, stmt.decls, stmt.expressions)
-        te.addType(stmt.name,stmt.expressions.last().type)
+        if(stmt.expressions.isNotEmpty()) {
+            te.addType(stmt.name, stmt.expressions.last().type)
+        }
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: Expression) =
