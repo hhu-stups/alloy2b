@@ -105,9 +105,11 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
                     blockOrBar().toAst(considerPosition),
                     toPosition(considerPosition))
-            is CompareExprContext -> BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
+            is CompareExprContext -> if (NOT() != null) {UnaryOperatorExpression(Operator.NOT, BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
                     left.toAst(considerPosition), right.toAst(considerPosition),
-                    toPosition(considerPosition))
+                    toPosition(considerPosition)))} else {BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
+                    left.toAst(considerPosition), right.toAst(considerPosition),
+                    toPosition(considerPosition))}
             is ArrowOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.arrowOp().text),
                     left.toAst(considerPosition), right.toAst(considerPosition),
                     toPosition(considerPosition))

@@ -18,7 +18,7 @@ PROPERTIES
     {Root_} /\ Cur_ = {} &
     File_ \/ Dir_ = Object_ &
     /* from signature declaration */ !(this_).({this_} <: File_ => card({d_ | {d_} <: Dir_ & {this_} <: contents_[entries_[{d_}]]}) > 0) &
-    /* from signature declaration */ !(this_).({this_} <: Dir_ => parent_[{this_}] = entries_[{this_}]~[contents_~[{this_}]] & !(e1_, e2_).({e1_} <: entries_ & {e2_} <: entries_ => name_[{e1_}] = name_[{e2_}] => {e1_} = {e2_}) & {this_} <: closure1(parent_[{this_}])[{this_}] & {this_} = {Root_} => {Root_} <: closure1(parent_[{this_}])[{this_}]) &
+    /* from signature declaration */ !(this_).({this_} <: Dir_ => parent_[{this_}] = entries_[{this_}]~[contents_~[{this_}]] & !(e1_, e2_).({e1_} <: entries_ & {e2_} <: entries_ => name_[{e1_}] = name_[{e2_}] => {e1_} = {e2_}) & not({this_} <: closure1(parent_[{this_}])[{this_}]) & not({this_} = {Root_}) => {Root_} <: closure1(parent_[{this_}])[{this_}]) &
     /* from signature declaration */ !(this_).({this_} <: {Root_} => parent_[{this_}] = {}) &
     /* from signature declaration */ !(this_).({this_} <: DirEntry_ => card(entries_~[{this_}]) = 1) &
     entries_ : Dir_ <-> DirEntry_ &

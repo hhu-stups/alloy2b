@@ -35,4 +35,18 @@ class CstAstMappingTest {
         val expectedAst = AlloySpecification(asList(SignatureDeclarations(asList(SignatureDeclaration(name = IdentifierExpression("FSObject"), decls = asList(Decl(names = asList(IdentifierExpression("parent")), expression = QuantifiedExpression(operator = Operator.LONE, expression = IdentifierExpression(name = "Dir")))))))))
         assertEquals(expectedAst, ast)
     }
+    @test
+
+    fun mapNegatedCompareExpression() {
+        val code = "sig FSObject { parent: x != y }"
+
+        val result = ParserFacade.parse(code)
+        val ast = result.root!!.toAst()
+        val errors = result.errors
+
+        assertTrue(errors.isEmpty())
+
+        val expectedAst = AlloySpecification(asList(SignatureDeclarations(asList(SignatureDeclaration(name=IdentifierExpression("FSObject"), decls=asList(Decl(names=asList(IdentifierExpression("parent")), expression=QuantifiedExpression(operator= Operator.ONE, expression=UnaryOperatorExpression(Operator.NOT,BinaryOperatorExpression(operator=Operator.EQUAL, left=IdentifierExpression(name="x"), right=IdentifierExpression(name="y"))), position=null))))))))
+        assertEquals(expectedAst, ast)
+    }
 }
