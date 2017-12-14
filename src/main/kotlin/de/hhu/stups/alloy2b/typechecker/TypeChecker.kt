@@ -38,6 +38,7 @@ class TypeChecker(spec: AlloySpecification) {
                 is FunDeclaration -> typeCheck(te, stmt)
                 is PredDeclaration -> typeCheck(te, stmt)
                 is EnumDeclaration -> typeCheck(te, stmt)
+                is OpenStatement -> {} // nothing to typecheck here
                 else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
             }
 
@@ -164,7 +165,16 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: IdentifierExpression) {
-        expr.type = te.lookupType(expr)
+        // special cases for identifiers used in ordering
+        if("first".equals(expr.name)) {
+            expr.type.setType(Scalar(Type(Untyped())))
+        } else if("next".equals(expr.name)) {
+            expr.type.setType(Relation(Type(Untyped()),Type(Untyped())))
+        } else if("last".equals(expr.name)) {
+            expr.type.setType(Scalar(Type(Untyped())))
+        } else {
+            expr.type = te.lookupType(expr)
+        }
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: BinaryOperatorExpression) {

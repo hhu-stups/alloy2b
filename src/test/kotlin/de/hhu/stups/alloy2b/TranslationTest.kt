@@ -88,11 +88,9 @@ class TranslationTest {
     }
 
     @test
-    @Ignore
     fun translateRiverCrossingPuzzle() {
-        println(BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
-        //val expected = getResourceAsString("RiverCrossingPuzzle.mch")
-        //assertEquals(expected, BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
+        val expected = getResourceAsString("RiverCrossingPuzzle.mch")
+        assertEquals(expected, BTranslation(parseResource("RiverCrossingPuzzle.als").toAst(false)).getTranslation())
     }
 
     @test

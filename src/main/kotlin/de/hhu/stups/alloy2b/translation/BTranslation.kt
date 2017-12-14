@@ -174,6 +174,7 @@ class BTranslation(spec: AlloySpecification) {
             is FunDeclaration -> translate(stmt)
             is PredDeclaration -> translate(stmt)
             is EnumDeclaration -> translate(stmt)
+            is OpenStatement -> {} // TODO: implement 
             else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
         }
     }
@@ -307,12 +308,22 @@ class BTranslation(spec: AlloySpecification) {
                 is IdentityExpression -> translateExpression(e)
                 is UnivExpression -> translateExpression(e)
                 is IfExpression -> translateExpression(e)
+                is BlockExpression -> translateExpression(e)
+                is IfElseExpression -> translateExpression(e)
                 else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
             }
 
     private fun translateExpression(ue: UnivExpression): String {
         // TODO
         return ""
+    }
+
+    private fun translateExpression(ite: IfElseExpression): String {
+        return "(${translateExpression(ite.ifExpr)} => ${translateExpression(ite.thenExpr)}) & (not(${translateExpression(ite.ifExpr)}) => ${translateExpression(ite.elseExpr)})"
+    }
+
+    private fun translateExpression(be: BlockExpression): String {
+        return be.expressions.joinToString(" & ") { translateExpression(it) }
     }
 
     private fun translateExpression(ie: IfExpression): String {

@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.Token
 import java.util.Arrays.asList
 
 fun SpecificationContext.toAst(considerPosition: Boolean = false): AlloySpecification =
-        AlloySpecification(this.paragraph().map { it.toAst(considerPosition) }, toPosition(considerPosition))
+        AlloySpecification(this.open().map {it.toAst(considerPosition)} + this.paragraph().map { it.toAst(considerPosition) }, toPosition(considerPosition))
 
 fun Token.startPoint() = Point(line, charPositionInLine)
 
@@ -15,6 +15,9 @@ fun Token.endPoint() = Point(line, charPositionInLine + text.length)
 fun ParserRuleContext.toPosition(considerPosition: Boolean): Position? {
     return if (considerPosition) Position(start.startPoint(), stop.endPoint()) else null
 }
+
+fun OpenContext.toAst(considerPosition: Boolean = false) : OpenStatement =
+        OpenStatement(this.name().map { it.toAst(considerPosition) })
 
 fun NameContext.toAst(considerPosition: Boolean = false): IdentifierExpression =
         IdentifierExpression(this.text, toPosition(considerPosition))

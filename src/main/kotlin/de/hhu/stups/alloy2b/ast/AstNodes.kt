@@ -118,6 +118,9 @@ data class UnivExpression(override val position: Position? = null,
                           override var type: Type = Type(Untyped())) : Expression
 
 // statements
+data class OpenStatement(val modules: List<IdentifierExpression>,
+                         override val position: Position? = null) : Statement
+
 data class EnumDeclaration(val name: String,
                            val elements: List<String>,
                            override val position: Position? = null) : Statement
