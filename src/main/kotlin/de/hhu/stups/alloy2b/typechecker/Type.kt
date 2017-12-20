@@ -58,7 +58,19 @@ data class Relation(val leftType: Type, val rightType: Type) : ExplicitType
 
 data class Scalar(val subType: Type) : ExplicitType
 
-class Integer : ExplicitType
+class Integer : ExplicitType {
+    override fun toString(): String {
+        return "INTEGER"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is Integer
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+}
 
 class Predicate : ExplicitType
 

@@ -145,11 +145,11 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheckExpr(@Suppress("UNUSED_PARAMETER") teIn: TypeEnvironment, expr: IntegerSetExpression) {
-        expr.type = Type(Set(Type(Integer())))
+        expr.type.setType(Type(Set(Type(Integer()))))
     }
 
     private fun typeCheckExpr(@Suppress("UNUSED_PARAMETER") teIn: TypeEnvironment, expr: IntegerExpression) {
-        expr.type = Type(Integer())
+        expr.type.setType(Type(Integer()))
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfExpression) {
@@ -189,7 +189,7 @@ class TypeChecker(spec: AlloySpecification) {
         } else if("last".equals(expr.name)) {
             expr.type.setType(Type(Scalar(Type(Untyped()))))
         } else {
-            expr.type = te.lookupType(expr)
+            expr.type.setType(te.lookupType(expr))
         }
     }
 
