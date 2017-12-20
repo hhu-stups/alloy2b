@@ -161,7 +161,7 @@ class BTranslation(spec: AlloySpecification) {
         if (type is Relation) {
             val relRightType = type.rightType.currentType
             if (relRightType is Set && relRightType.subType.currentType is Integer) {
-                return IntegerCastExpression(expr)
+                return IntegerCastExpression(expr, type=Type(Integer()))
             }
         }
         return expr
