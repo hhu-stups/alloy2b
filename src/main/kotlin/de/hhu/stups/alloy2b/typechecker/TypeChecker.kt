@@ -79,7 +79,7 @@ class TypeChecker(spec: AlloySpecification) {
             decl.names.forEach { idExpr ->
                 run {
                     typeCheckExpr(te, decl.expression)
-                    val type = Relation(stmt.name.type, decl.expression.expression.type)
+                    val type = Relation(te.lookupType(stmt.name), decl.expression.expression.type)
                     idExpr.type.setType(type)
                     te.addType(idExpr.name, type)
                 }
