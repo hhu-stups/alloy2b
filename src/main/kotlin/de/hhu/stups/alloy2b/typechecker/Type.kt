@@ -6,6 +6,9 @@ class Type(type: ExplicitType = Untyped()) {
     var currentType = type
 
     fun setType(type: Type) {
+        if(type.untyped() && this.untyped()) {
+            return
+        }
         if(type.untyped()) {
             type.setType(this)
         }
