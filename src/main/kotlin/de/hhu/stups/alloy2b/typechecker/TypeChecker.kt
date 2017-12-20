@@ -26,10 +26,10 @@ class TypeChecker(spec: AlloySpecification) {
                 signatureType = (signatureType.currentType as Scalar).subType
             }
             if (it.qualifiers.contains(Operator.ONE)) {
-                it.name.type.setType(Scalar(signatureType))
-                te.addType(it.name.name, Scalar(signatureType))
+                it.name.type.setType(Type(Scalar(signatureType)))
+                te.addType(it.name.name, Type(Scalar(signatureType)))
             } else {
-                it.name.type.setType(Set(signatureType))
+                it.name.type.setType(Type(Set(signatureType)))
                 te.addType(it.name.name, Set(signatureType))
             }
         it.decls.forEach({d -> d.names.forEach({name -> te.addType(name.name,Relation(Type(Untyped()),Type(Untyped())))})})})
@@ -80,7 +80,7 @@ class TypeChecker(spec: AlloySpecification) {
                 run {
                     typeCheckExpr(te, decl.expression)
                     val type = Relation(te.lookupType(stmt.name), decl.expression.expression.type)
-                    idExpr.type.setType(type)
+                    idExpr.type.setType(Type(type))
                     te.addType(idExpr.name, type)
                 }
             }
@@ -133,15 +133,15 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifiedExpression) {
         typeCheckExpr(teIn, expr.expression)
         if (expr.operator == ONE) {
-            expr.type = Type(Scalar(expr.expression.type))
+            expr.type.setType(Type(Scalar(expr.expression.type)))
         } else {
-            expr.type = expr.expression.type
+            expr.type.setType(expr.expression.type)
         }
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IntegerCastExpression) {
-        expr.type = Type(Integer())
         typeCheckExpr(teIn, expr.expr)
+        expr.type.setType(Type(Integer()))
     }
 
     private fun typeCheckExpr(@Suppress("UNUSED_PARAMETER") teIn: TypeEnvironment, expr: IntegerSetExpression) {
@@ -155,35 +155,39 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfExpression) {
         typeCheckExpr(teIn, expr.ifExpr)
         typeCheckExpr(teIn, expr.thenExpr)
+        expr.type.setType(expr.thenExpr.type)
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfElseExpression) {
         typeCheckExpr(teIn, expr.ifExpr)
         typeCheckExpr(teIn, expr.thenExpr)
         typeCheckExpr(teIn, expr.elseExpr)
+        expr.type.setType(expr.thenExpr.type)
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: BlockExpression) {
         expr.expressions.forEach { subExpr -> typeCheckExpr(teIn, subExpr) }
+        expr.type.setType(Type(Predicate()))
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: QuantifierExpression) {
         checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
+        expr.type.setType(Type(Predicate()))
     }
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: DeclListExpression) {
         checkDeclsAndExpressions(teIn, expr.decls, expr.expressions)
-        expr.type.setType(expr.expressions.last().type.currentType)
+        expr.type.setType(expr.expressions.last().type)
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: IdentifierExpression) {
         // special cases for identifiers used in ordering
         if("first".equals(expr.name)) {
-            expr.type.setType(Scalar(Type(Untyped())))
+            expr.type.setType(Type(Scalar(Type(Untyped()))))
         } else if("next".equals(expr.name)) {
-            expr.type.setType(Relation(Type(Untyped()),Type(Untyped())))
+            expr.type.setType(Type(Relation(Type(Untyped()),Type(Untyped()))))
         } else if("last".equals(expr.name)) {
-            expr.type.setType(Scalar(Type(Untyped())))
+            expr.type.setType(Type(Scalar(Type(Untyped()))))
         } else {
             expr.type = te.lookupType(expr)
         }
@@ -197,43 +201,43 @@ class TypeChecker(spec: AlloySpecification) {
             return
         }
         if (expr.right is IdentityExpression) run {
-            expr.right.type.setType(expr.left.type.currentType)
+            expr.right.type.setType(expr.left.type)
             return
         }
         val exprRightType = expr.right.type.currentType
         if (expr.left is UnivExpression && exprRightType is Relation) {
-            expr.type.setType(Set(exprRightType.leftType))
+            expr.type.setType(Type(Set(exprRightType.leftType)))
             return
         }
         val exprLeftType = expr.left.type.currentType
         if (expr.right is UnivExpression && exprLeftType is Relation) {
-            expr.type.setType(Set(exprLeftType.rightType))
+            expr.type.setType(Type(Set(exprLeftType.rightType)))
             return
         }
         if (expr.left.type.currentType is Relation && expr.right.type.currentType is Relation) {
-            expr.type.setType(expr.left.type.currentType)
+            expr.type.setType(expr.left.type)
             return
         }
-        expr.type.setType(Set(expr.left.type))
+        expr.type.setType(Type(Set(expr.left.type)))
     }
 
     private fun typeCheckJoinExpr(te: TypeEnvironment, je: BinaryOperatorExpression) {
         val jeRightType = je.right.type.currentType
         val jeLeftType = je.left.type.currentType
         if (je.left is UnivExpression && jeRightType is Relation) {
-            je.type.setType(jeRightType.rightType.currentType)
+            je.type.setType(jeRightType.rightType)
         } else if (je.right is UnivExpression && jeLeftType is Relation) {
-            je.type.setType(jeLeftType.leftType.currentType)
+            je.type.setType(jeLeftType.leftType)
         } else if (jeLeftType is Relation && jeRightType is Relation) {
-            je.type.setType(Relation(jeLeftType.leftType,jeRightType.rightType))
+            je.type.setType(Type(Relation(jeLeftType.leftType,jeRightType.rightType)))
         } else if (jeLeftType is Relation && (jeRightType is Set || jeRightType is Scalar)) {
-            je.type.setType(Set(jeLeftType.leftType))
+            je.type.setType(Type(Set(jeLeftType.leftType)))
         } else if (jeLeftType is Set && jeRightType is Relation) {
             //je.left.type.setType(Set(jeRightType.leftType))
-            je.type.setType(Set(jeRightType.rightType))
+            je.type.setType(Type(Set(jeRightType.rightType)))
         } else if (jeLeftType is Scalar && jeRightType is Relation) {
             //je.left.type.setType(Scalar(jeRightType.leftType))
-            je.type.setType(Set(jeRightType.rightType))
+            je.type.setType(Type(Set(jeRightType.rightType)))
         } else {
             throw UnsupportedOperationException("join typechecking failed: ${je.left} . ${je.right}")
         }
@@ -241,7 +245,7 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: UnaryOperatorExpression) {
         typeCheckExpr(te, expr.expression)
-        expr.type = expr.expression.type
+        expr.type.setType(expr.expression.type)
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: LetExpression) {
@@ -249,16 +253,17 @@ class TypeChecker(spec: AlloySpecification) {
             typeCheckExpr(te, decl.expression); te.addType(decl.name.name, decl.expression.type)
         }
         expr.expressions.forEach { typeCheckExpr(te, it) }
+        expr.type.setType(expr.expressions.last().type)
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: BoxJoinExpression) {
         typeCheckExpr(te, expr.left)
         expr.parameters.map { typeCheckExpr(te, it) }
         if (expr.left.type.currentType is Relation && expr.parameters.any { it.type.currentType is Relation }) {
-            expr.type.setType(Relation(expr.left.type, expr.left.type))
+            expr.type.setType(Type(Relation(expr.left.type, expr.left.type)))
             return
         }
-        expr.type.setType(Set(expr.left.type))
+        expr.type.setType(Type(Set(expr.left.type)))
     }
 
     private fun checkDeclsAndExpressions(te: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>) {

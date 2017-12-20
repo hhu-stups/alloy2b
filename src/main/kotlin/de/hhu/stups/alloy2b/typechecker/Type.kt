@@ -5,23 +5,23 @@ interface ExplicitType
 class Type(type: ExplicitType = Untyped()) {
     var currentType = type
 
-    fun setType(type: ExplicitType) {
-        if(type is Untyped) {
-            return
+    fun setType(type: Type) {
+        if(type.untyped()) {
+            type.setType(this)
         }
+        val ctype = type.currentType
         if (currentType is Untyped) {
-            currentType = type
-        } else if (currentType is Relation && type is Relation) {
-            (currentType as Relation).rightType.setType(type.rightType.currentType)
-            (currentType as Relation).leftType.setType(type.leftType.currentType)
-        } else if (currentType is Scalar && type is Scalar) {
-            (currentType as Scalar).subType.setType(type.subType.currentType)
-            (currentType as Scalar).subType.setType(type.subType.currentType)
-        } else if (currentType is Set && type is Set) {
-            (currentType as Set).subType.setType(type.subType.currentType)
-            (currentType as Set).subType.setType(type.subType.currentType)
-        } else if (currentType is Signature && type is Signature) {
-            if(!(currentType as Signature).subType.equals(type.subType)) {
+            currentType = type.currentType
+        } else if (currentType is Relation && ctype is Relation) {
+            (currentType as Relation).rightType.setType(ctype.rightType)
+            (currentType as Relation).leftType.setType(ctype.leftType)
+        } else if (currentType is Scalar && ctype is Scalar) {
+            (currentType as Scalar).subType.setType(ctype.subType)
+            (currentType as Scalar).subType.setType(ctype.subType)
+        } else if (currentType is Set && ctype is Set) {
+            (currentType as Set).subType.setType(ctype.subType)
+        } else if (currentType is Signature && ctype is Signature) {
+            if(!(currentType as Signature).subType.equals(ctype.subType)) {
                 throw UnsupportedOperationException("Type Checking failed. Tried to unify $currentType and $type")
             }
         } else {
@@ -59,6 +59,8 @@ data class Relation(val leftType: Type, val rightType: Type) : ExplicitType
 data class Scalar(val subType: Type) : ExplicitType
 
 class Integer : ExplicitType
+
+class Predicate : ExplicitType
 
 class Untyped : ExplicitType {
     override fun toString(): String {

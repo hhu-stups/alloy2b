@@ -18,7 +18,7 @@ class TypeEnvironment(private val types: MutableMap<String, Type> = mutableMapOf
 
     fun addType(id: String, type: ExplicitType) =
             if (types.containsKey(id)) {
-                types[id]!!.setType(type)
+                types[id]!!.setType(Type(type))
             } else {
                 types[id] = Type(type)
             }
