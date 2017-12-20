@@ -323,25 +323,29 @@ class BTranslation(spec: AlloySpecification) {
         }
     }
 
-    private fun translateExpression(e: Expression) =
-            when (e) {
-                is QuantifierExpression -> translateExpression(e)
-                is IdentifierExpression -> translateExpression(e)
-                is BinaryOperatorExpression -> translateExpression(e)
-                is UnaryOperatorExpression -> translateExpression(e)
-                is LetExpression -> translateExpression(e)
-                is BoxJoinExpression -> translateExpression(e)
-                is IntegerSetExpression -> "INTEGER"
-                is IntegerCastExpression -> translateExpression(e)
-                is IntegerExpression -> translateExpression(e)
-                is QuantifiedExpression -> translateExpression(e)
-                is IdentityExpression -> translateExpression(e)
-                is UnivExpression -> translateExpression(e)
-                is IfExpression -> translateExpression(e)
-                is BlockExpression -> translateExpression(e)
-                is IfElseExpression -> translateExpression(e)
-                else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
-            }
+    private fun translateExpression(e: Expression): String {
+        if (e.type.untyped()) {
+            throw UnsupportedOperationException("untyped expression: $e")
+        }
+        return when (e) {
+            is QuantifierExpression -> translateExpression(e)
+            is IdentifierExpression -> translateExpression(e)
+            is BinaryOperatorExpression -> translateExpression(e)
+            is UnaryOperatorExpression -> translateExpression(e)
+            is LetExpression -> translateExpression(e)
+            is BoxJoinExpression -> translateExpression(e)
+            is IntegerSetExpression -> "INTEGER"
+            is IntegerCastExpression -> translateExpression(e)
+            is IntegerExpression -> translateExpression(e)
+            is QuantifiedExpression -> translateExpression(e)
+            is IdentityExpression -> translateExpression(e)
+            is UnivExpression -> translateExpression(e)
+            is IfExpression -> translateExpression(e)
+            is BlockExpression -> translateExpression(e)
+            is IfElseExpression -> translateExpression(e)
+            else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
+        }
+    }
 
     private fun translateExpression(ue: UnivExpression): String {
         // TODO
