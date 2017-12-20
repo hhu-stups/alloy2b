@@ -20,7 +20,6 @@ class Type(type: ExplicitType = Untyped()) {
             (currentType as Relation).leftType.setType(ctype.leftType)
         } else if (currentType is Scalar && ctype is Scalar) {
             (currentType as Scalar).subType.setType(ctype.subType)
-            (currentType as Scalar).subType.setType(ctype.subType)
         } else if (currentType is Set && ctype is Set) {
             (currentType as Set).subType.setType(ctype.subType)
         } else if (currentType is Signature && ctype is Signature) {
