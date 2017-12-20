@@ -145,6 +145,12 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
             is IntersectionExprContext -> BinaryOperatorExpression(Operator.INTERSECTION,
                     left.toAst(considerPosition),
                     right.toAst(considerPosition))
+            is RestrictionOpExprContext -> BinaryOperatorExpression(Operator.DOM_RESTR,
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition))
+            is OverrideExprContext -> BinaryOperatorExpression(Operator.OVERRIDE,
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition))
             is NegatedExprContext -> UnaryOperatorExpression(Operator.NOT,
                     expr().toAst(considerPosition),
                     toPosition(considerPosition))
