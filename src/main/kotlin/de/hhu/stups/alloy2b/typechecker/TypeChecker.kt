@@ -202,7 +202,6 @@ class TypeChecker(spec: AlloySpecification) {
         }
         if (expr.right is IdentityExpression) run {
             expr.right.type.setType(expr.left.type)
-            return
         }
         val exprRightType = expr.right.type.currentType
         if (expr.left is UnivExpression && exprRightType is Relation) {
