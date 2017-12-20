@@ -18,8 +18,13 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun collectSignatureType(te: TypeEnvironment, sdecs: SignatureDeclarations) {
         sdecs.signatures.forEach({
-            println(it.signatureExtension)
-            val signatureType = if (it.signatureExtension == null || it.signatureExtension is InSignatureExtension) Type(Signature(it.name.name)) else Type(te.lookupType((it.signatureExtension as ExtendsSignatureExtension).name).currentType)
+            var signatureType = if (it.signatureExtension == null || it.signatureExtension is InSignatureExtension) Type(Signature(it.name.name)) else Type(te.lookupType((it.signatureExtension as ExtendsSignatureExtension).name).currentType)
+            if(signatureType.currentType is Set) {
+                signatureType = (signatureType.currentType as Set).subType
+            }
+            if(signatureType.currentType is Scalar) {
+                signatureType = (signatureType.currentType as Scalar).subType
+            }
             if (it.qualifiers.contains(Operator.ONE)) {
                 it.name.type.setType(Scalar(signatureType))
                 te.addType(it.name.name, Scalar(signatureType))

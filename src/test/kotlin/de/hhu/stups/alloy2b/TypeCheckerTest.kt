@@ -14,7 +14,7 @@ import org.junit.Test
 class TypeCheckerTest {
     @Test
     fun typeSubSignatures() {
-        val code = "sig test {}\nsig test2 {}"
+        val code = "sig test {}\nsig test2 extends test {}"
 
         val result = ParserFacade.parse(code)
         val ast = result.root!!.toAst()
