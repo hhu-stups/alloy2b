@@ -16,7 +16,7 @@ data class AlloySpecification(val declarations: List<Statement>,
 
 interface Statement : Node
 interface Expression : Node {
-    var type: Type
+    val type: Type
 }
 
 
@@ -39,22 +39,22 @@ data class InSignatureExtension(val names: List<IdentifierExpression>,
 data class UnaryOperatorExpression(val operator: Operator,
                                    val expression: Expression,
                                    override val position: Position? = null,
-                                   override var type: Type = Type(Untyped())) : Expression
+                                   override val type: Type = Type(Untyped())) : Expression
 
 data class BinaryOperatorExpression(val operator: Operator,
                                     val left: Expression,
                                     val right: Expression,
                                     override val position: Position? = null,
-                                    override var type: Type = Type(Untyped())) : Expression
+                                    override val type: Type = Type(Untyped())) : Expression
 
 data class BoxJoinExpression(val left: Expression,
                              val parameters: List<Expression>,
                              override val position: Position? = null,
-                             override var type: Type = Type(Untyped())) : Expression
+                             override val type: Type = Type(Untyped())) : Expression
 
 data class IdentifierExpression(val name: String,
                                 override val position: Position? = null,
-                                override var type: Type = Type(Untyped())) : Expression {
+                                override val type: Type = Type(Untyped())) : Expression {
     override fun equals(other: Any?): Boolean {
         if (other is IdentifierExpression) {
             return name.equals(other.name)
@@ -70,52 +70,52 @@ data class IdentifierExpression(val name: String,
 data class LetExpression(val letDecls: List<LetDecl>,
                          val expressions: List<Expression>,
                          override val position: Position? = null,
-                         override var type: Type = Type(Untyped())) : Expression
+                         override val type: Type = Type(Untyped())) : Expression
 
 data class QuantifiedExpression(val operator: Operator,
                                 val expression: Expression,
                                 override val position: Position? = null,
-                                override var type: Type = Type(Untyped())) : Expression
+                                override val type: Type = Type(Untyped())) : Expression
 
 data class QuantifierExpression(val operator: Operator,
                                 val decls: List<Decl>,
                                 val expressions: List<Expression>,
                                 override val position: Position? = null,
-                                override var type: Type = Type(Untyped())) : Expression
+                                override val type: Type = Type(Untyped())) : Expression
 
 data class BlockExpression(val expressions: List<Expression>,
                            override val position: Position? = null,
-                           override var type: Type = Type(Untyped())) : Expression
+                           override val type: Type = Type(Untyped())) : Expression
 
 data class IfExpression(val ifExpr: Expression, val thenExpr: Expression,
                         override val position: Position? = null,
-                        override var type: Type = Type(Untyped())) : Expression
+                        override val type: Type = Type(Untyped())) : Expression
 
 data class IfElseExpression(val ifExpr: Expression, val thenExpr: Expression, val elseExpr: Expression,
                             override val position: Position? = null,
-                            override var type: Type = Type(Untyped())) : Expression
+                            override val type: Type = Type(Untyped())) : Expression
 
 data class DeclListExpression(val decls: List<Decl>,
                               val expressions: List<Expression>,
                               override val position: Position? = null,
-                              override var type: Type = Type(Untyped())) : Expression
+                              override val type: Type = Type(Untyped())) : Expression
 
 data class IntegerSetExpression(override val position: Position? = null,
-                                override var type: Type = Type(Untyped())) : Expression
+                                override val type: Type = Type(Untyped())) : Expression
 
 data class IntegerCastExpression(val expr: Expression,
                                  override val position: Position? = null,
-                                 override var type: Type = Type(Untyped())) : Expression
+                                 override val type: Type = Type(Untyped())) : Expression
 
 data class IntegerExpression(val int: Long,
                              override val position: Position? = null,
-                             override var type: Type = Type(Untyped())) : Expression
+                             override val type: Type = Type(Untyped())) : Expression
 
 data class IdentityExpression(override val position: Position? = null,
-                              override var type: Type = Type(Untyped())) : Expression
+                              override val type: Type = Type(Untyped())) : Expression
 
 data class UnivExpression(override val position: Position? = null,
-                          override var type: Type = Type(Untyped())) : Expression
+                          override val type: Type = Type(Untyped())) : Expression
 
 // statements
 data class OpenStatement(val modules: List<IdentifierExpression>,
