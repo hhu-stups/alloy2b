@@ -267,7 +267,7 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun checkDeclsAndExpressions(te: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>) {
-        decls.forEach { decl -> decl.names.forEach { name -> typeCheckExpr(te, decl.expression); name.type = decl.expression.type; te.addLocalType(name.name, decl.expression.type) } }
+        decls.forEach { decl -> decl.names.forEach { name -> typeCheckExpr(te, decl.expression); name.type.setType(decl.expression.type); te.addLocalType(name.name, decl.expression.type) } }
         expressions.forEach { subExpr -> typeCheckExpr(te, subExpr) }
     }
 
