@@ -228,6 +228,8 @@ class TypeChecker(spec: AlloySpecification) {
         } else if (je.right is UnivExpression && jeLeftType is Relation) {
             je.type.setType(jeLeftType.leftType)
         } else if (jeLeftType is Relation && jeRightType is Relation) {
+            je.left.type.setType(Type(Relation(jeRightType.leftType,Type(Untyped()))))
+            je.right.type.setType(Type(Relation(Type(Untyped()),jeLeftType.rightType)))
             je.type.setType(Type(Relation(jeLeftType.leftType,jeRightType.rightType)))
         } else if (jeLeftType is Relation && (jeRightType is Set || jeRightType is Scalar)) {
             je.type.setType(Type(Set(jeLeftType.leftType)))
