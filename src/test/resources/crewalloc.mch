@@ -21,7 +21,7 @@ PROPERTIES
     {carol_} <: Personell_ &
     {janet_} <: Personell_ &
     {tracy_} <: Personell_ &
-    Personell_ <: male_ &
+    male_ <: Personell_ &
     male_ = {tom_} \/ {david_} \/ {jeremy_} &
     speaks_ = {tom_} * {german_} \/ {david_} * {french_} \/ {jeremy_} * {german_} \/ {carol_} * {spanish_} \/ {janet_} * {french_} \/ {tracy_} * {spanish_} &
     french_ /= german_ &

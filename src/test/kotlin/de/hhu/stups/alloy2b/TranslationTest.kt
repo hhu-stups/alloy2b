@@ -20,6 +20,12 @@ class TranslationTest {
     }
 
     @test
+    fun translateCrewAllocLarge() {
+        val expected = getResourceAsString("crewAllocLarge.mch")
+        assertEquals(expected, BTranslation(parseResource("crewAllocLarge.als").toAst(false)).getTranslation())
+    }
+
+    @test
     fun translateFileSystem() {
         val expected = getResourceAsString("FileSystem.mch")
         assertEquals(expected, BTranslation(parseResource("FileSystem.als").toAst(false)).getTranslation())

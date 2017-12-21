@@ -300,8 +300,8 @@ class BTranslation(spec: AlloySpecification) {
             }
             is InSignatureExtension -> {
                 sdec.signatureExtension.names.forEach({ extensionName ->
-                    properties.add("${sanitizeIdentifier(extensionName)} <: ${sanitizeIdentifier(sdec.name)}")
-                    parentSignature[extensionName] = sdec.name
+                    properties.add("${sanitizeIdentifier(sdec.name)} <: ${sanitizeIdentifier(extensionName)}")
+                    parentSignature[sdec.name] = extensionName
                 })
 
             }
