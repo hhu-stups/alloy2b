@@ -41,8 +41,14 @@ class AlloyLexerTest {
     }
 
     @test
-    fun tokenizeArrorOp(){
+    fun tokenizeArrorOp() {
         assertEquals(listOf("ID","COLON","ID","ARROW","LONE","ID","EOF"),
                 tokens(lexerForCode("mother : Person -> lone women")))
+    }
+
+    @test
+    fun tokenizeQuantifiedDeclListExpression() {
+        assertEquals(listOf("PRED", "ID", "LBRACKET", "NO", "DISJ", "ID", "COMMA", "ID", "COLON", "ID", "DASH", "ID", "LSQBRACKET", "ID", "COMMA", "ID", "RSQBRACKET", "EOF"),
+                tokens(lexerForCode("pred Show {\n no disj q1,q2:Queen| aligned[q1,q2]")))
     }
 }

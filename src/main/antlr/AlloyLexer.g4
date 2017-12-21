@@ -30,7 +30,7 @@ SUM                : 'sum' ;
 IDEN               : 'iden' ;
 UNIV               : 'univ' ;
 ELSE               : 'else' ;
-DISJ               : 'DISJ' ;
+DISJ               : 'disj' ;
 
 // commands
 RUN                : 'run' ;

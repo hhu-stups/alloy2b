@@ -56,6 +56,8 @@ expr               : unOp expr                                                  
                    | left=expr OVERRIDE right=expr                                        # overrideExpr
                    | CARD expr                                                            # cardExpr
                    | left=expr operator=binOp right=expr                                  # binOpExpr
+                                      | quant declList blockOrBar                                            # quantifierExpr
+
                    | exprQuantifier expr                                                  # quantifiedExpr
                    | left=expr NOT? compareOp right=expr                                  # compareExpr
 
@@ -67,7 +69,6 @@ expr               : unOp expr                                                  
                    | left=expr OR right=expr                                              # disjunctionExpr
 
                    | LET letDecl (COMMA letDecl)* blockOrBar                              # letExpr
-                   | quant declList blockOrBar                                            # quantifierExpr
 
                    | INT LSQBRACKET expr RSQBRACKET                                       # intCastExpr
                    | INT LPAREN expr RPAREN                                               # intCastExpr
