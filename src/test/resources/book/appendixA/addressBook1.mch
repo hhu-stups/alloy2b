@@ -9,7 +9,6 @@ DEFINITIONS
 PROPERTIES
     Alias_ <: Name_ &
     Group_ <: Name_ &
-     &
     Alias_ /\ Group_ = {} &
     Alias_ \/ Group_ = Name_ &
     address_ : Name_ <-> Addr_ \/ Name_
