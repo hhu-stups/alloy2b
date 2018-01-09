@@ -4,7 +4,7 @@ lexer grammar AlloyLexer;
 NEWLINE            : ('\r\n' | '\r' | '\n') -> skip ;
 WS                 : [\t ]+ -> skip ;
 COMMENT            : ('//' ~( '\r' | '\n' )*
-                   |  '--'+ ~( '\r' | '\n' )*
+                   |  '--' '-'* ~( '\r' | '\n' )*
                    |  '/*' .*? '*/')
                    -> skip ;
 
