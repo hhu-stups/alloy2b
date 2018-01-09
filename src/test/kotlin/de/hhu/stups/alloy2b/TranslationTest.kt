@@ -110,4 +110,10 @@ class TranslationTest {
         val expected = getResourceAsString("EnumTest.mch")
         assertEquals(expected, BTranslation(parseResource("EnumTest.als").toAst(false)).getTranslation())
     }
+
+    @test
+    fun translateAddressBook1a() {
+        val expected = getResourceAsString("book/appendixA/addressBook1.mch")
+        assertEquals(expected, BTranslation(parseResource("book/appendixA/addressBook1.als").toAst(false)).getTranslation())
+    }
 }
