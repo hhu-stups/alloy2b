@@ -1,4 +1,4 @@
-module tour/addressBook1a ----- Page 6
+module tour/addressBook1a
 
 sig Name, Addr { }
 
