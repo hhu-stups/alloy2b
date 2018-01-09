@@ -462,7 +462,7 @@ class BTranslation(spec: AlloySpecification) {
             BIJECTIVE_FUNCTION -> symbol = ">->>"
             else -> throw UnsupportedOperationException(qe.operator.name)
         }
-        return "${translateExpression(qe.left)} $symbol ${translateExpression(qe.right)}"
+        return "(${translateExpression(qe.left)} $symbol ${translateExpression(qe.right)})"
     }
 
     private fun translateExpression(qe: UnaryOperatorExpression): String =

@@ -11,11 +11,11 @@ PROPERTIES
     Dir_ <: FSObject_ &
     File_ /\ Dir_ = {} &
     File_ \/ Dir_ = FSObject_ &
-    /* from signature declaration */ !(this_).({this_} <: FileSystem_ => live_[{this_}] <: (root_[{this_}] ; closure(contents_[{this_}])) & parent_[{this_}] = contents_[{this_}]~) &
+    /* from signature declaration */ !(this_).({this_} <: FileSystem_ => (live_[{this_}] <: (root_[{this_}] ; closure(contents_[{this_}]))) & (parent_[{this_}] = contents_[{this_}]~)) &
     live_ : FileSystem_ <-> FSObject_ &
-    !(this_).({this_} <: FileSystem_ => root_ : FileSystem_ --> Dir_ /\ live_[{this_}]) &
-    !(this_).({this_} <: FileSystem_ => parent_ : FileSystem_ --> live_[{this_}] - root_[{this_}] --> Dir_ /\ live_[{this_}]) &
-    contents_ : FileSystem_ --> Dir_ * FSObject_
+    !(this_).({this_} <: FileSystem_ => root_ : FileSystem_ --> (Dir_ /\ live_[{this_}])) &
+    !(this_).({this_} <: FileSystem_ => parent_ : FileSystem_ --> ((live_[{this_}] - root_[{this_}]) --> (Dir_ /\ live_[{this_}]))) &
+    contents_ : FileSystem_ --> (Dir_ * FSObject_)
 OPERATIONS
     run_example = PRE example_ THEN skip END
 END

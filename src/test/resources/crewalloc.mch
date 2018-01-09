@@ -5,11 +5,11 @@ SETS
 CONSTANTS
     ordering_Flight_, french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_, assign_
 DEFINITIONS
-    allLanguages_ ==   !(f_).({f_} <: Flight_ => speaks_[assign_[{f_}]] = Language_) ;
-    allSexes_ ==   !(f_).({f_} <: Flight_ => card(assign_[{f_}] - male_) >= 1 & card(assign_[{f_}] /\ male_) >= 1) ;
-    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => {p_} <: assign_[{f_}] & {p_} <: assign_[next_(f_)] => not({p_} <: assign_[next_(next_(f_))])) ;
-    everybodyInSchedule_ ==   dom(assign_) = Personell_ ;
-    crewAlloc_ ==   allLanguages_ & allSexes_ & scheduleOk_ & everybodyInSchedule_
+    allLanguages_ ==   !(f_).({f_} <: Flight_ => (speaks_[assign_[{f_}]] = Language_)) ;
+    allSexes_ ==   !(f_).({f_} <: Flight_ => (card((assign_[{f_}] - male_)) >= 1 & card((assign_[{f_}] /\ male_)) >= 1)) ;
+    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => (({p_} <: assign_[{f_}]) & ({p_} <: assign_[next_(f_)])) => not(({p_} <: assign_[next_(next_(f_))]))) ;
+    everybodyInSchedule_ ==   (dom(assign_) = Personell_) ;
+    crewAlloc_ ==   (((allLanguages_ & allSexes_) & scheduleOk_) & everybodyInSchedule_)
 PROPERTIES
     ordering_Flight_ : SEQ(Flight_) &
     {french_} <: Language_ &
@@ -22,8 +22,8 @@ PROPERTIES
     {janet_} <: Personell_ &
     {tracy_} <: Personell_ &
     male_ <: Personell_ &
-    male_ = {tom_} \/ {david_} \/ {jeremy_} &
-    speaks_ = {tom_} * {german_} \/ {david_} * {french_} \/ {jeremy_} * {german_} \/ {carol_} * {spanish_} \/ {janet_} * {french_} \/ {tracy_} * {spanish_} &
+    (male_ = (({tom_} \/ {david_}) \/ {jeremy_})) &
+    (speaks_ = (((((({tom_} * {german_}) \/ ({david_} * {french_})) \/ ({jeremy_} * {german_})) \/ ({carol_} * {spanish_})) \/ ({janet_} * {french_})) \/ ({tracy_} * {spanish_}))) &
     french_ /= german_ &
     french_ /= spanish_ &
     german_ /= spanish_ &
