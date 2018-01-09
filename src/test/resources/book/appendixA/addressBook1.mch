@@ -11,7 +11,7 @@ PROPERTIES
     Group_ <: Name_ &
     Alias_ /\ Group_ = {} &
     Alias_ \/ Group_ = Name_ &
-    address_ : Name_ <-> Addr_ \/ Name_
+    address_ : Name_ <-> (Addr_ \/ Name_)
 OPERATIONS
     run_show = PRE show_ THEN skip END
 END
