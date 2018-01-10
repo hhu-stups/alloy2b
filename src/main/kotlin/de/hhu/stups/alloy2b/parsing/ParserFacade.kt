@@ -28,11 +28,11 @@ object ParserFacade {
         val errors = LinkedList<Error>()
         val errorListener = object : ANTLRErrorListener {
             override fun reportAmbiguity(p0: Parser?, p1: DFA?, p2: Int, p3: Int, p4: Boolean, p5: BitSet?, p6: ATNConfigSet?) {
-                errors.add(Error("Ambiguous definitions."))
+                // Ignored for now
             }
 
             override fun reportAttemptingFullContext(p0: Parser?, p1: DFA?, p2: Int, p3: Int, p4: BitSet?, p5: ATNConfigSet?) {
-                errors.add(Error("Attempting full context."))
+                // Ignored for now
             }
 
             override fun syntaxError(recognizer: Recognizer<*, *>?, offendingSymbol: Any?, line: Int, charPositionInline: Int, msg: String?, ex: RecognitionException?) {
@@ -40,7 +40,7 @@ object ParserFacade {
             }
 
             override fun reportContextSensitivity(p0: Parser?, p1: DFA?, p2: Int, p3: Int, p4: Int, p5: ATNConfigSet?) {
-                errors.add(Error("Context sensitivity."))
+                // Ignored for now
             }
         }
 
