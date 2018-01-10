@@ -111,7 +111,7 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("EnumTest.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore   // currently failing
+    @test
     fun translateAddressBook1() {
         val expected = getResourceAsString("book/appendixA/addressBook1.mch")
         assertEquals(expected, BTranslation(parseResource("book/appendixA/addressBook1.als").toAst(false)).getTranslation())
