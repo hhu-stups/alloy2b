@@ -23,7 +23,7 @@ class Type(type: ExplicitType = Untyped()) {
         } else if (currentType is Set && ctype is Set) {
             (currentType as Set).subType.setType(ctype.subType)
         } else if (currentType is Signature && ctype is Signature) {
-            if(!(currentType as Signature).subType.equals(ctype.subType)) {
+            if((currentType as Signature).subType != ctype.subType) {
                 throw UnsupportedOperationException("Type Checking failed. Tried to unify $currentType and $type")
             }
         } else {
@@ -40,10 +40,10 @@ class Type(type: ExplicitType = Untyped()) {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other is Type) {
-            return currentType.equals(other.currentType)
+        return if (other is Type) {
+            currentType == other.currentType
         } else {
-            return false
+            false
         }
     }
 

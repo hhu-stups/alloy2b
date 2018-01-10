@@ -14,31 +14,31 @@ fun main(args: Array<String>) {
         translateToFile(args[0], args[1])
         return
     }
-    println("use alloy filename as single command line argument (translation will be printed to stdout)")
-    println("or alloy filename and .mch file as two command line arguments")
+    println("Use the alloy file path as a single command line argument to print the translation to stdout.")
+    println("Alternatively, use the alloy file path and .mch file path as two command line arguments.")
 }
 
 fun translateToConsole(inputFilePath: String) {
     println("Parsing ...")
     val parseResult = parse(File(inputFilePath))
-    if (parseResult.root != null) {
+    if (parseResult.root != null && parseResult.errors.isEmpty()) {
         println("Translating ...")
         println(BTranslation((parseResult.root.toAst(false))).getTranslation())
         return
     }
-    println("Parsing failed")
+    println("Parsing failed.")
 }
 
 fun translateToFile(inputFilePath: String, outputFilePath: String) {
     println("Parsing ...")
     val parseResult = parse(File(inputFilePath))
-    if (parseResult.root != null) {
+    if (parseResult.root != null && parseResult.errors.isEmpty()) {
         println("Translating ...")
         File(outputFilePath).printWriter().use { out ->
             out.println(BTranslation((parseResult.root.toAst(false))).getTranslation())
         }
         return
     }
-    println("Parsing failed")
+    println("Parsing failed.")
 }
 

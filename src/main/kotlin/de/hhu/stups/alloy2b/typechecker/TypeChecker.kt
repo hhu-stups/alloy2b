@@ -182,14 +182,11 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: IdentifierExpression) {
         // special cases for identifiers used in ordering
-        if("first".equals(expr.name)) {
-            expr.type.setType(Type(Scalar(Type(Untyped()))))
-        } else if("next".equals(expr.name)) {
-            expr.type.setType(Type(Relation(Type(Untyped()),Type(Untyped()))))
-        } else if("last".equals(expr.name)) {
-            expr.type.setType(Type(Scalar(Type(Untyped()))))
-        } else {
-            expr.type.setType(te.lookupType(expr))
+        when {
+            "first" == expr.name -> expr.type.setType(Type(Scalar(Type(Untyped()))))
+            "next" == expr.name -> expr.type.setType(Type(Relation(Type(Untyped()),Type(Untyped()))))
+            "last" == expr.name -> expr.type.setType(Type(Scalar(Type(Untyped()))))
+            else -> expr.type.setType(te.lookupType(expr))
         }
     }
 
@@ -220,6 +217,7 @@ class TypeChecker(spec: AlloySpecification) {
         expr.type.setType(Type(Set(expr.left.type)))
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun typeCheckJoinExpr(te: TypeEnvironment, je: BinaryOperatorExpression) {
         val jeRightType = je.right.type.currentType
         val jeLeftType = je.left.type.currentType
