@@ -108,16 +108,16 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateFieldDeclarations(decl: Decl, name: String, fieldNames: List<IdentifierExpression>) {
         decl.names.map {
             fields.add(it.name) // used to decide how to translate dot join
-            val nexpr = replaceFieldIdentifiers(name,fieldNames,decl.expression.expression)
+            val nexpr = replaceFieldIdentifiers(name, fieldNames, decl.expression.expression)
 
             val symbol: String =
-            when (decl.expression.operator) {
-                LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
-                ONE -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
-                else -> "<->"
-            }
+                    when (decl.expression.operator) {
+                        LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
+                        ONE -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
+                        else -> "<->"
+                    }
 
-            if(nexpr == decl.expression.expression){
+            if (nexpr == decl.expression.expression) {
                 // no this was introduced, avoid quantifier
                 properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} $symbol ${translateExpression(nexpr)}")
             } else {
@@ -161,7 +161,7 @@ class BTranslation(spec: AlloySpecification) {
         if (type is Relation) {
             val relRightType = type.rightType.currentType
             if (relRightType is Set && relRightType.subType.currentType is Integer) {
-                return IntegerCastExpression(expr, type=Type(Integer()))
+                return IntegerCastExpression(expr, type = Type(Integer()))
             }
         }
         return expr
@@ -187,15 +187,15 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translate(stmt: OpenStatement) {
         stmt.modules.forEach({
-            if (it.name.equals("util/ordering")) {
-                stmt.refs.forEach({
+            when {
+                it.name == "util/ordering" -> stmt.refs.forEach({
                     constants.add("ordering_${sanitizeIdentifier(it)}")
                     properties.add("ordering_${sanitizeIdentifier(it)} : SEQ(${sanitizeIdentifier(it)})")
                 })
-            } else if (it.name.equals("util/integer")) {
-              // implemented by default
-            } else {
-                throw UnsupportedOperationException("unknown module ${it.name}")
+                it.name == "util/integer" -> {
+                    // implemented by default
+                }
+                else -> throw UnsupportedOperationException("unknown module ${it.name}")
             }
         })
     }
@@ -209,6 +209,9 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(fdec: FactDeclaration) {
+        if (fdec.expressions.isEmpty()) {
+            return
+        }
         properties.add(fdec.expressions.joinToString(" & ") { e -> translateExpression(e) })
     }
 
@@ -354,11 +357,11 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translateExpression(ie: IdentifierExpression): String {
         // special cases for identifiers used in ordering
-        if("first".equals(ie.name)) {
+        if ("first" == ie.name) {
             val subtype = ie.type.currentType as Scalar
             return "first(ordering_${subtype.subType}_)"
         }
-        if("last".equals(ie.name)) {
+        if ("last" == ie.name) {
             val subtype = ie.type.currentType as Scalar
             return "first(ordering_${subtype.subType}_)"
         }
