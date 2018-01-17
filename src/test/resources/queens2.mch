@@ -3,15 +3,15 @@ MACHINE alloytranslation
 SETS
     queen_
 CONSTANTS
-    x_, x__, y_
+    x_queen, x__queen, y_queen
 DEFINITIONS
     show_ ==   1=1
 PROPERTIES
-    !(q_, q__).({q_} <: queen_ & {q__} <: (queen_ - {q_}) => not((x_(q_) = x_(q__))) & not((y_(q_) = y_(q__))) & not(((x_(q_) + y_(q_)) = (x_(q__) + y_(q__)))) & not(((x__(q_) + y_(q_)) = (x__(q__) + y_(q__))))) &
-    /* from signature declaration */ !(this_).({this_} <: queen_ => (x_(this_) >= 1) & (y_(this_) >= 1) & (x_(this_) <= card(queen_)) & (y_(this_) <= card(queen_)) & (x__(this_) >= 1) & (x__(this_) <= card(queen_)) & (x__(this_) = ((card(queen_) + 1) - x_(this_)))) &
-    x_ : queen_ --> INTEGER &
-    x__ : queen_ --> INTEGER &
-    y_ : queen_ --> INTEGER
+    !(q_, q__).({q_} <: queen_ & {q__} <: (queen_ - {q_}) => not((x_queen(q_) = x_queen(q__))) & not((y_queen(q_) = y_queen(q__))) & not(((x_queen(q_) + y_queen(q_)) = (x_queen(q__) + y_queen(q__)))) & not(((x__queen(q_) + y_queen(q_)) = (x__queen(q__) + y_queen(q__))))) &
+    /* from signature declaration */ !(this_).({this_} <: queen_ => (x_queen(this_) >= 1) & (y_queen(this_) >= 1) & (x_queen(this_) <= card(queen_)) & (y_queen(this_) <= card(queen_)) & (x__queen(this_) >= 1) & (x__queen(this_) <= card(queen_)) & (x__queen(this_) = ((card(queen_) + 1) - x_queen(this_)))) &
+    x_queen : queen_ --> INTEGER &
+    x__queen : queen_ --> INTEGER &
+    y_queen : queen_ --> INTEGER
 OPERATIONS
     run_show = PRE show_ THEN skip END
 END

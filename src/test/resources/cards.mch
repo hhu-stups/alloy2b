@@ -3,9 +3,9 @@ MACHINE alloytranslation
 SETS
     Card_; Suit_
 CONSTANTS
-    suit_
+    suit_Card
 DEFINITIONS
-    ThreeOfAKind_(hand_) == hand_ <: Card_  &  ((card(suit_[hand_]) = 1) & (card(hand_) = 3))
+    ThreeOfAKind_(hand_) == hand_ <: Card_  &  ((card(suit_Card[hand_]) = 1) & (card(hand_) = 3))
 PROPERTIES
-    suit_ : Card_ --> Suit_
+    suit_Card : Card_ --> Suit_
 END

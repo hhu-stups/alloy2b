@@ -3,22 +3,22 @@ MACHINE alloytranslation
 SETS
     Person_
 CONSTANTS
-    Man_, Woman_, father_, mother_, wife_, husband_
+    Man_, Woman_, father_Person, mother_Person, wife_Person, husband_Person
 DEFINITIONS
-    grandpas_(p_) == { temp | {p_} <: Person_ & temp : LET parent_ BE parent_ = (((mother_ \/ father_) \/ (father_ ; wife_)) \/ (mother_ ; husband_)) IN (parent_[parent_[{p_}]] /\ Man_) END} ;
+    grandpas_(p_) == { temp | {p_} <: Person_ & temp : LET parent_ BE parent_ = (((mother_Person \/ father_Person) \/ (father_Person ; wife_Person)) \/ (mother_Person ; husband_Person)) IN (parent_Person[parent_Person[{p_}]] /\ Man_) END} ;
     ownGrandpa_(m_) == {m_} <: Man_  &  ({m_} <: grandpas_(m_))
 PROPERTIES
     Man_ <: Person_ &
     Woman_ <: Person_ &
-    card({p_ | {p_} <: Person_ & ({p_} <: closure1((mother_ \/ father_))[{p_}])}) = 0 &
-    (wife_ = husband_~) &
-    (wife_ /\ (closure((mother_ \/ father_)) ; mother_)) = {} & (husband_ /\ (closure((mother_ \/ father_)) ; father_)) = {} &
+    card({p_ | {p_} <: Person_ & ({p_} <: closure1((mother_Person \/ father_Person))[{p_}])}) = 0 &
+    (wife_Person = husband_Person~) &
+    (wife_Person /\ (closure((mother_Person \/ father_Person)) ; mother_Person)) = {} & (husband_Person /\ (closure((mother_Person \/ father_Person)) ; father_Person)) = {} &
     Man_ /\ Woman_ = {} &
     Man_ \/ Woman_ = Person_ &
-    father_ : Person_ +-> Man_ &
-    mother_ : Person_ +-> Woman_ &
-    wife_ : Man_ +-> Woman_ &
-    husband_ : Woman_ +-> Man_
+    father_Person : Person_ +-> Man_ &
+    mother_Person : Person_ +-> Woman_ &
+    wife_Person : Man_ +-> Woman_ &
+    husband_Person : Woman_ +-> Man_
 OPERATIONS
     run_ownGrandpa = PRE #(m_).(ownGrandpa_(m_)) THEN skip END
 END

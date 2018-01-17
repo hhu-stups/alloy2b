@@ -3,15 +3,15 @@ MACHINE alloytranslation
 SETS
     Language_; Personell_; Flight_
 CONSTANTS
-    ordering_Flight_, french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_, assign_
+    ordering_Flight_, french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_Personell, assign_Flight
 DEFINITIONS
-    allLanguages_ ==   !(f_).({f_} <: Flight_ => (speaks_[assign_[{f_}]] = Language_)) ;
-    allSexes_ ==   !(f_).({f_} <: Flight_ => (card((assign_[{f_}] - male_)) >= 1 & card((assign_[{f_}] /\ male_)) >= 1)) ;
-    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => (({p_} <: assign_[{f_}]) & ({p_} <: assign_[next_(f_)])) => not(({p_} <: assign_[next_(next_(f_))]))) ;
-    everybodyInSchedule_ ==   (dom(assign_) = Personell_) ;
+    allLanguages_ ==   !(f_).({f_} <: Flight_ => (speaks_Personell[assign_Flight[{f_}]] = Language_)) ;
+    allSexes_ ==   !(f_).({f_} <: Flight_ => (card((assign_Flight[{f_}] - male_)) >= 1 & card((assign_Flight[{f_}] /\ male_)) >= 1)) ;
+    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => (({p_} <: assign_Flight[{f_}]) & ({p_} <: assign_Flight[next_(f_)])) => not(({p_} <: assign_Flight[next_(next_(f_))]))) ;
+    everybodyInSchedule_ ==   (dom(assign_Flight) = Personell_) ;
     crewAlloc_ ==   (((allLanguages_ & allSexes_) & scheduleOk_) & everybodyInSchedule_)
 PROPERTIES
-    ordering_Flight_ : SEQ(Flight_) &
+    ordering_Flight_ : seq(Flight_) &
     {french_} <: Language_ &
     {german_} <: Language_ &
     {spanish_} <: Language_ &
@@ -23,7 +23,7 @@ PROPERTIES
     {tracy_} <: Personell_ &
     male_ <: Personell_ &
     (male_ = (({tom_} \/ {david_}) \/ {jeremy_})) &
-    (speaks_ = (((((({tom_} * {german_}) \/ ({david_} * {french_})) \/ ({jeremy_} * {german_})) \/ ({carol_} * {spanish_})) \/ ({janet_} * {french_})) \/ ({tracy_} * {spanish_}))) &
+    (speaks_Personell = (((((({tom_} * {german_}) \/ ({david_} * {french_})) \/ ({jeremy_} * {german_})) \/ ({carol_} * {spanish_})) \/ ({janet_} * {french_})) \/ ({tracy_} * {spanish_}))) &
     french_ /= german_ &
     french_ /= spanish_ &
     german_ /= spanish_ &
@@ -44,8 +44,8 @@ PROPERTIES
     janet_ /= tracy_ &
     {french_} \/ {german_} \/ {spanish_} = Language_ &
     {tom_} \/ {david_} \/ {jeremy_} \/ {carol_} \/ {janet_} \/ {tracy_} = Personell_ &
-    speaks_ : Personell_ <-> Language_ &
-    assign_ : Flight_ <-> Personell_
+    speaks_Personell : Personell_ <-> Language_ &
+    assign_Flight : Flight_ <-> Personell_
 OPERATIONS
     run_crewAlloc = PRE crewAlloc_ THEN skip END
 END
