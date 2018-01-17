@@ -190,7 +190,7 @@ class BTranslation(spec: AlloySpecification) {
             when {
                 it.name == "util/ordering" -> stmt.refs.forEach({
                     constants.add("ordering_${sanitizeIdentifier(it)}")
-                    properties.add("ordering_${sanitizeIdentifier(it)} : SEQ(${sanitizeIdentifier(it)})")
+                    properties.add("ordering_${sanitizeIdentifier(it)} : seq(${sanitizeIdentifier(it)})")
                 })
                 it.name == "util/integer" -> {
                     // implemented by default
@@ -365,6 +365,7 @@ class BTranslation(spec: AlloySpecification) {
             val subtype = ie.type.currentType as Scalar
             return "first(ordering_${subtype.subType}_)"
         }
+        // TODO: next,prev,nexts,prevs
         return sanitizeIdentifier(ie)
     }
 
@@ -532,12 +533,36 @@ class BTranslation(spec: AlloySpecification) {
     private fun sanitizeIdentifier(id: String) =
             "${id.replace("'", "_")}_"
 
-    private fun sanitizeIdentifier(id: IdentifierExpression): String =
-            if (id.type.currentType is Scalar) {
-                "{${id.name.replace("'", "_")}_}"
-            } else {
-                sanitizeIdentifier(id.name)
+    private fun sanitizeIdentifier(id: IdentifierExpression): String {
+        val currentType = id.type.currentType
+        val cleanName = "${id.name.replace("'", "_")}_"
+        if (currentType is Scalar) {
+            return "{$cleanName}"
+        }
+        // signatures extending the same signature possibly define the same fields, and thus, we add the signature
+        // name as a suffix to get unique identifier names in B
+        val uniqueSigName = getLeftSignatureTypeIfRelation(currentType)
+        if (uniqueSigName.isNotEmpty()) {
+            return "$cleanName$uniqueSigName"
+        }
+        return sanitizeIdentifier(id.name)
+    }
+
+    /**
+     * If the given type is a relation, i.e. a field declaration of a signature, return the name of the relation's left
+     * type which is the signature defining this field.
+     */
+    private fun getLeftSignatureTypeIfRelation(explicitType: ExplicitType): String {
+        if (explicitType is Relation) {
+            val leftType = explicitType.leftType.currentType
+            if (leftType is Set) {
+                val innerType = leftType.subType.currentType
+                return (innerType as? Signature)?.subType ?: ""
             }
+            return ""
+        }
+        return ""
+    }
 
     private fun translateType(type: Type): String {
         val eType = type.currentType
