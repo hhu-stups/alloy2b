@@ -1,17 +1,19 @@
 /*@ generated */
 MACHINE alloytranslation
-SETS
-    Language_; Personell_; Flight_
 CONSTANTS
-    ordering_Flight_, french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_Personell, assign_Flight
+    french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_Personell, assign_Flight, Language_, Personell_
 DEFINITIONS
     allLanguages_ ==   !(f_).({f_} <: Flight_ => (speaks_Personell[assign_Flight[{f_}]] = Language_)) ;
     allSexes_ ==   !(f_).({f_} <: Flight_ => (card((assign_Flight[{f_}] - male_)) >= 1 & card((assign_Flight[{f_}] /\ male_)) >= 1)) ;
-    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => (({p_} <: assign_Flight[{f_}]) & ({p_} <: assign_Flight[next_(f_)])) => not(({p_} <: assign_Flight[next_(next_(f_))]))) ;
+    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => (({p_} <: assign_Flight[{f_}]) & ({p_} <: assign_Flight[next_Flight_(f_)])) => not(({p_} <: assign_Flight[next_Flight_(min(next_Flight_(f_)))]))) ;
     everybodyInSchedule_ ==   (dom(assign_Flight) = Personell_) ;
-    crewAlloc_ ==   (((allLanguages_ & allSexes_) & scheduleOk_) & everybodyInSchedule_)
+    crewAlloc_ ==   (((allLanguages_ & allSexes_) & scheduleOk_) & everybodyInSchedule_) ;
+    Flight_ == 1..3 ;
+    next_Flight_(s) == {x|x=s+1 & x:1..3} ;
+    nexts_Flight_(s) == {x|x>s & x:1..3} ;
+    prev_Flight_(s) == {x|x=s-1 & x:1..3} ;
+    prevs_Flight_(s) == {x|x<s & x:1..3}
 PROPERTIES
-    ordering_Flight_ : seq(Flight_) &
     {french_} <: Language_ &
     {german_} <: Language_ &
     {spanish_} <: Language_ &
@@ -45,7 +47,9 @@ PROPERTIES
     {french_} \/ {german_} \/ {spanish_} = Language_ &
     {tom_} \/ {david_} \/ {jeremy_} \/ {carol_} \/ {janet_} \/ {tracy_} = Personell_ &
     speaks_Personell : Personell_ <-> Language_ &
-    assign_Flight : Flight_ <-> Personell_
+    assign_Flight : Flight_ <-> Personell_ &
+    Language_ : POW(INT) &
+    Personell_ : POW(INT)
 OPERATIONS
     run_crewAlloc = PRE crewAlloc_ THEN skip END
 END
