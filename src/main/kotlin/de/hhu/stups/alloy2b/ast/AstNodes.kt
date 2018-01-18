@@ -32,6 +32,7 @@ interface SignatureExtension : Node
 
 data class ExtendsSignatureExtension(val name: IdentifierExpression,
                                      override val position: Position? = null) : SignatureExtension
+
 data class InSignatureExtension(val names: List<IdentifierExpression>,
                                 override val position: Position? = null) : SignatureExtension
 
@@ -57,7 +58,7 @@ data class IdentifierExpression(val name: String,
                                 override val type: Type = Type(Untyped())) : Expression {
     override fun equals(other: Any?): Boolean {
         if (other is IdentifierExpression) {
-            return name.equals(other.name)
+            return name == other.name
         }
         return false
     }
@@ -143,6 +144,13 @@ data class PredDeclaration(val name: String,
 data class SignatureDeclarations(val signatures: List<SignatureDeclaration>,
                                  override val position: Position? = null) : Statement
 
+data class TypescopeDeclaration(val typeName: IdentifierExpression,
+                                val scope: Long,
+                                override val position: Position? = null) : Statement
+
+data class ScopeDeclarations(val typeScopes: List<TypescopeDeclaration>,
+                             override val position: Position? = null) : Statement
+
 data class AssertionStatement(val name: String,
                               val expressions: List<Expression>,
                               override val position: Position? = null) : Statement
@@ -151,7 +159,9 @@ data class AssertionStatement(val name: String,
 data class CheckStatement(val name: String, val expressions: List<Expression>,
                           override val position: Position? = null) : Statement
 
-data class RunStatement(val name: String, val expressions: List<Expression>,
+data class RunStatement(val name: String,
+                        val expressions: List<Expression>,
+                        val scopeDeclarations: ScopeDeclarations,
                         override val position: Position? = null) : Statement
 
 // signature declarations

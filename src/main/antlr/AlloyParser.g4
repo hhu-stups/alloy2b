@@ -56,7 +56,7 @@ expr               : unOp expr                                                  
                    | left=expr OVERRIDE right=expr                                        # overrideExpr
                    | CARD expr                                                            # cardExpr
                    | left=expr operator=binOp right=expr                                  # binOpExpr
-                                      | quant declList blockOrBar                                            # quantifierExpr
+                   | quant declList blockOrBar                                            # quantifierExpr
 
                    | exprQuantifier expr                                                  # quantifiedExpr
                    | left=expr NOT? compareOp right=expr                                  # compareExpr
