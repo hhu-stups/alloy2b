@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.Token
 import java.util.Arrays.asList
 
 fun SpecificationContext.toAst(considerPosition: Boolean = false): AlloySpecification =
-        AlloySpecification(this.open().map {it.toAst(considerPosition)} + this.paragraph().map { it.toAst(considerPosition) }, toPosition(considerPosition))
+        AlloySpecification(this.open().map { it.toAst(considerPosition) } + this.paragraph().map { it.toAst(considerPosition) }, toPosition(considerPosition))
 
 fun Token.startPoint() = Point(line, charPositionInLine)
 
@@ -16,7 +16,7 @@ fun ParserRuleContext.toPosition(considerPosition: Boolean): Position? {
     return if (considerPosition) Position(start.startPoint(), stop.endPoint()) else null
 }
 
-fun OpenContext.toAst(considerPosition: Boolean = false) : OpenStatement =
+fun OpenContext.toAst(considerPosition: Boolean = false): OpenStatement =
         OpenStatement(this.name().map { it.toAst(considerPosition) }, this.ref().map { it.toAst(considerPosition) })
 
 fun NameContext.toAst(considerPosition: Boolean = false): IdentifierExpression =
@@ -37,8 +37,8 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
                 toPosition(considerPosition))
         is RunStatementContext -> return RunStatement(child.cmdname?.text ?: "",
                 child.block()?.toAst(considerPosition) ?: asList(child.name(0).toAst(considerPosition)),
+                child.scope().toAst(),
                 toPosition(considerPosition))
-
         is FunDeclContext -> return FunDeclaration(child.name()?.text ?: "",
                 child.declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
                 child.block().expr().map { it.toAst(considerPosition) },
@@ -51,6 +51,18 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
                 child.name().subList(1, child.name().size).map { it.text }, toPosition(considerPosition))
         else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
     }
+}
+
+fun TypescopeContext.toAst(considerPosition: Boolean = false): TypescopeDeclaration {
+    if (name() == null && INT() != null) {
+        return TypescopeDeclaration(IdentifierExpression("int"), NUMBER().text.toLong())
+    }
+    return TypescopeDeclaration(name().toAst(considerPosition), NUMBER().text.toLong())
+}
+
+fun ScopeContext.toAst(considerPosition: Boolean = false): ScopeDeclarations {
+    // TODO: there may be more scope definitions
+    return ScopeDeclarations(typescope().map { it.toAst(considerPosition) })
 }
 
 fun SigDeclContext.toAst(considerPosition: Boolean = false): SignatureDeclarations {
@@ -112,11 +124,15 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
                     blockOrBar().toAst(considerPosition),
                     toPosition(considerPosition))
-            is CompareExprContext -> if (NOT() != null) {UnaryOperatorExpression(Operator.NOT, BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
-                    left.toAst(considerPosition), right.toAst(considerPosition),
-                    toPosition(considerPosition)))} else {BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
-                    left.toAst(considerPosition), right.toAst(considerPosition),
-                    toPosition(considerPosition))}
+            is CompareExprContext -> if (NOT() != null) {
+                UnaryOperatorExpression(Operator.NOT, BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
+                        left.toAst(considerPosition), right.toAst(considerPosition),
+                        toPosition(considerPosition)))
+            } else {
+                BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
+                        left.toAst(considerPosition), right.toAst(considerPosition),
+                        toPosition(considerPosition))
+            }
             is ArrowOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.arrowOp().text),
                     left.toAst(considerPosition), right.toAst(considerPosition),
                     toPosition(considerPosition))
@@ -168,7 +184,7 @@ fun BlockOrBarContext.toAst(considerPosition: Boolean = false): List<Expression>
 
 fun DeclContext.toAst(considerPosition: Boolean = false): Decl {
     var expr = expr().toAst(considerPosition)
-    if (!(expr is QuantifiedExpression)) {
+    if (expr !is QuantifiedExpression) {
         expr = QuantifiedExpression(Operator.ONE, expr, expr.position)
     }
     return Decl(this.name().map { IdentifierExpression(it.text, it.toPosition(considerPosition)) }, expr)
