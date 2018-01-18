@@ -2,6 +2,7 @@ package de.hhu.stups.alloy2b.typechecker
 
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.ast.Operator.*
+import javax.naming.OperationNotSupportedException
 
 class TypeChecker(spec: AlloySpecification) {
 
@@ -12,17 +13,17 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheck(spec: AlloySpecification) {
         val te = TypeEnvironment()
         // first pass: collect signatures
-        spec.declarations.filter { it is SignatureDeclarations }.forEach{collectSignatureType(te, it as SignatureDeclarations)}
+        spec.declarations.filter { it is SignatureDeclarations }.forEach { collectSignatureType(te, it as SignatureDeclarations) }
         spec.declarations.forEach { dec -> typeCheck(te, dec) }
     }
 
     private fun collectSignatureType(te: TypeEnvironment, sdecs: SignatureDeclarations) {
         sdecs.signatures.forEach({
             var signatureType = if (it.signatureExtension == null || it.signatureExtension is InSignatureExtension) Type(Signature(it.name.name)) else Type(te.lookupType((it.signatureExtension as ExtendsSignatureExtension).name).currentType)
-            if(signatureType.currentType is Set) {
+            if (signatureType.currentType is Set) {
                 signatureType = (signatureType.currentType as Set).subType
             }
-            if(signatureType.currentType is Scalar) {
+            if (signatureType.currentType is Scalar) {
                 signatureType = (signatureType.currentType as Scalar).subType
             }
             if (it.qualifiers.contains(Operator.ONE)) {
@@ -32,7 +33,8 @@ class TypeChecker(spec: AlloySpecification) {
                 it.name.type.setType(Type(Set(signatureType)))
                 te.addType(it.name.name, Set(signatureType))
             }
-        it.decls.forEach({d -> d.names.forEach({name -> te.addType(name.name,Relation(Type(Untyped()),Type(Untyped())))})})})
+            it.decls.forEach({ d -> d.names.forEach({ name -> te.addType(name.name, Relation(Type(Untyped()), Type(Untyped()))) }) })
+        })
     }
 
 
@@ -46,7 +48,8 @@ class TypeChecker(spec: AlloySpecification) {
                 is FunDeclaration -> typeCheck(te, stmt)
                 is PredDeclaration -> typeCheck(te, stmt)
                 is EnumDeclaration -> typeCheck(te, stmt)
-                is OpenStatement -> {} // nothing to typecheck here
+                is OpenStatement -> {
+                } // nothing to typecheck here
                 else -> throw UnsupportedOperationException(stmt.javaClass.canonicalName)
             }
 
@@ -97,14 +100,14 @@ class TypeChecker(spec: AlloySpecification) {
 
     private fun typeCheck(te: TypeEnvironment, stmt: FunDeclaration) {
         checkDeclsAndExpressions(te, stmt.decls, stmt.expressions)
-        if(stmt.expressions.isNotEmpty()) {
+        if (stmt.expressions.isNotEmpty()) {
             te.addType(stmt.name, stmt.expressions.last().type)
         }
     }
 
     private fun typeCheck(te: TypeEnvironment, stmt: PredDeclaration) {
         checkDeclsAndExpressions(te, stmt.decls, stmt.expressions)
-        if(stmt.expressions.isNotEmpty()) {
+        if (stmt.expressions.isNotEmpty()) {
             te.addType(stmt.name, stmt.expressions.last().type)
         }
     }
@@ -181,19 +184,14 @@ class TypeChecker(spec: AlloySpecification) {
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: IdentifierExpression) {
-        // special cases for identifiers used in ordering
-        when {
-            "first" == expr.name -> expr.type.setType(Type(Scalar(Type(Untyped()))))
-            "next" == expr.name -> expr.type.setType(Type(Relation(Type(Untyped()),Type(Untyped()))))
-            "last" == expr.name -> expr.type.setType(Type(Scalar(Type(Untyped()))))
-            else -> expr.type.setType(te.lookupType(expr))
-        }
+        val type = te.lookupType(expr)
+        expr.type.setType(type)
     }
 
     private fun typeCheckExpr(te: TypeEnvironment, expr: BinaryOperatorExpression) {
         typeCheckExpr(te, expr.left)
         typeCheckExpr(te, expr.right)
-        if(expr.operator == JOIN) {
+        if (expr.operator == JOIN) {
             typeCheckJoinExpr(te, expr)
             return
         }
@@ -226,14 +224,28 @@ class TypeChecker(spec: AlloySpecification) {
         } else if (je.right is UnivExpression && jeLeftType is Relation) {
             je.type.setType(jeLeftType.leftType)
         } else if (jeLeftType is Relation && jeRightType is Relation) {
-            je.left.type.setType(Type(Relation(jeRightType.leftType,Type(Untyped()))))
-            je.right.type.setType(Type(Relation(Type(Untyped()),jeLeftType.rightType)))
-            je.type.setType(Type(Relation(jeLeftType.leftType,jeRightType.rightType)))
+            je.left.type.setType(Type(Relation(jeRightType.leftType, Type(Untyped()))))
+            je.right.type.setType(Type(Relation(Type(Untyped()), jeLeftType.rightType)))
+            je.type.setType(Type(Relation(jeLeftType.leftType, jeRightType.rightType)))
         } else if (jeLeftType is Relation && (jeRightType is Set || jeRightType is Scalar)) {
             je.type.setType(Type(Set(jeLeftType.leftType)))
         } else if (jeLeftType is Set && jeRightType is Relation) {
             //je.left.type.setType(Set(jeRightType.leftType))
             je.type.setType(Type(Set(jeRightType.rightType)))
+        } else if (jeLeftType is Scalar && jeRightType is Untyped) {
+            // next, nexts, prev, prevs
+            je.right.type.setType(je.left.type)
+            je.type.setType(Type(jeLeftType))
+        } else if (jeRightType is Scalar && jeLeftType is Untyped) {
+            // first, last
+            je.left.type.setType(je.right.type)
+            je.type.setType(Type(jeRightType))
+        } else if (jeRightType is Relation && jeLeftType is Untyped) {
+            // first, last for signature fields
+            val rightType = je.right.type.currentType as Relation
+            val setType = rightType.leftType.currentType as Set
+            je.left.type.setType(Type(Scalar(setType.subType)))
+            je.type.setType(Type(jeRightType))
         } else if (jeLeftType is Scalar && jeRightType is Relation) {
             //je.left.type.setType(Scalar(jeRightType.leftType))
             je.type.setType(Type(Set(jeRightType.rightType)))
@@ -258,11 +270,28 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(te: TypeEnvironment, expr: BoxJoinExpression) {
         typeCheckExpr(te, expr.left)
         expr.parameters.map { typeCheckExpr(te, it) }
-        if (expr.left.type.currentType is Relation && expr.parameters.any { it.type.currentType is Relation }) {
+        val leftType = expr.left.type.currentType
+        if (leftType is Relation && expr.parameters.any { it.type.currentType is Relation }) {
             expr.type.setType(Type(Relation(expr.left.type, expr.left.type)))
             return
         }
+        if (leftType is Untyped && expr.parameters.size > 0) {
+            val orderedParam = expr.parameters.get(0)
+            // next, nexts, prev, prevs can also be used by a box join like next[s]
+            expr.left.type.setType(Type(getSigTypeFromSet(orderedParam.type)))
+        }
         expr.type.setType(Type(Set(expr.left.type)))
+    }
+
+    private fun getSigTypeFromSet(type: Type): Scalar {
+        val currentType = type.currentType
+        if (currentType is Scalar) {
+            return currentType
+        }
+        if (currentType is Set) {
+            return getSigTypeFromSet(currentType.subType)
+        }
+        throw OperationNotSupportedException("Only nested sets allowed.")
     }
 
     private fun checkDeclsAndExpressions(te: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>) {
