@@ -12,6 +12,7 @@ class BTranslation(spec: AlloySpecification) {
     private val properties = mutableListOf<String>()
     private val assertions = mutableListOf<String>()
     private val operations = mutableListOf<String>()
+    private val orderings = mutableListOf<String>()
 
     private var runCounter = 1
     private var checkCounter = 1
@@ -39,7 +40,12 @@ class BTranslation(spec: AlloySpecification) {
         builder.appendln("/*@ generated */")
         builder.appendln("MACHINE alloytranslation")
 
-        appendIfNotEmpty(builder, sets, "; ", "SETS")
+        // ordered signatures are defined as intervals in the definitions instead of a deferred set
+        if (orderings.size == 0) {
+            appendIfNotEmpty(builder, sets, "; ", "SETS")
+        } else {
+            defineDeferredSetsAsSetsOfInteger(sets.filter { it !in orderings })
+        }
         appendIfNotEmpty(builder, constants, ", ", "CONSTANTS")
         appendIfNotEmpty(builder, definitions, " ;\n    ", "DEFINITIONS")
         appendIfNotEmpty(builder, properties, " &\n    ", "PROPERTIES")
@@ -51,7 +57,12 @@ class BTranslation(spec: AlloySpecification) {
         return builder.toString()
     }
 
-    private fun appendIfNotEmpty(builder: StringBuilder, list: MutableList<String>, delimiter: String, sectionName: String) {
+    private fun defineDeferredSetsAsSetsOfInteger(deferredSets: List<String>) {
+        constants.addAll(deferredSets)
+        properties.addAll(deferredSets.map { "$it : POW(INT)" })
+    }
+
+    private fun appendIfNotEmpty(builder: StringBuilder, list: List<String>, delimiter: String, sectionName: String) {
         if (list.isEmpty()) {
             return
         }
@@ -188,10 +199,10 @@ class BTranslation(spec: AlloySpecification) {
     private fun translate(stmt: OpenStatement) {
         stmt.modules.forEach({
             when {
-                it.name == "util/ordering" -> stmt.refs.forEach({
-                    constants.add("ordering_${sanitizeIdentifier(it)}")
-                    properties.add("ordering_${sanitizeIdentifier(it)} : seq(${sanitizeIdentifier(it)})")
-                })
+                it.name == "util/ordering" -> stmt.refs.forEach {
+                    // translated within run statement where we know the scope
+                    orderings.add(sanitizeIdentifier(it.name))
+                }
                 it.name == "util/integer" -> {
                     // implemented by default
                 }
@@ -270,6 +281,21 @@ class BTranslation(spec: AlloySpecification) {
                 else -> operations.add("run_${++runCounter} = PRE ${translateExpression(e)} THEN skip END")
             }
         })
+        stmt.scopeDeclarations.typeScopes.forEach { translate(it) }
+    }
+
+    private fun translate(typescopeDeclaration: TypescopeDeclaration) {
+        if (sanitizeIdentifier(typescopeDeclaration.typeName.name) in orderings) {
+            // now we know the scope and define an ordering as a set of integer 1..scope
+            val sigName = translateExpression(typescopeDeclaration.typeName)
+            val scope = typescopeDeclaration.scope
+            definitions.add("${sigName} == 1..${scope}")
+            // define next, nexts, prev and prevs for each ordering
+            definitions.add("next_${sigName}(s) == {x|x=s+1 & x:1..${scope}}")
+            definitions.add("nexts_${sigName}(s) == {x|x>s & x:1..${scope}}")
+            definitions.add("prev_${sigName}(s) == {x|x=s-1 & x:1..${scope}}")
+            definitions.add("prevs_${sigName}(s) == {x|x<s & x:1..${scope}}")
+        }
     }
 
     private fun translate(sdec: SignatureDeclarations) {
@@ -327,9 +353,6 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(e: Expression): String {
-        if (e.type.untyped()) {
-            throw UnsupportedOperationException("untyped expression: $e")
-        }
         return when (e) {
             is QuantifierExpression -> translateExpression(e)
             is IdentifierExpression -> translateExpression(e)
@@ -358,14 +381,20 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(ie: IdentifierExpression): String {
         // special cases for identifiers used in ordering
         if ("first" == ie.name) {
-            val subtype = ie.type.currentType as Scalar
-            return "first(ordering_${subtype.subType}_)"
+            // we use sets of integers for ordered signatures, first is always 1
+            return "{1}"
         }
         if ("last" == ie.name) {
-            val subtype = ie.type.currentType as Scalar
-            return "first(ordering_${subtype.subType}_)"
+            // TODO: we do not know the scope here, maybe replace card by the size later on since its a constant value
+            val sigtype = ((ie.type.currentType as Scalar).subType.currentType as Signature).subType
+            return "{card(${sigtype}_)}"
         }
-        // TODO: next,prev,nexts,prevs
+        if (ie.name in listOf("next", "nexts", "prev", "prevs")) {
+            val subtype = ie.type.currentType as Scalar
+            val settype = subtype.subType.currentType as Set
+            val sigtype = settype.subType.currentType as Signature
+            return "${ie.name}_${sigtype.subType}_"
+        }
         return sanitizeIdentifier(ie)
     }
 
@@ -435,8 +464,17 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(bje: BoxJoinExpression): String {
+        if (bje.parameters.size == 0) {
+            throw UnsupportedOperationException("BoxJoin not supported this way.")
+        }
         val parameters = bje.parameters.map { if (it is IdentifierExpression) sanitizeIdentifier(it.name) else translateExpression(it) }
-        return "${translateExpression(bje.left)}(${parameters.joinToString(", ")})"
+        val translatedLeftExpression = translateExpression(bje.left)
+        val firstParam = parameters.get(0)
+        if (firstParam.contains("next_").or(firstParam.contains("prev_"))) {
+            // nested next or prev calls like next[next[s]], the function returns a singleton set of integer so we take the min (or max)
+            return "$translatedLeftExpression(min(${parameters.joinToString(", ")}))"
+        }
+        return "$translatedLeftExpression(${parameters.joinToString(", ")})"
     }
 
     private fun translateExpression(qe: BinaryOperatorExpression): String {
@@ -492,23 +530,34 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateJoin(je: BinaryOperatorExpression): String {
         val jeRightType = je.right.type.currentType
         val jeLeftType = je.left.type.currentType
+        val rightExpression = translateExpression(je.right)
+        val leftExpression = translateExpression(je.left)
         if (je.left is UnivExpression) {
-            return "dom(${translateExpression(je.right)})"
+            return "dom($rightExpression)"
         }
         if (je.right is UnivExpression) {
-            return "ran(${translateExpression(je.left)})"
+            return "ran($leftExpression)"
         }
         if (je.left.type.untyped() || je.right.type.untyped()) {
             throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
         }
         if (jeLeftType is Relation && jeRightType is Relation) {
-            return "(${translateExpression(je.left)} ; ${translateExpression(je.right)})"
+            return "($leftExpression ; $rightExpression)"
         }
         if (jeLeftType is Relation && (jeRightType is Set || jeRightType is Scalar)) {
-            return "${translateExpression(je.left)}~[${translateExpression(je.right)}]"
+            return "$leftExpression~[$rightExpression]"
         }
         if ((jeLeftType is Set || jeLeftType is Scalar) && jeRightType is Relation) {
-            return "${translateExpression(je.right)}[${translateExpression(je.left)}]"
+            return "$rightExpression[$leftExpression]"
+        }
+        if (jeLeftType is Scalar && jeRightType is Scalar) {
+            val newLeftExpression = leftExpression.replace("{", "").replace("}", "")
+            // translate next, nexts, prev and prevs which are defined as functions in the definitions
+            if (newLeftExpression.contains("\\[next\\](*.)\\[prev\\]")) {
+                // nested next or prev calls like s.next.next, the function returns a singleton set of integer so we take the min (or max)
+                return "$rightExpression(min($newLeftExpression))"
+            }
+            return "$rightExpression($newLeftExpression)"
         }
         throw UnsupportedOperationException("join not supported this way: ${je.left} . ${je.right}")
     }
