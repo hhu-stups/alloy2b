@@ -278,20 +278,9 @@ class TypeChecker(spec: AlloySpecification) {
         if (leftType is Untyped && expr.parameters.size > 0) {
             val orderedParam = expr.parameters.get(0)
             // next, nexts, prev, prevs can also be used by a box join like next[s]
-            expr.left.type.setType(Type(getSigTypeFromSet(orderedParam.type)))
+            expr.left.type.setType(getSigTypeFromSet(orderedParam.type))
         }
         expr.type.setType(Type(Set(expr.left.type)))
-    }
-
-    private fun getSigTypeFromSet(type: Type): Scalar {
-        val currentType = type.currentType
-        if (currentType is Scalar) {
-            return currentType
-        }
-        if (currentType is Set) {
-            return getSigTypeFromSet(currentType.subType)
-        }
-        throw OperationNotSupportedException("Only nested sets allowed.")
     }
 
     private fun checkDeclsAndExpressions(te: TypeEnvironment, decls: List<Decl>, expressions: List<Expression>) {

@@ -22,6 +22,8 @@ class Type(type: ExplicitType = Untyped()) {
             (currentType as Scalar).subType.setType(ctype.subType)
         } else if (currentType is Set && ctype is Set) {
             (currentType as Set).subType.setType(ctype.subType)
+        } else if (currentType is Integer && ctype is Integer) {
+            //
         } else if (currentType is Signature && ctype is Signature) {
             if((currentType as Signature).subType != ctype.subType) {
                 throw UnsupportedOperationException("Type Checking failed. Tried to unify $currentType and $type")

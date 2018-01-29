@@ -1,7 +1,9 @@
 /*@ generated */
 MACHINE alloytranslation
+SETS
+    Object_
 CONSTANTS
-    Farmer_, Fox_, Chicken_, Grain_, eats_Object, near_State, far_State, Object_
+    Farmer_, Fox_, Chicken_, Grain_, eats_Object, near_State, far_State
 DEFINITIONS
     crossRiver_(from_,from__,to_,to__) == from_ <: Object_ & from__ <: Object_ & to_ <: Object_ & to__ <: Object_  &  card({x_ | {x_} <: from_ & (from__ = (((from_ - {x_}) - {Farmer_}) - eats_Object[from__])) & (to__ = ((to_ \/ {x_}) \/ {Farmer_}))}) = 1 ;
     State_ == 1..8 ;
@@ -26,8 +28,7 @@ PROPERTIES
     {Farmer_} \/ {Fox_} \/ {Chicken_} \/ {Grain_} = Object_ &
     eats_Object : Object_ <-> Object_ &
     near_State : State_ <-> Object_ &
-    far_State : State_ <-> Object_ &
-    Object_ : POW(INT)
+    far_State : State_ <-> Object_
 OPERATIONS
     run_2 = PRE (far_State[{card(State_)}] = Object_) THEN skip END
 END
