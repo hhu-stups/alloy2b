@@ -12,7 +12,7 @@ class BTranslation(spec: AlloySpecification) {
     private val properties = mutableListOf<String>()
     private val assertions = mutableListOf<String>()
     private val operations = mutableListOf<String>()
-    private val orderings = mutableListOf<String>()
+    private val orderingAndScopeMap = mutableMapOf<String, Long>()
     private val translationPreferences = hashMapOf(
             TranslationPreference.ORDERED_UNORDERED_SIGNATURE_INTERACTION to mutableMapOf<String, String>(),
             TranslationPreference.DISTINCT_SIGNATURE_INTERACTION to mutableMapOf())
@@ -35,9 +35,8 @@ class BTranslation(spec: AlloySpecification) {
         spec.declarations.forEach({ stmt -> translate(stmt) })
         addSignatureExtensionProperties()
         addSignatureFieldsExtensionProperties()
-        modelAnalysis(orderings, translationPreferences, spec)
-        // TODO: consider the translation preferences
-        // foreach DISTINCT_SIGNATURE_INTERACTION -> define parent type
+        modelAnalysis(orderingAndScopeMap, translationPreferences, spec)
+        // TODO: consider the translation preferences --> foreach DISTINCT_SIGNATURE_INTERACTION -> define parent type
     }
 
     fun getTranslation(): String {
@@ -46,13 +45,16 @@ class BTranslation(spec: AlloySpecification) {
         builder.appendln("/*@ generated */")
         builder.appendln("MACHINE alloytranslation")
 
+        // define orderings since we know the scope now
+        defineDistinctOrderedSignatures(definitions, orderingAndScopeMap)
+
         val orderedUnorderedInteractions = translationPreferences[TranslationPreference.ORDERED_UNORDERED_SIGNATURE_INTERACTION]
         // ordered signatures are defined as intervals in the definitions instead of a deferred set
-        if (orderings.size == 0 || orderedUnorderedInteractions!!.isEmpty()) {
-            appendIfNotEmpty(builder, sets.filter { it !in orderings }, "; ", "SETS")
+        if (orderingAndScopeMap.isEmpty() || orderedUnorderedInteractions!!.isEmpty()) {
+            appendIfNotEmpty(builder, sets.filter { it !in orderingAndScopeMap }, "; ", "SETS")
         } else {
-            appendIfNotEmpty(builder, sets.filter { it !in orderings.union(orderedUnorderedInteractions.values).union(orderedUnorderedInteractions.keys) }, "; ", "SETS")
-            defineDeferredSetsAsSetsOfInteger(sets.filter { it !in orderedUnorderedInteractions.values.union(orderedUnorderedInteractions.keys).subtract(orderings) })
+            appendIfNotEmpty(builder, sets.filter { it !in orderingAndScopeMap.keys.union(orderedUnorderedInteractions.values).union(orderedUnorderedInteractions.keys) }, "; ", "SETS")
+            defineDeferredSetsAsSetsOfInteger(sets.filter { it !in orderedUnorderedInteractions.values.union(orderedUnorderedInteractions.keys).subtract(orderingAndScopeMap.keys) })
         }
         appendIfNotEmpty(builder, constants, ", ", "CONSTANTS")
         appendIfNotEmpty(builder, definitions, " ;\n    ", "DEFINITIONS")
@@ -63,6 +65,15 @@ class BTranslation(spec: AlloySpecification) {
         builder.appendln("END")
 
         return builder.toString()
+    }
+
+    private fun defineDistinctOrderedSignatures(definitions: MutableList<String>, orderingAndScopeMap: Map<String, Long>) {
+        // first ordered signature is defined from 0..scope-1, second from scope..next_scope-1, etc. to provide distinct elements
+        var c = 0.toLong()
+        for (entry in orderingAndScopeMap) {
+            definitions.add("${entry.key} == $c..${c + entry.value - 1}")
+            c += entry.value
+        }
     }
 
     private fun defineDeferredSetsAsSetsOfInteger(deferredSets: List<String>) {
@@ -133,7 +144,8 @@ class BTranslation(spec: AlloySpecification) {
                     when (decl.expression.operator) {
                         LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
                         ONE -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
-                        else -> "<->"
+                        SET -> "<->"
+                        else -> throw UnsupportedOperationException("Field declaration not supported this way for operator ${decl.expression.operator}.")
                     }
 
             if (nexpr == decl.expression.expression) {
@@ -208,8 +220,8 @@ class BTranslation(spec: AlloySpecification) {
         stmt.modules.forEach({
             when {
                 it.name == "util/ordering" -> stmt.refs.forEach {
-                    // translated within run statement where we know the scope
-                    orderings.add(sanitizeIdentifier(it.name))
+                    // translated within run statement where we know the scope, so size is 0 here
+                    orderingAndScopeMap.put(sanitizeIdentifier(it.name), 0)
                 }
                 it.name == "util/integer" -> {
                     // implemented by default
@@ -293,17 +305,17 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(typescopeDeclaration: TypescopeDeclaration) {
-        if (sanitizeIdentifier(typescopeDeclaration.typeName.name) in orderings) {
-            // now we know the scope and define an ordering as a set of integer 1..scope
+        val sanitizedName = sanitizeIdentifier(typescopeDeclaration.typeName.name)
+        if (sanitizedName in orderingAndScopeMap) {
+            // now we know the scope and update the size of the ordered signature within the map
             val sigName = translateExpression(typescopeDeclaration.typeName)
             val scope = typescopeDeclaration.scope
-            definitions.add("$sigName == 1..$scope")
-            // TODO: define distinct sets of integer
+            orderingAndScopeMap.replace(sanitizedName, 0, scope)
             // define next, nexts, prev and prevs for each ordering
-            definitions.add("next_$sigName(s) == {x|x=s+1 & x:1..$scope}")
-            definitions.add("nexts_$sigName(s) == {x|x>s & x:1..$scope}")
-            definitions.add("prev_$sigName(s) == {x|x=s-1 & x:1..$scope}")
-            definitions.add("prevs_$sigName(s) == {x|x<s & x:1..$scope}")
+            definitions.add("next_$sigName(s) == {x|x=s+1 & x:$sanitizedName}")
+            definitions.add("nexts_$sigName(s) == {x|x>s & x:$sanitizedName}")
+            definitions.add("prev_$sigName(s) == {x|x=s-1 & x:$sanitizedName}")
+            definitions.add("prevs_$sigName(s) == {x|x<s & x:$sanitizedName}")
         }
     }
 
@@ -382,23 +394,22 @@ class BTranslation(spec: AlloySpecification) {
         }
     }
 
-    private fun translateExpression(ue: UnivExpression): String {
-        // TODO
+    private fun translateExpression(@Suppress("UNUSED_PARAMETER") ue: UnivExpression): String {
+        // implicitly provided by dot join
         return ""
     }
 
     private fun translateExpression(ie: IdentifierExpression): String {
         // special cases for identifiers used in ordering
         if ("first" == ie.name) {
-            // we use sets of integers for ordered signatures, first is always 1
-            return "{1}"
-            // TODO: this needs to be adapted
+            // we use sets of integers for ordered signatures, first is always the minimum
+            val sigtype = ((ie.type.currentType as Scalar).subType.currentType as Signature).subType
+            return "{min(${sigtype}_)}"
         }
         if ("last" == ie.name) {
-            // TODO: we do not know the scope here, maybe replace card by the size later on since its a constant value
-            // TODO: this needs to be updated, maybe store the size of each set of integer?
+            // and last is always the maximum
             val sigtype = ((ie.type.currentType as Scalar).subType.currentType as Signature).subType
-            return "{card(${sigtype}_)}"
+            return "{max(${sigtype}_)}"
         }
         if (ie.name in listOf("next", "nexts", "prev", "prevs")) {
             val subtype = ie.type.currentType as Scalar
@@ -457,7 +468,7 @@ class BTranslation(spec: AlloySpecification) {
                 ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }})"
                 NO -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) = 0"
                 ONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) = 1"
-                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) <= 1"
+                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) < 2"
                 SOME -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) > 0"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
@@ -533,8 +544,8 @@ class BTranslation(spec: AlloySpecification) {
             when (qe.operator) {
                 NO -> "${translateExpression(qe.expression)} = {}"
                 ONE -> "card(${translateExpression(qe.expression)}) = 1"
-                LONE -> "card(${translateExpression(qe.expression)}) <= 1"
-                SOME -> "card(${translateExpression(qe.expression)}) >= 1"
+                LONE -> "card(${translateExpression(qe.expression)}) < 2"
+                SOME -> "card(${translateExpression(qe.expression)}) > 0"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -543,8 +554,11 @@ class BTranslation(spec: AlloySpecification) {
         val jeLeftType = je.left.type.currentType
         val rightExpression = translateExpression(je.right)
         val leftExpression = translateExpression(je.left)
-        if (je.left is UnivExpression || je.right is UnivExpression) {
+        if (je.left is UnivExpression) {
             return "ran($rightExpression)"
+        }
+        if (je.right is UnivExpression) {
+            return "dom($leftExpression)"
         }
         if (je.left.type.untyped() || je.right.type.untyped()) {
             throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")

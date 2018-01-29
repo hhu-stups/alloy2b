@@ -5,39 +5,39 @@ import de.hhu.stups.alloy2b.typechecker.Scalar
 import de.hhu.stups.alloy2b.typechecker.Set
 import de.hhu.stups.alloy2b.typechecker.Type
 
-fun modelAnalysis(orderedSignatures: List<String>,
+fun modelAnalysis(orderingAndScopeMap: Map<String, Long>,
                   translationPreferences: Map<TranslationPreference, MutableMap<String, String>>,
                   spec: AlloySpecification) {
     // check if an unordered signature interacts with an ordered signature
     // if so, we have to define the unordered signature as a set of integer, too
-    spec.declarations.forEach { modelAnalysis(orderedSignatures, translationPreferences, it) }
+    spec.declarations.forEach { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
 }
 
-private fun modelAnalysis(orderedSignatures: List<String>,
+private fun modelAnalysis(orderingAndScopeMap: Map<String, Long>,
                           translationPreferences: Map<TranslationPreference, MutableMap<String, String>>,
                           statement: Statement) {
     when (statement) {
-        is FactDeclaration -> statement.expressions.map { modelAnalysis(orderedSignatures, translationPreferences, it) }
-        is FunDeclaration -> statement.expressions.map { modelAnalysis(orderedSignatures, translationPreferences, it) }
-        is PredDeclaration -> statement.expressions.map { modelAnalysis(orderedSignatures, translationPreferences, it) }
-        is AssertionStatement -> statement.expressions.map { modelAnalysis(orderedSignatures, translationPreferences, it) }
-        is RunStatement -> statement.expressions.map { modelAnalysis(orderedSignatures, translationPreferences, it) }
+        is FactDeclaration -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is FunDeclaration -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is PredDeclaration -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is AssertionStatement -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is RunStatement -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
     }
 }
 
-private fun modelAnalysis(orderedSignatures: List<String>,
+private fun modelAnalysis(orderingAndScopeMap: Map<String, Long>,
                           translationPreferences: Map<TranslationPreference, MutableMap<String, String>>,
                           expression: Expression) {
     when (expression) {
-        is BinaryOperatorExpression -> modelAnalysisBinaryExpression(orderedSignatures, translationPreferences, expression)
+        is BinaryOperatorExpression -> modelAnalysisBinaryExpression(orderingAndScopeMap, translationPreferences, expression)
     }
 }
 
-private fun modelAnalysisBinaryExpression(orderedSignatures: List<String>,
+private fun modelAnalysisBinaryExpression(orderingAndScopeMap: Map<String, Long>,
                                           translationPreferences: Map<TranslationPreference, MutableMap<String, String>>,
                                           expression: BinaryOperatorExpression) {
-    val leftIsOrderedSignature = isOrderedSignature(orderedSignatures, expression.left.type)
-    val rightIsOrderedSignature = isOrderedSignature(orderedSignatures, expression.right.type)
+    val leftIsOrderedSignature = isOrderedSignature(orderingAndScopeMap, expression.left.type)
+    val rightIsOrderedSignature = isOrderedSignature(orderingAndScopeMap, expression.right.type)
     if ((leftIsOrderedSignature.first.isOrdered() && rightIsOrderedSignature.first.isUnordered()) ||
             rightIsOrderedSignature.first.isOrdered() && leftIsOrderedSignature.first.isUnordered()) {
         // left is ordered but right is unordered signature or vice versa
@@ -55,13 +55,13 @@ private fun modelAnalysisBinaryExpression(orderedSignatures: List<String>,
     }
 }
 
-private fun isOrderedSignature(orderedSignatures: List<String>,
+private fun isOrderedSignature(orderingAndScopeMap: Map<String, Long>,
                                type: Type): Pair<Ordering, String> {
     // return a pair of Ordering and the signature name
     val currentType = type.currentType
     if (currentType is Set) {
         val sigType = getSigTypeFromSet(type).toString()
-        if (orderedSignatures.contains(sigType)) {
+        if (orderingAndScopeMap.contains(sigType)) {
             return Pair(Ordering.ORDERED, sigType)
         }
         return Pair(Ordering.UNORDERED, sigType)
