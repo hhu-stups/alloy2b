@@ -5,7 +5,7 @@ SETS
 CONSTANTS
     a_, b_, c_, d_, e_, f_, g_, h_, i_, graph1_Node, graph2_Node, p_Node
 DEFINITIONS
-    permutation_ ==   ((p_Node ; p_Node~) <: id(Node_)) & (dom(p_Node) = Node_) ;
+    permutation_ ==   ((p_Node ; p_Node~) <: id(Node_)) & (ran(p_Node) = Node_) ;
     isomorph_ ==   permutation_ & !(n_).({n_} <: Node_ => (p_Node[graph1_Node[{n_}]] = graph2_Node[p_Node[{n_}]]))
 PROPERTIES
     {a_} <: Node_ &
