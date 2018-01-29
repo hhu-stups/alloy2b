@@ -6,15 +6,15 @@ CONSTANTS
     french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_Personell, assign_Flight
 DEFINITIONS
     allLanguages_ ==   !(f_).({f_} <: Flight_ => (speaks_Personell[assign_Flight[{f_}]] = Language_)) ;
-    allSexes_ ==   !(f_).({f_} <: Flight_ => (card((assign_Flight[{f_}] - male_)) >= 1 & card((assign_Flight[{f_}] /\ male_)) >= 1)) ;
+    allSexes_ ==   !(f_).({f_} <: Flight_ => (card((assign_Flight[{f_}] - male_)) > 0 & card((assign_Flight[{f_}] /\ male_)) > 0)) ;
     scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => (({p_} <: assign_Flight[{f_}]) & ({p_} <: assign_Flight[next_Flight_(f_)])) => not(({p_} <: assign_Flight[next_Flight_(min(next_Flight_(f_)))]))) ;
     everybodyInSchedule_ ==   (ran(assign_Flight) = Personell_) ;
     crewAlloc_ ==   (((allLanguages_ & allSexes_) & scheduleOk_) & everybodyInSchedule_) ;
-    Flight_ == 1..3 ;
-    next_Flight_(s) == {x|x=s+1 & x:1..3} ;
-    nexts_Flight_(s) == {x|x>s & x:1..3} ;
-    prev_Flight_(s) == {x|x=s-1 & x:1..3} ;
-    prevs_Flight_(s) == {x|x<s & x:1..3}
+    next_Flight_(s) == {x|x=s+1 & x:Flight_} ;
+    nexts_Flight_(s) == {x|x>s & x:Flight_} ;
+    prev_Flight_(s) == {x|x=s-1 & x:Flight_} ;
+    prevs_Flight_(s) == {x|x<s & x:Flight_} ;
+    Flight_ == 0..2
 PROPERTIES
     {french_} <: Language_ &
     {german_} <: Language_ &
