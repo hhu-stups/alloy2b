@@ -1,7 +1,11 @@
 package de.hhu.stups.alloy2b.ast
 
+import de.hhu.stups.alloy2b.typechecker.Integer
+import de.hhu.stups.alloy2b.typechecker.Scalar
+import de.hhu.stups.alloy2b.typechecker.Set
 import de.hhu.stups.alloy2b.typechecker.Type
 import de.hhu.stups.alloy2b.typechecker.Untyped
+import javax.naming.OperationNotSupportedException
 
 interface Node {
     val position: Position?
@@ -171,3 +175,14 @@ data class SignatureDeclaration(val qualifiers: List<Operator> = emptyList(),
                                 val decls: List<Decl> = emptyList(),
                                 val expression: Expression? = null,
                                 override val position: Position? = null) : Node
+
+fun getSigTypeFromSet(type: Type): Type {
+    val currentType = type.currentType
+    if (currentType is Scalar || currentType is Integer) {
+        return Type(currentType)
+    }
+    if (currentType is Set) {
+        return getSigTypeFromSet(currentType.subType)
+    }
+    return Type(Untyped())
+}
