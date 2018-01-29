@@ -36,3 +36,6 @@ fact {
 /* the farmer moves everything to the far side of the river. */
 run { last.far=Object } for exactly 8 State
 //run { last.far=Farmer+Grain } for exactly 2 State
+
+// for ProB viewing expression as table:
+// %i.(i:1..8 | near_State[{i}] |-> far_State[{i}])
