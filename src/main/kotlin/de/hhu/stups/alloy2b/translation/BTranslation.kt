@@ -13,6 +13,9 @@ class BTranslation(spec: AlloySpecification) {
     private val assertions = mutableListOf<String>()
     private val operations = mutableListOf<String>()
     private val orderings = mutableListOf<String>()
+    private val translationPreferences = hashMapOf(
+            TranslationPreference.ORDERED_UNORDERED_SIGNATURE_INTERACTION to mutableMapOf<String, String>(),
+            TranslationPreference.DISTINCT_SIGNATURE_INTERACTION to mutableMapOf())
 
     private var runCounter = 1
     private var checkCounter = 1
@@ -32,6 +35,9 @@ class BTranslation(spec: AlloySpecification) {
         spec.declarations.forEach({ stmt -> translate(stmt) })
         addSignatureExtensionProperties()
         addSignatureFieldsExtensionProperties()
+        modelAnalysis(orderings, translationPreferences, spec)
+        // TODO: consider the translation preferences
+        // foreach DISTINCT_SIGNATURE_INTERACTION -> define parent type
     }
 
     fun getTranslation(): String {
@@ -40,11 +46,13 @@ class BTranslation(spec: AlloySpecification) {
         builder.appendln("/*@ generated */")
         builder.appendln("MACHINE alloytranslation")
 
+        val orderedUnorderedInteractions = translationPreferences[TranslationPreference.ORDERED_UNORDERED_SIGNATURE_INTERACTION]
         // ordered signatures are defined as intervals in the definitions instead of a deferred set
-        if (orderings.size == 0) {
-            appendIfNotEmpty(builder, sets, "; ", "SETS")
+        if (orderings.size == 0 || orderedUnorderedInteractions!!.isEmpty()) {
+            appendIfNotEmpty(builder, sets.filter { it !in orderings }, "; ", "SETS")
         } else {
-            defineDeferredSetsAsSetsOfInteger(sets.filter { it !in orderings })
+            appendIfNotEmpty(builder, sets.filter { it !in orderings.union(orderedUnorderedInteractions.values).union(orderedUnorderedInteractions.keys) }, "; ", "SETS")
+            defineDeferredSetsAsSetsOfInteger(sets.filter { it !in orderedUnorderedInteractions.values.union(orderedUnorderedInteractions.keys).subtract(orderings) })
         }
         appendIfNotEmpty(builder, constants, ", ", "CONSTANTS")
         appendIfNotEmpty(builder, definitions, " ;\n    ", "DEFINITIONS")
@@ -289,12 +297,13 @@ class BTranslation(spec: AlloySpecification) {
             // now we know the scope and define an ordering as a set of integer 1..scope
             val sigName = translateExpression(typescopeDeclaration.typeName)
             val scope = typescopeDeclaration.scope
-            definitions.add("${sigName} == 1..${scope}")
+            definitions.add("$sigName == 1..$scope")
+            // TODO: define distinct sets of integer
             // define next, nexts, prev and prevs for each ordering
-            definitions.add("next_${sigName}(s) == {x|x=s+1 & x:1..${scope}}")
-            definitions.add("nexts_${sigName}(s) == {x|x>s & x:1..${scope}}")
-            definitions.add("prev_${sigName}(s) == {x|x=s-1 & x:1..${scope}}")
-            definitions.add("prevs_${sigName}(s) == {x|x<s & x:1..${scope}}")
+            definitions.add("next_$sigName(s) == {x|x=s+1 & x:1..$scope}")
+            definitions.add("nexts_$sigName(s) == {x|x>s & x:1..$scope}")
+            definitions.add("prev_$sigName(s) == {x|x=s-1 & x:1..$scope}")
+            definitions.add("prevs_$sigName(s) == {x|x<s & x:1..$scope}")
         }
     }
 
@@ -383,9 +392,11 @@ class BTranslation(spec: AlloySpecification) {
         if ("first" == ie.name) {
             // we use sets of integers for ordered signatures, first is always 1
             return "{1}"
+            // TODO: this needs to be adapted
         }
         if ("last" == ie.name) {
             // TODO: we do not know the scope here, maybe replace card by the size later on since its a constant value
+            // TODO: this needs to be updated, maybe store the size of each set of integer?
             val sigtype = ((ie.type.currentType as Scalar).subType.currentType as Signature).subType
             return "{card(${sigtype}_)}"
         }
@@ -464,12 +475,12 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(bje: BoxJoinExpression): String {
-        if (bje.parameters.size == 0) {
+        if (bje.parameters.isEmpty()) {
             throw UnsupportedOperationException("BoxJoin not supported this way.")
         }
         val parameters = bje.parameters.map { if (it is IdentifierExpression) sanitizeIdentifier(it.name) else translateExpression(it) }
         val translatedLeftExpression = translateExpression(bje.left)
-        val firstParam = parameters.get(0)
+        val firstParam = parameters[0]
         if (firstParam.contains("next_").or(firstParam.contains("prev_"))) {
             // nested next or prev calls like next[next[s]], the function returns a singleton set of integer so we take the min (or max)
             return "$translatedLeftExpression(min(${parameters.joinToString(", ")}))"
@@ -532,11 +543,8 @@ class BTranslation(spec: AlloySpecification) {
         val jeLeftType = je.left.type.currentType
         val rightExpression = translateExpression(je.right)
         val leftExpression = translateExpression(je.left)
-        if (je.left is UnivExpression) {
-            return "dom($rightExpression)"
-        }
-        if (je.right is UnivExpression) {
-            return "ran($leftExpression)"
+        if (je.left is UnivExpression || je.right is UnivExpression) {
+            return "ran($rightExpression)"
         }
         if (je.left.type.untyped() || je.right.type.untyped()) {
             throw UnsupportedOperationException("missing types in join translation: ${je.left} . ${je.right}")
@@ -559,7 +567,7 @@ class BTranslation(spec: AlloySpecification) {
             }
             return "$rightExpression($newLeftExpression)"
         }
-        throw UnsupportedOperationException("join not supported this way: ${je.left} . ${je.right}")
+        throw UnsupportedOperationException("Join not supported this way: ${je.left} . ${je.right}")
     }
 
     private fun translateDeclsIDList(decls: List<Decl>) =
