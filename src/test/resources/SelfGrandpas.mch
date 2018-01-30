@@ -10,7 +10,7 @@ DEFINITIONS
 PROPERTIES
     Man_ <: Person_ &
     Woman_ <: Person_ &
-    card({p_ | {p_} <: Person_ & ({p_} <: closure1((mother_Person \/ father_Person))[{p_}])}) = 0 &
+    not(#(p_).({p_} <: Person_ => ({p_} <: closure1((mother_Person \/ father_Person))[{p_}]))) &
     (wife_Person = husband_Person~) &
     (wife_Person /\ (closure((mother_Person \/ father_Person)) ; mother_Person)) = {} & (husband_Person /\ (closure((mother_Person \/ father_Person)) ; father_Person)) = {} &
     Man_ /\ Woman_ = {} &
