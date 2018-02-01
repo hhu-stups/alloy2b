@@ -92,6 +92,17 @@ GREATER_EQUAL      : '>=' ;
 LESS_EQUAL         : '=<' | '<=' ;
 LESS               : '<' ;
 
+// operators from util/integer
+INT_PLUS           : 'plus' ;
+INT_MINUS          : 'minus' ;
+INT_PRODUCT        : 'mul' ;
+INT_DIV            : 'div' ;
+INT_MODULO         : 'rem' ;
+INT_SUM            : 'sum' ;
+INT_MAX            : 'max' ;
+INT_MIN            : 'min' ;
+
+
 // identifiers
 ID                 : [A-Za-z][A-Za-z0-9_']* ;
 
