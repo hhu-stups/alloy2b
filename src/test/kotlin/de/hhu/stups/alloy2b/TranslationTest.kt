@@ -123,7 +123,7 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("book/chapter2/addressBook1a.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
     fun translateLaws() {
         val expected = getResourceAsString("laws/SetLaws.mch")
         assertEquals(expected, BTranslation(parseResource("laws/SetLaws.als").toAst(false)).getTranslation())
