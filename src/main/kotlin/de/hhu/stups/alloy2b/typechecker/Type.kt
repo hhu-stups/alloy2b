@@ -6,31 +6,41 @@ class Type(type: ExplicitType = Untyped()) {
     var currentType = type
 
     fun setType(type: Type) {
-        if(type.untyped() && this.untyped()) {
+        if (type.untyped() && this.untyped()) {
             return
         }
-        if(type.untyped()) {
+        if (type.untyped()) {
             type.setType(this)
         }
         val ctype = type.currentType
         if (currentType is Untyped) {
             currentType = type.currentType
-        } else if (currentType is Relation && ctype is Relation) {
+            return
+        }
+        if (currentType is Relation && ctype is Relation) {
             (currentType as Relation).rightType.setType(ctype.rightType)
             (currentType as Relation).leftType.setType(ctype.leftType)
-        } else if (currentType is Scalar && ctype is Scalar) {
-            (currentType as Scalar).subType.setType(ctype.subType)
-        } else if (currentType is Set && ctype is Set) {
-            (currentType as Set).subType.setType(ctype.subType)
-        } else if (currentType is Integer && ctype is Integer) {
-            //
-        } else if (currentType is Signature && ctype is Signature) {
-            if((currentType as Signature).subType != ctype.subType) {
-                throw UnsupportedOperationException("Type Checking failed. Tried to unify $currentType and $type")
-            }
-        } else {
-            throw UnsupportedOperationException("Type Checking failed. Tried to unify $currentType and $type")
+            return
         }
+        if (currentType is Scalar && ctype is Scalar) {
+            (currentType as Scalar).subType.setType(ctype.subType)
+            return
+        }
+        if (currentType is Set && ctype is Set) {
+            (currentType as Set).subType.setType(ctype.subType)
+            return
+        }
+        if (currentType is Integer && ctype is Integer) {
+            //
+            return
+        }
+        if (currentType is Signature && ctype is Signature) {
+            if ((currentType as Signature).subType != ctype.subType) {
+                throw UnsupportedOperationException("\nType Checking failed. Tried to unify\n$currentType\nand\n$type")
+            }
+            return
+        }
+        throw UnsupportedOperationException("\nType Checking failed. Tried to unify\n$currentType\nand\n$type")
     }
 
     fun untyped(): Boolean {
