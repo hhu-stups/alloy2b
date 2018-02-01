@@ -1,0 +1,16 @@
+/*@ generated */
+MACHINE alloytranslation
+SETS
+    setX_; V_
+CONSTANTS
+    SS_, TT_, VV_, Empty_
+PROPERTIES
+    card(V_) = 1 &
+    Empty_[V_] = {} &
+    SS_ : V_ <-> setX_ &
+    TT_ : V_ <-> setX_ &
+    VV_ : V_ <-> setX_ &
+    Empty_ : V_ <-> setX_
+OPERATIONS
+    check_SetLaws = PRE not(/* SetLaws */ ((SS_[V_] \/ SS_[V_]) = SS_[V_]) & (SS_[V_] - SS_[V_]) = {} & (SS_[V_] = (SS_[V_] /\ SS_[V_])) & ((SS_[V_] - Empty_[V_]) = SS_[V_]) & (Empty_[V_] = (SS_[V_] - SS_[V_])) & ((Empty_[V_] - SS_[V_]) = Empty_[V_]) & ((SS_[V_] \/ TT_[V_]) = (TT_[V_] \/ SS_[V_])) & ((SS_[V_] /\ TT_[V_]) = (TT_[V_] /\ SS_[V_])) & ((SS_[V_] \/ (TT_[V_] \/ VV_[V_])) = ((SS_[V_] \/ TT_[V_]) \/ VV_[V_])) & ((SS_[V_] /\ (TT_[V_] /\ VV_[V_])) = ((SS_[V_] /\ TT_[V_]) /\ VV_[V_])) & ((SS_[V_] \/ (TT_[V_] /\ VV_[V_])) = ((SS_[V_] \/ TT_[V_]) /\ (SS_[V_] \/ VV_[V_]))) & ((SS_[V_] /\ (TT_[V_] \/ VV_[V_])) = ((SS_[V_] /\ TT_[V_]) \/ (SS_[V_] /\ VV_[V_]))) & (((SS_[V_] /\ TT_[V_]) \/ (SS_[V_] - TT_[V_])) = SS_[V_]) & (((SS_[V_] - TT_[V_]) /\ TT_[V_]) = Empty_[V_]) & ((SS_[V_] - (TT_[V_] - VV_[V_])) = ((SS_[V_] - TT_[V_]) \/ (SS_[V_] /\ VV_[V_]))) & (((SS_[V_] - TT_[V_]) - VV_[V_]) = (SS_[V_] - (TT_[V_] \/ VV_[V_]))) & ((SS_[V_] \/ (TT_[V_] - VV_[V_])) = ((SS_[V_] \/ TT_[V_]) - (VV_[V_] - SS_[V_]))) & ((SS_[V_] /\ (TT_[V_] - VV_[V_])) = ((SS_[V_] /\ TT_[V_]) - VV_[V_])) & (((SS_[V_] \/ TT_[V_]) - VV_[V_]) = ((SS_[V_] - VV_[V_]) \/ (TT_[V_] - VV_[V_]))) & ((SS_[V_] - (TT_[V_] /\ VV_[V_])) = ((SS_[V_] - TT_[V_]) \/ (SS_[V_] - VV_[V_]))) & (SS_[V_] <: (SS_[V_] \/ TT_[V_])) & (TT_[V_] <: (SS_[V_] \/ TT_[V_])) & ((SS_[V_] <: VV_[V_]) & (TT_[V_] <: VV_[V_])) => ((SS_[V_] \/ TT_[V_]) <: VV_[V_]) & ((SS_[V_] /\ TT_[V_]) <: SS_[V_]) & ((SS_[V_] /\ TT_[V_]) <: TT_[V_]) & ((VV_[V_] <: SS_[V_]) & (VV_[V_] <: TT_[V_])) => (VV_[V_] <: (SS_[V_] /\ TT_[V_])) & !(xx_).({xx_} <: SS_[V_] => ({xx_} <: TT_[V_]) => ({xx_} <: (SS_[V_] /\ TT_[V_]))) & !(xx_).({xx_} <: SS_[V_] => not(({xx_} <: TT_[V_])) => (({xx_} <: (SS_[V_] - TT_[V_])) & not(({xx_} <: TT_[V_])))) & !(xx_).({xx_} <: SS_[V_] => (({xx_} <: TT_[V_]) & ({xx_} <: VV_[V_])) => not((((SS_[V_] /\ TT_[V_]) /\ VV_[V_]) = Empty_[V_]))) & !(xx_).({xx_} <: SS_[V_] => not(({xx_} <: TT_[V_])) => (not(((SS_[V_] \/ TT_[V_]) = TT_[V_])) & not(((SS_[V_] - TT_[V_]) = Empty_[V_])))) & ((SS_[V_] <: VV_[V_]) or not((SS_[V_] <: VV_[V_]))) & (SS_[V_] <: VV_[V_]) => (card(SS_[V_]) <= card(VV_[V_])) & (card(SS_[V_]) < card(VV_[V_])) => not((VV_[V_] <: SS_[V_])) & (card((SS_[V_] \/ VV_[V_])) <= (card(SS_[V_]) + card(VV_[V_]))) & (((SS_[V_] /\ VV_[V_]) = Empty_[V_]) <=> (SS_[V_] <: (setX_ - VV_[V_])))) THEN skip END
+END
