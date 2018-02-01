@@ -20,6 +20,7 @@ enum class Operator {
                     ">=" -> GREATER_EQUAL
                     "<" -> LESS
                     "<=" -> LESS_EQUAL
+                    "=<" -> LESS_EQUAL
                     "#" -> CARD
                     "&" -> INTERSECTION
                     "+" -> PLUS
