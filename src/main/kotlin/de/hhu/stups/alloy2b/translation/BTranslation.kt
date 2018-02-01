@@ -23,6 +23,7 @@ class BTranslation(spec: AlloySpecification) {
     private val signatures = mutableListOf<IdentifierExpression>()
     private val signatureDeclarations = mutableMapOf<IdentifierExpression, SignatureDeclaration>()
     private val abstractSignatures = mutableListOf<IdentifierExpression>()
+    private val singletonSignatures = mutableListOf<IdentifierExpression>() // singleton signatures that do not extend another signature
     private val extendingSignatures = mutableMapOf<IdentifierExpression, List<IdentifierExpression>>()
     private val parentSignature = mutableMapOf<IdentifierExpression, IdentifierExpression>()
 
@@ -335,6 +336,11 @@ class BTranslation(spec: AlloySpecification) {
 
         if (sdec.signatureExtension == null) {
             // basic signature -> B set
+            if (ONE in sdec.qualifiers) {
+                // singleton signature that does not extend another signature
+                properties.add("card(${sanitizeIdentifier(sdec.name.name)}) = 1")
+                singletonSignatures.add(sdec.name)
+            }
             sets.add(sanitizeIdentifier(sdec.name))
             return
         }
@@ -360,16 +366,17 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun handleQuantifiersByCardinality(sdec: SignatureDeclaration) {
-        // case ONE is handled by introducing a constant for the singleton element
-        // thus, we do not need a cardinality constraint
         if (NO in sdec.qualifiers) {
             properties.add("${sanitizeIdentifier(sdec.name.name)} = {}")
+            return
         }
         if (LONE in sdec.qualifiers) {
             properties.add("card(${sanitizeIdentifier(sdec.name.name)}) <= 1")
+            return
         }
         if (SOME in sdec.qualifiers) {
             properties.add("card(${sanitizeIdentifier(sdec.name.name)}) >= 1")
+            return
         }
     }
 
@@ -612,7 +619,7 @@ class BTranslation(spec: AlloySpecification) {
     private fun sanitizeIdentifier(id: IdentifierExpression): String {
         val currentType = id.type.currentType
         val cleanName = "${id.name.replace("'", "_")}_"
-        if (currentType is Scalar) {
+        if (currentType is Scalar && !singletonSignatures.contains(id)) {
             return "{$cleanName}"
         }
         // signatures extending the same signature possibly define the same fields, and thus, we add the signature
