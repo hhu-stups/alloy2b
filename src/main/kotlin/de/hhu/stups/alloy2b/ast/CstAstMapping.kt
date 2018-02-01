@@ -6,7 +6,8 @@ import org.antlr.v4.runtime.Token
 import java.util.Arrays.asList
 
 fun SpecificationContext.toAst(considerPosition: Boolean = false): AlloySpecification =
-        AlloySpecification(this.open().map { it.toAst(considerPosition) } + this.paragraph().map { it.toAst(considerPosition) }, toPosition(considerPosition))
+        AlloySpecification(this.open().map { it.toAst(considerPosition) } + this.paragraph()
+                .map { it.toAst(considerPosition) }, toPosition(considerPosition))
 
 fun Token.startPoint() = Point(line, charPositionInLine)
 
@@ -74,7 +75,8 @@ fun SigDeclContext.toAst(considerPosition: Boolean = false): SignatureDeclaratio
         SignatureDeclaration(qualifiers,
                 it.toAst(considerPosition), signatureExtensions,
                 decls,
-                quantifiedBlock(it.toAst(considerPosition), block()?.toAst(considerPosition)), toPosition(considerPosition))
+                quantifiedBlock(it.toAst(considerPosition), block()?.toAst(considerPosition)),
+                toPosition(considerPosition))
     })
 }
 
@@ -87,8 +89,10 @@ fun quantifiedBlock(signatureName: IdentifierExpression, block: List<Expression>
 }
 
 fun SigExtContext.toAst(considerPosition: Boolean = false): SignatureExtension = when (this) {
-    is ExtendsExtensionContext -> ExtendsSignatureExtension(this.ref().toAst(considerPosition), toPosition(considerPosition))
-    is InExtensionContext -> InSignatureExtension(this.ref().map { it.toAst(considerPosition) }, toPosition(considerPosition))
+    is ExtendsExtensionContext -> ExtendsSignatureExtension(this.ref().toAst(considerPosition),
+            toPosition(considerPosition))
+    is InExtensionContext -> InSignatureExtension(this.ref().map { it.toAst(considerPosition) },
+            toPosition(considerPosition))
     else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
 }
 
@@ -113,9 +117,11 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     right.toAst(considerPosition),
                     toPosition(considerPosition))
             is ImpliesExprContext -> if (elseExpr != null) {
-                IfElseExpression(ifExpr.toAst(considerPosition), thenExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), toPosition(considerPosition))
+                IfElseExpression(ifExpr.toAst(considerPosition), thenExpr.toAst(considerPosition),
+                        elseExpr.toAst(considerPosition), toPosition(considerPosition))
             } else {
-                IfExpression(ifExpr.toAst(considerPosition), thenExpr.toAst(considerPosition), toPosition(considerPosition))
+                IfExpression(ifExpr.toAst(considerPosition), thenExpr.toAst(considerPosition),
+                        toPosition(considerPosition))
             }
             is DotJoinExprContext -> BinaryOperatorExpression(Operator.fromString(this.DOT().text),
                     left.toAst(considerPosition),
@@ -128,15 +134,17 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(),
                     blockOrBar().toAst(considerPosition),
                     toPosition(considerPosition))
-            is CompareExprContext -> if (NOT() != null) {
-                UnaryOperatorExpression(Operator.NOT, BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
-                        left.toAst(considerPosition), right.toAst(considerPosition),
-                        toPosition(considerPosition)))
-            } else {
-                BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
-                        left.toAst(considerPosition), right.toAst(considerPosition),
-                        toPosition(considerPosition))
-            }
+            is CompareExprContext ->
+                if (NOT() != null) {
+                    UnaryOperatorExpression(Operator.NOT,
+                            BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
+                                    left.toAst(considerPosition), right.toAst(considerPosition),
+                                    toPosition(considerPosition)))
+                } else {
+                    BinaryOperatorExpression(Operator.fromString(this.compareOp().text),
+                            left.toAst(considerPosition), right.toAst(considerPosition),
+                            toPosition(considerPosition))
+                }
             is ArrowOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.arrowOp().text),
                     left.toAst(considerPosition), right.toAst(considerPosition),
                     toPosition(considerPosition))
@@ -145,7 +153,8 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     toPosition(considerPosition))
             is ParenExprContext -> this.expr().toAst(considerPosition)
             is BlockExprContext -> BlockExpression(this.block().expr().map { it.toAst(considerPosition) })
-            is DeclListExprContext -> DeclListExpression(declList()?.decl()?.map { it.toAst(considerPosition) } ?: emptyList(), blockOrBar().toAst(considerPosition), toPosition(considerPosition))
+            is DeclListExprContext -> DeclListExpression(declList()?.decl()?.map { it.toAst(considerPosition) }
+                    ?: emptyList(), blockOrBar().toAst(considerPosition), toPosition(considerPosition))
             is CapIntExprContext -> IntegerSetExpression(toPosition(considerPosition))
             is NumberExprContext -> IntegerExpression(NUMBER().text.toLong(), toPosition(considerPosition))
             is IntCastExprContext -> IntegerCastExpression(expr().toAst(considerPosition), toPosition(considerPosition))
@@ -174,6 +183,13 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
             is NegatedExprContext -> UnaryOperatorExpression(Operator.NOT,
                     expr().toAst(considerPosition),
                     toPosition(considerPosition))
+            is BinaryIntegerExprContext -> BinaryOperatorExpression(Operator.fromString(this.operator.text),
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition),
+                    toPosition(considerPosition))
+            is UnaryIntegerExprContext -> UnaryOperatorExpression(Operator.fromString(this.operator.text),
+                    expr().toAst(considerPosition),
+                    toPosition(considerPosition))
             else -> throw UnsupportedOperationException(this.javaClass.canonicalName)
         }
 
@@ -194,4 +210,5 @@ fun DeclContext.toAst(considerPosition: Boolean = false): Decl {
     return Decl(this.name().map { IdentifierExpression(it.text, it.toPosition(considerPosition)) }, expr)
 }
 
-fun LetDeclContext.toAst(considerPosition: Boolean = false): LetDecl = LetDecl(IdentifierExpression(this.name().text, this.toPosition(considerPosition)), this.expr().toAst(considerPosition))
+fun LetDeclContext.toAst(considerPosition: Boolean = false): LetDecl = LetDecl(IdentifierExpression(this.name().text,
+        this.toPosition(considerPosition)), this.expr().toAst(considerPosition))
