@@ -44,46 +44,48 @@ enumDecl           : ENUM name LBRACKET name (COMMA name)* RBRACKET ;
 
 sigQual            : ABSTRACT | LONE | ONE | SOME | PRIVATE ;
 
-sigExt             : EXTENDS ref        # extendsExtension
-                   | IN ref (PLUS ref)* # inExtension;
+sigExt             : EXTENDS ref            # extendsExtension
+                   | IN ref (PLUS ref)*     # inExtension;
 
-expr               : unOp expr                                                            # unOpExpr
-                   | left=expr DOT right=expr                                             # dotJoinExpr
-                   | expr LSQBRACKET exprList RSQBRACKET                                  # boxJoinExpr
-                   | left=expr operator=restrOperator right=expr                          # restrictionOpExpr
-                   | left=expr arrowOp right=expr                                         # arrowOpExpr
-                   | left=expr INTERSECTION right=expr                                    # intersectionExpr
-                   | left=expr OVERRIDE right=expr                                        # overrideExpr
-                   | CARD expr                                                            # cardExpr
-                   | left=expr operator=binOp right=expr                                  # binOpExpr
-                   | quant declList blockOrBar                                            # quantifierExpr
+expr               : unOp expr                                                                   # unOpExpr
+                   | operator=unaryIntegerOperator LSQBRACKET expr RSQBRACKET                    # unaryIntegerExpr
+                   | operator=binaryIntegerOperator LSQBRACKET left=expr COMMA right=expr RSQBRACKET   # binaryIntegerExpr
+                   | left=expr DOT right=expr                                                    # dotJoinExpr
+                   | expr LSQBRACKET exprList RSQBRACKET                                         # boxJoinExpr
+                   | left=expr operator=restrOperator right=expr                                 # restrictionOpExpr
+                   | left=expr arrowOp right=expr                                                # arrowOpExpr
+                   | left=expr INTERSECTION right=expr                                           # intersectionExpr
+                   | left=expr OVERRIDE right=expr                                               # overrideExpr
+                   | CARD expr                                                                   # cardExpr
+                   | left=expr operator=binOp right=expr                                         # binOpExpr
+                   | quant declList blockOrBar                                                   # quantifierExpr
 
-                   | exprQuantifier expr                                                  # quantifiedExpr
-                   | left=expr NOT? compareOp right=expr                                  # compareExpr
+                   | exprQuantifier expr                                                         # quantifiedExpr
+                   | left=expr NOT? compareOp right=expr                                         # compareExpr
 
-                   | NOT expr                                                             # negatedExpr
-                   | left=expr AND right=expr                                             # conjunctionExpr
-                   |<assoc=right> ifExpr=expr IMPLIES thenExpr=expr (ELSE elseExpr=expr)? # impliesExpr // needed because associativity differs
+                   | NOT expr                                                                    # negatedExpr
+                   | left=expr AND right=expr                                                    # conjunctionExpr
+                   |<assoc=right> ifExpr=expr IMPLIES thenExpr=expr (ELSE elseExpr=expr)?        # impliesExpr // needed because associativity differs
 
-                   | left=expr IFF right=expr                                             # equivalenceExpr
-                   | left=expr OR right=expr                                              # disjunctionExpr
+                   | left=expr IFF right=expr                                                    # equivalenceExpr
+                   | left=expr OR right=expr                                                     # disjunctionExpr
 
-                   | LET letDecl (COMMA letDecl)* blockOrBar                              # letExpr
+                   | LET letDecl (COMMA letDecl)* blockOrBar                                     # letExpr
 
-                   | INT LSQBRACKET expr RSQBRACKET                                       # intCastExpr
-                   | INT LPAREN expr RPAREN                                               # intCastExpr
-                   | INT expr                                                             # intCastExpr
-                   | NUMBER                                                               # numberExpr
-                   | MINUS NUMBER                                                         # negNumberExpr
-                   | NONE                                                                 # noneExpr
-                   | IDEN                                                                 # idenExpr
-                   | UNIV                                                                 # univExpr
-                   | CAPINT                                                               # capIntExpr
-                   | SeqInt                                                               # seqIntExpr
-                   | LPAREN expr RPAREN                                                   # parenExpr
-                   | AT? name                                                             # idExpr
-                   | block                                                                # blockExpr
-                   | LBRACKET declList blockOrBar RBRACKET                                # declListExpr
+                   | INT LSQBRACKET expr RSQBRACKET                                              # intCastExpr
+                   | INT LPAREN expr RPAREN                                                      # intCastExpr
+                   | INT expr                                                                    # intCastExpr
+                   | NUMBER                                                                      # numberExpr
+                   | MINUS NUMBER                                                                # negNumberExpr
+                   | NONE                                                                        # noneExpr
+                   | IDEN                                                                        # idenExpr
+                   | UNIV                                                                        # univExpr
+                   | CAPINT                                                                      # capIntExpr
+                   | SeqInt                                                                      # seqIntExpr
+                   | LPAREN expr RPAREN                                                          # parenExpr
+                   | AT? name                                                                    # idExpr
+                   | block                                                                       # blockExpr
+                   | LBRACKET declList blockOrBar RBRACKET                                       # declListExpr
                    ;
 
 decl               : PRIVATE? DISJ? name (COMMA name)* COLON DISJ? expr ;
@@ -93,6 +95,10 @@ letDecl            : name EQUAL expr ;
 quant              : ALL | NO | SOME | LONE | ONE | SUM ;
 
 restrOperator      : DOM_RESTR | RAN_RESTR;
+
+binaryIntegerOperator : INT_PLUS | INT_MINUS | INT_PRODUCT | INT_DIV | INT_MODULO | INT_SUM;
+
+unaryIntegerOperator : INT_SUM | INT_MAX | INT_MIN;
 
 binOp              : PLUS | MINUS;
 
@@ -111,7 +117,7 @@ blockOrBar         : block     # blockInBlockOrBar
 
 name               : (THIS | ID) ( SLASH ID )* ;
 
-ref                : name # nameRef
-                   | UNIV # univRef
-                   | CAPINT # capIntRef
-                   | SeqInt # seqIntRef;
+ref                : name       # nameRef
+                   | UNIV       # univRef
+                   | CAPINT     # capIntRef
+                   | SeqInt     # seqIntRef;
