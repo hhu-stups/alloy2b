@@ -363,7 +363,7 @@ class BTranslation(spec: AlloySpecification) {
         // case ONE is handled by introducing a constant for the singleton element
         // thus, we do not need a cardinality constraint
         if (NO in sdec.qualifiers) {
-            properties.add("card(${sanitizeIdentifier(sdec.name.name)}) = 0")
+            properties.add("${sanitizeIdentifier(sdec.name.name)} = {}")
         }
         if (LONE in sdec.qualifiers) {
             properties.add("card(${sanitizeIdentifier(sdec.name.name)}) <= 1")
