@@ -101,7 +101,9 @@ class BTranslation(spec: AlloySpecification) {
         })
         // abstract signatures are exhaustively divided into their sub signatures
         abstractSignatures.forEach({ absSigName ->
-            properties.add("${extendingSignatures[absSigName].orEmpty().joinToString(" \\/ ") { sanitizeIdentifier(it) }} = ${sanitizeIdentifier(absSigName)}")
+            if (extendingSignatures[absSigName] != null && extendingSignatures[absSigName]!!.isNotEmpty()) {
+                properties.add("${extendingSignatures[absSigName]?.joinToString(" \\/ ") { sanitizeIdentifier(it) }} = ${sanitizeIdentifier(absSigName)}")
+            }
         })
     }
 
