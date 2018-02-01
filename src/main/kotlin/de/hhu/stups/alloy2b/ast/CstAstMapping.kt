@@ -108,6 +108,10 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                     left.toAst(considerPosition),
                     right.toAst(considerPosition),
                     toPosition(considerPosition))
+            is EquivalenceExprContext -> BinaryOperatorExpression(Operator.fromString(this.IFF().text),
+                    left.toAst(considerPosition),
+                    right.toAst(considerPosition),
+                    toPosition(considerPosition))
             is ImpliesExprContext -> if (elseExpr != null) {
                 IfElseExpression(ifExpr.toAst(considerPosition), thenExpr.toAst(considerPosition), elseExpr.toAst(considerPosition), toPosition(considerPosition))
             } else {
