@@ -65,7 +65,7 @@ expr               : unOp expr                                                  
                    | left=expr AND right=expr                                             # conjunctionExpr
                    |<assoc=right> ifExpr=expr IMPLIES thenExpr=expr (ELSE elseExpr=expr)? # impliesExpr // needed because associativity differs
 
-                   | left=expr IFF right=expr                                             # equalityExpr
+                   | left=expr IFF right=expr                                             # equivalenceExpr
                    | left=expr OR right=expr                                              # disjunctionExpr
 
                    | LET letDecl (COMMA letDecl)* blockOrBar                              # letExpr
