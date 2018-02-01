@@ -43,7 +43,7 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("FileSystem3.als").toAst(false)).getTranslation())
     }
 
-    @test
+    @test @Ignore
     fun translateExtendedFileSystem() {
         val expected = getResourceAsString("ExtendedFileSystem.mch")
         assertEquals(expected, BTranslation(parseResource("ExtendedFileSystem.als").toAst(false)).getTranslation())
