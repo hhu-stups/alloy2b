@@ -49,13 +49,22 @@ class BTranslation(spec: AlloySpecification) {
         // define orderings since we know the scope now
         defineDistinctOrderedSignatures(definitions, orderingAndScopeMap)
 
-        val orderedUnorderedInteractions = translationPreferences[TranslationPreference.ORDERED_UNORDERED_SIGNATURE_INTERACTION]
+        val orderedUnorderedInteractions =
+                translationPreferences[TranslationPreference.ORDERED_UNORDERED_SIGNATURE_INTERACTION]
         // ordered signatures are defined as intervals in the definitions instead of a deferred set
         if (orderingAndScopeMap.isEmpty() || orderedUnorderedInteractions!!.isEmpty()) {
             appendIfNotEmpty(builder, sets.filter { it !in orderingAndScopeMap }, "; ", "SETS")
         } else {
-            appendIfNotEmpty(builder, sets.filter { it !in orderingAndScopeMap.keys.union(orderedUnorderedInteractions.values).union(orderedUnorderedInteractions.keys) }, "; ", "SETS")
-            defineDeferredSetsAsSetsOfInteger(sets.filter { it !in orderedUnorderedInteractions.values.union(orderedUnorderedInteractions.keys).subtract(orderingAndScopeMap.keys) })
+            appendIfNotEmpty(builder, sets.filter {
+                it !in orderingAndScopeMap.keys
+                        .union(orderedUnorderedInteractions.values)
+                        .union(orderedUnorderedInteractions.keys)
+            }, "; ", "SETS")
+            defineDeferredSetsAsSetsOfInteger(sets.filter {
+                it !in orderedUnorderedInteractions.values
+                        .union(orderedUnorderedInteractions.keys)
+                        .subtract(orderingAndScopeMap.keys)
+            })
         }
         appendIfNotEmpty(builder, constants, ", ", "CONSTANTS")
         appendIfNotEmpty(builder, definitions, " ;\n    ", "DEFINITIONS")
@@ -68,8 +77,10 @@ class BTranslation(spec: AlloySpecification) {
         return builder.toString()
     }
 
-    private fun defineDistinctOrderedSignatures(definitions: MutableList<String>, orderingAndScopeMap: Map<String, Long>) {
-        // first ordered signature is defined from 0..scope-1, second from scope..next_scope-1, etc. to provide distinct elements
+    private fun defineDistinctOrderedSignatures(definitions: MutableList<String>,
+                                                orderingAndScopeMap: Map<String, Long>) {
+        // first ordered signature is defined from 0..scope-1, second from scope..next_scope-1,
+        // etc. to provide distinct elements
         var c = 0.toLong()
         for (entry in orderingAndScopeMap) {
             definitions.add("${entry.key} == $c..${c + entry.value - 1}")
@@ -102,7 +113,9 @@ class BTranslation(spec: AlloySpecification) {
         // abstract signatures are exhaustively divided into their sub signatures
         abstractSignatures.forEach({ absSigName ->
             if (extendingSignatures[absSigName] != null && extendingSignatures[absSigName]!!.isNotEmpty()) {
-                properties.add("${extendingSignatures[absSigName]?.joinToString(" \\/ ") { sanitizeIdentifier(it) }} = ${sanitizeIdentifier(absSigName)}")
+                properties.add("${extendingSignatures[absSigName]?.joinToString(" \\/ ") {
+                    sanitizeIdentifier(it)
+                }} = ${sanitizeIdentifier(absSigName)}")
             }
         })
     }
@@ -148,15 +161,18 @@ class BTranslation(spec: AlloySpecification) {
                         LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
                         ONE -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
                         SET -> "<->"
-                        else -> throw UnsupportedOperationException("Field declaration not supported this way for operator ${decl.expression.operator}.")
+                        else -> throw UnsupportedOperationException("\nField declaration not supported this " +
+                                "way for operator ${decl.expression.operator}.")
                     }
 
             if (nexpr == decl.expression.expression) {
                 // no this was introduced, avoid quantifier
-                properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} $symbol ${translateExpression(nexpr)}")
+                properties.add("${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} " +
+                        "$symbol ${translateExpression(nexpr)}")
             } else {
                 // this_ needed, add quantifier
-                properties.add("!(this_).({this_} <: ${sanitizeIdentifier(name)} => ${sanitizeIdentifier(it)} : ${sanitizeIdentifier(name)} $symbol ${translateExpression(nexpr)})")
+                properties.add("!(this_).({this_} <: ${sanitizeIdentifier(name)} => ${sanitizeIdentifier(it)} " +
+                        ": ${sanitizeIdentifier(name)} $symbol ${translateExpression(nexpr)})")
             }
 
         }
@@ -224,7 +240,7 @@ class BTranslation(spec: AlloySpecification) {
             when {
                 it.name == "util/ordering" -> stmt.refs.forEach {
                     // translated within run statement where we know the scope, so size is 0 here
-                    orderingAndScopeMap.put(sanitizeIdentifier(it.name), 0)
+                    orderingAndScopeMap[sanitizeIdentifier(it.name)] = 0
                 }
                 it.name == "util/integer" -> {
                     // implemented by default
@@ -239,7 +255,8 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(stmt: AssertionStatement) {
-        alloyAssertions[stmt.name] = "/* ${stmt.name} */ " + stmt.expressions.joinToString(" & ") { e -> translateExpression(e) }
+        alloyAssertions[stmt.name] = "/* ${stmt.name} */ " + stmt.expressions
+                .joinToString(" & ") { e -> translateExpression(e) }
     }
 
     private fun translate(fdec: FactDeclaration) {
@@ -254,7 +271,9 @@ class BTranslation(spec: AlloySpecification) {
         if (fdec.decls.isEmpty()) {
             builder.append(sanitizeIdentifier(fdec.name))
         } else {
-            builder.append("${sanitizeIdentifier(fdec.name)}(${fdec.decls.joinToString(", ") { it.names.joinToString(", ") { name -> sanitizeIdentifier(name.name) } }}) == ")
+            builder.append("${sanitizeIdentifier(fdec.name)}(${fdec.decls.joinToString(", ") {
+                it.names.joinToString(", ") { name -> sanitizeIdentifier(name.name) }
+            }}) == ")
         }
         val decls = translateDeclsExprList(fdec.decls)
         val parameterExpressions = fdec.expressions.map { translateExpression(it) }.joinToString(" & ") { "temp : $it" }
@@ -291,7 +310,8 @@ class BTranslation(spec: AlloySpecification) {
     private fun translate(stmt: CheckStatement) {
         stmt.expressions.forEach({ e ->
             when (e) {
-                is IdentifierExpression -> if (alloyAssertions.containsKey(e.name)) operations.add("check_${e.name} = PRE not(${alloyAssertions[e.name].orEmpty()}) THEN skip END")
+                is IdentifierExpression -> if (alloyAssertions.containsKey(e.name))
+                    operations.add("check_${e.name} = PRE not(${alloyAssertions[e.name].orEmpty()}) THEN skip END")
                 else -> operations.add("check_${++checkCounter} = PRE not(${translateExpression(e)}) THEN skip END")
             }
         })
@@ -300,7 +320,8 @@ class BTranslation(spec: AlloySpecification) {
     private fun translate(stmt: RunStatement) {
         stmt.expressions.forEach({ e ->
             when (e) {
-                is IdentifierExpression -> if (alloyAssertions.containsKey(e.name)) operations.add("run_${e.name} = PRE ${alloyAssertions[e.name].orEmpty()} THEN skip END")
+                is IdentifierExpression -> if (alloyAssertions.containsKey(e.name))
+                    operations.add("run_${e.name} = PRE ${alloyAssertions[e.name].orEmpty()} THEN skip END")
                 else -> operations.add("run_${++runCounter} = PRE ${translateExpression(e)} THEN skip END")
             }
         })
@@ -348,10 +369,12 @@ class BTranslation(spec: AlloySpecification) {
         }
 
         // not a basic signature -> ensure subset relation with extended / extending signatures
-        constants.add(sanitizeIdentifier(sdec.name.name)) // use sdec.name.name instead of sdec.name to avoid adding { .. }
+        // use sdec.name.name instead of sdec.name to avoid adding { .. }
+        constants.add(sanitizeIdentifier(sdec.name.name))
         when (sdec.signatureExtension) {
             is ExtendsSignatureExtension -> {
-                properties.add("${sanitizeIdentifier(sdec.name)} <: ${sanitizeIdentifier(sdec.signatureExtension.name)}")
+                properties.add("${sanitizeIdentifier(sdec.name)} <: " +
+                        sanitizeIdentifier(sdec.signatureExtension.name))
                 extendingSignatures[sdec.signatureExtension.name] =
                         extendingSignatures.getOrDefault(sdec.signatureExtension.name, emptyList()) + sdec.name
                 parentSignature[sdec.name] = sdec.signatureExtension.name
@@ -405,7 +428,8 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(declListExpression: DeclListExpression): String {
-        return "{${translateDeclsExprList(declListExpression.decls)} | ${declListExpression.expressions.map { translateExpression(it) }.joinToString { " & " }}}"
+        return "{${translateDeclsExprList(declListExpression.decls)} |" +
+                " ${declListExpression.expressions.map { translateExpression(it) }.joinToString { " & " }}}"
     }
 
     private fun translateExpression(@Suppress("UNUSED_PARAMETER") ue: UnivExpression): String {
@@ -435,7 +459,8 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(ite: IfElseExpression): String {
-        return "(${translateExpression(ite.ifExpr)} => ${translateExpression(ite.thenExpr)}) & (not(${translateExpression(ite.ifExpr)}) => ${translateExpression(ite.elseExpr)})"
+        return "(${translateExpression(ite.ifExpr)} => ${translateExpression(ite.thenExpr)}) & " +
+                "(not(${translateExpression(ite.ifExpr)}) => ${translateExpression(ite.elseExpr)})"
     }
 
     private fun translateExpression(be: BlockExpression): String {
@@ -479,11 +504,16 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translateExpression(qe: QuantifierExpression): String =
             when (qe.operator) {
-                ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }})"
-                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}))"
-                ONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) = 1"
-                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) < 2"
-                SOME -> "#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }})"
+                ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => " +
+                        "${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }})"
+                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} =>" +
+                        " ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}))"
+                ONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} &" +
+                        " ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) = 1"
+                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} &" +
+                        " ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) < 2"
+                SOME -> "#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => " +
+                        "${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }})"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -492,7 +522,10 @@ class BTranslation(spec: AlloySpecification) {
         builder.append("LET ")
         builder.append(le.letDecls.joinToString(", ") { it -> sanitizeIdentifier(it.name) })
         builder.append(" BE ")
-        builder.append(le.letDecls.joinToString(" & ") { it -> "${sanitizeIdentifier(it.name)} = ${translateExpression(it.expression)}" })
+        builder.append(le.letDecls.joinToString(" & ") { it ->
+            "${sanitizeIdentifier(it.name)} = " +
+                    translateExpression(it.expression)
+        })
         builder.append(" IN ")
         builder.append(le.expressions.joinToString(" & ") { it -> translateExpression(it) })
         builder.append(" END")
@@ -503,11 +536,13 @@ class BTranslation(spec: AlloySpecification) {
         if (bje.parameters.isEmpty()) {
             throw UnsupportedOperationException("BoxJoin not supported this way.")
         }
-        val parameters = bje.parameters.map { if (it is IdentifierExpression) sanitizeIdentifier(it.name) else translateExpression(it) }
+        val parameters = bje.parameters
+                .map { if (it is IdentifierExpression) sanitizeIdentifier(it.name) else translateExpression(it) }
         val translatedLeftExpression = translateExpression(bje.left)
         val firstParam = parameters[0]
         if (firstParam.contains("next_").or(firstParam.contains("prev_"))) {
-            // nested next or prev calls like next[next[s]], the function returns a singleton set of integer so we take the min (or max)
+            // nested next or prev calls like next[next[s]], the function returns a singleton set of integer so
+            // we take the min (or max)
             return "$translatedLeftExpression(min(${parameters.joinToString(", ")}))"
         }
         return "$translatedLeftExpression(${parameters.joinToString(", ")})"
@@ -523,7 +558,8 @@ class BTranslation(spec: AlloySpecification) {
             IN -> symbol = "<:"
             EQUAL -> symbol = "="
             INTERSECTION -> symbol = "/\\"
-            PLUS -> symbol = if (qe.left.type.currentType is Integer || qe.right.type.currentType is Integer) "+" else "\\/"
+            PLUS ->
+                symbol = if (qe.left.type.currentType is Integer || qe.right.type.currentType is Integer) "+" else "\\/"
             MINUS -> symbol = "-"
             GREATER -> symbol = ">"
             GREATER_EQUAL -> symbol = ">="
@@ -538,6 +574,11 @@ class BTranslation(spec: AlloySpecification) {
             TOTAL_FUNCTION -> symbol = "-->"
             PARTIAL_FUNCTION -> symbol = "+->"
             BIJECTIVE_FUNCTION -> symbol = ">->>"
+            INT_PLUS -> symbol = "+"
+            INT_MINUS -> symbol = "-"
+            INT_DIV -> symbol = "/"
+            INT_MODULO -> symbol = "mod"
+            INT_PRODUCT -> symbol = "*"
             else -> throw UnsupportedOperationException(qe.operator.name)
         }
         return "(${translateExpression(qe.left)} $symbol ${translateExpression(qe.right)})"
@@ -550,7 +591,10 @@ class BTranslation(spec: AlloySpecification) {
                 CARD -> "card(${translateExpression(qe.expression)})"
                 INVERSE -> "${translateExpression(qe.expression)}~"
                 NOT -> "not(${translateExpression(qe.expression)})"
-                SET -> translateExpression(qe.expression) // TODO: should this be POW?
+                SET -> translateExpression(qe.expression)                         // TODO: should this be POW?
+                INT_SUM -> "SIGMA(x).(x:${translateExpression(qe.expression)}|x)" // TODO: check this for correctness
+                INT_MAX -> "max(translateExpression(qe.expression))"
+                INT_MIN -> "min(translateExpression(qe.expression))"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -590,7 +634,8 @@ class BTranslation(spec: AlloySpecification) {
             val newLeftExpression = leftExpression.replace("{", "").replace("}", "")
             // translate next, nexts, prev and prevs which are defined as functions in the definitions
             if (newLeftExpression.contains("\\[next\\](*.)\\[prev\\]")) {
-                // nested next or prev calls like s.next.next, the function returns a singleton set of integer so we take the min (or max)
+                // nested next or prev calls like s.next.next, the function returns a singleton set of
+                // integer so we take the min (or max)
                 return "$rightExpression(min($newLeftExpression))"
             }
             return "$rightExpression($newLeftExpression)"
@@ -599,10 +644,16 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateDeclsIDList(decls: List<Decl>) =
-            decls.joinToString(", ") { it.names.joinToString(", ") { sanitizeIdentifier(it.name) } } // sanitizing string instead of identifier expression avoids set expansion to {id}
+            // sanitizing string instead of identifier expression avoids set expansion to {id}
+            decls.joinToString(", ") { it.names.joinToString(", ") { sanitizeIdentifier(it.name) } }
 
     private fun translateDeclsExprList(decls: List<Decl>): String {
-        return decls.joinToString(" & ") { it.names.joinToString(" & ") { n -> "${sanitizeIdentifier(n)} <: ${translateDeclExpression(it.expression)}" } }
+        return decls.joinToString(" & ") {
+            it.names.joinToString(" & ") { n ->
+                "${sanitizeIdentifier(n)} <: " +
+                        translateDeclExpression(it.expression)
+            }
+        }
     }
 
     private fun translateDeclExpression(expr: QuantifiedExpression): String =
