@@ -390,8 +390,13 @@ class BTranslation(spec: AlloySpecification) {
             is IfExpression -> translateExpression(e)
             is BlockExpression -> translateExpression(e)
             is IfElseExpression -> translateExpression(e)
+            is DeclListExpression -> translateExpression(e)
             else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
         }
+    }
+
+    private fun translateExpression(declListExpression: DeclListExpression): String {
+        return "{${translateDeclsExprList(declListExpression.decls)} | ${declListExpression.expressions.map { translateExpression(it) }.joinToString { " & " }}}"
     }
 
     private fun translateExpression(@Suppress("UNUSED_PARAMETER") ue: UnivExpression): String {
