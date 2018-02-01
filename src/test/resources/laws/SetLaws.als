@@ -47,6 +47,18 @@ assert SetLaws {
  #(V.SS) < #(V.VV) implies not(V.VV in V.SS)
  (#(V.SS + V.VV) <= plus[#(V.SS) , #(V.VV)])
  (V.SS & V.VV = V.Empty  iff V.SS in setX - V.VV)
+ one V.SS iff #(V.SS)=1
+ lone V.SS iff #(V.SS) =<1
+ some V.SS iff #(V.SS) > 0
+ // all V.SS iff V.SS = setX no longer allowed
+ one (V.SS + V.TT) implies (one V.SS or one V.TT)
+ some (V.SS + V.TT) iff (some V.SS or some V.TT)
+ some (V.SS & V.TT) implies (some V.SS && some V.TT)
+ (lone V.SS implies lone (V.SS & V.TT))
+ (lone V.SS && lone V.TT) implies lone (V.SS &  V.TT)
+ lone V.SS implies lone (V.SS - V.TT)
+ lone V.Empty
+ not(some V.Empty)
 }
 
 assert SetLawsAlloyStrange {
