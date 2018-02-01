@@ -236,7 +236,7 @@ class TypeChecker(spec: AlloySpecification) {
             // next, nexts, prev, prevs
             je.right.type.setType(je.left.type)
             je.type.setType(Type(jeLeftType))
-        } else if (jeRightType is Scalar && jeLeftType is Untyped) {
+        } else if ((jeRightType is Scalar || jeRightType is Set) && jeLeftType is Untyped) {
             // first, last
             je.left.type.setType(je.right.type)
             je.type.setType(Type(jeRightType))
