@@ -566,6 +566,8 @@ class BTranslation(spec: AlloySpecification) {
             INVERSE -> symbol = "~"
             CARTESIAN -> symbol = "*"
             TOTAL_FUNCTION -> symbol = "-->"
+            PARTIAL_INJECTION -> symbol = ">+>"
+            TOTAL_INJECTION -> symbol = ">->"
             PARTIAL_FUNCTION -> symbol = "+->"
             BIJECTIVE_FUNCTION -> symbol = ">->>"
             INT_PLUS -> symbol = "+"

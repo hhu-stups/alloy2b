@@ -3,7 +3,8 @@ package de.hhu.stups.alloy2b.ast
 enum class Operator {
     LONE, SET, ALL, JOIN, EQUAL, PLUS, INTERSECTION, MINUS, NO, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
     IMPLICATION, IFF, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, CARD, DOM_RESTR, RAN_RESTR, OVERRIDE, ABSTRACT,
-    CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, BIJECTIVE_FUNCTION, INVERSE, NOT, SEQ,
+    CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, BIJECTIVE_FUNCTION, TOTAL_INJECTION, PARTIAL_INJECTION,
+    PARTIAL_SURJECTION, TOTAL_SURJECTION, PARTIAL_BIJECTION, INVERSE, NOT, SEQ,
     INT_PLUS, INT_MINUS, INT_DIV, INT_MODULO, INT_PRODUCT, INT_SUM, INT_MAX, INT_MIN;
 
     companion object {
@@ -41,6 +42,11 @@ enum class Operator {
                     "->" -> CARTESIAN
                     "->one" -> TOTAL_FUNCTION
                     "->lone" -> PARTIAL_FUNCTION
+                    "lone->lone" -> PARTIAL_INJECTION
+                    "lone->one" -> TOTAL_INJECTION
+                    "some->lone" -> PARTIAL_SURJECTION
+                    "some->one" -> TOTAL_SURJECTION
+                    "one->lone" -> PARTIAL_BIJECTION
                     "one->one" -> BIJECTIVE_FUNCTION
                     "and" -> AND
                     "&&" -> AND
