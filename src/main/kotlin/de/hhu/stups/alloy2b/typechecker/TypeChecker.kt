@@ -255,7 +255,7 @@ class TypeChecker(spec: AlloySpecification) {
         }
         if (jeLeftType is Set && jeRightType is Relation) {
             //je.left.type.setType(Set(jeRightType.leftType))
-            je.type.setType(Type(Set(jeRightType.rightType)))
+            je.type.setType(jeRightType.rightType)
             return
         }
         if (jeLeftType is Scalar && jeRightType is Untyped) {
@@ -280,7 +280,7 @@ class TypeChecker(spec: AlloySpecification) {
         }
         if (jeLeftType is Scalar && jeRightType is Relation) {
             //je.left.type.setType(Scalar(jeRightType.leftType))
-            je.type.setType(Type(Set(jeRightType.rightType)))
+            je.type.setType(jeRightType.rightType)
             return
         }
         throw UnsupportedOperationException("\nJoin typechecking failed: \nLeftType: ${je.left}\nRightType: ${je.right}")

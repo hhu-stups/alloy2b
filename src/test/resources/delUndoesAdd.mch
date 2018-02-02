@@ -1,25 +1,14 @@
-sig Name, Addr {}
-sig Book {
-	addr: Name -> lone Addr
-	}
-
-pred add (b, b': Book, n: Name, a: Addr) {
-	b'.addr = b.addr + n-> a
-	}
-
-pred del (b, b': Book, n: Name) {
-	b'.addr = b.addr - n -> Addr
-	}
-
-//fun lookup (b: Book, n: Name): set Addr {
-//	n.(b.addr)
-//	}
-
-assert delUndoesAdd {
-	all b, b', b'': Book, n: Name, a: Addr |
-		 no n.(b.addr) and add [b, b', n, a] and del [b', b'', n] implies b.addr = b''.addr
-	}
-
-
-
-check delUndoesAdd for 3 
+/*@ generated */
+MACHINE alloytranslation
+SETS
+    Name_; Addr_; Book_
+CONSTANTS
+    addr_Book
+DEFINITIONS
+    add_(b_,b__, n_, a_) == {b_} <: Book_ & {b__} <: Book_ & {n_} <: Name_ & {a_} <: Addr_  &  ((addr_Book[{b__}] = (addr_Book[{b_}] \/ ({n_} * {a_})))) ;
+    del_(b_,b__, n_) == {b_} <: Book_ & {b__} <: Book_ & {n_} <: Name_  &  ((addr_Book[{b__}] = (addr_Book[{b_}] - ({n_} * Addr_))))
+PROPERTIES
+    addr_Book : Book_ --> (Name_ +-> Addr_)
+OPERATIONS
+    check_delUndoesAdd = PRE not(/* delUndoesAdd */ (!(b_, b__, b___, n_, a_).({b_} <: Book_ & {b__} <: Book_ & {b___} <: Book_ & {n_} <: Name_ & {a_} <: Addr_ => (((addr_Book[{b_}][{n_}] = {} & add_Name(b_, b__, n_, a_)) & del_Name(b__, b___, n_)) => (addr_Book[{b_}] = addr_Book[{b___}]))))) THEN skip END
+END
