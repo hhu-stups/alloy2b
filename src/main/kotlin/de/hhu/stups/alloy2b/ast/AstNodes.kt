@@ -52,6 +52,12 @@ data class BinaryOperatorExpression(val operator: Operator,
                                     override val position: Position? = null,
                                     override val type: Type = Type(Untyped())) : Expression
 
+data class ArrowOperatorExpression(val operator: Operator,
+                                   val left: Expression,
+                                   val right: Expression,
+                                   override val position: Position? = null,
+                                   override val type: Type = Type(Untyped())) : Expression
+
 data class BoxJoinExpression(val left: Expression,
                              val parameters: List<Expression>,
                              override val position: Position? = null,

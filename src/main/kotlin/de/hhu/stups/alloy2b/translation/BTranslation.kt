@@ -198,6 +198,7 @@ class BTranslation(spec: AlloySpecification) {
         is BoxJoinExpression -> BoxJoinExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.left), expr.parameters.map { replaceFieldIdentifiers(signatureName, fieldNames, it) }, expr.position, expr.type)
         is IfExpression -> IfExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.ifExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.thenExpr), expr.position, expr.type)
         is IfElseExpression -> IfElseExpression(replaceFieldIdentifiers(signatureName, fieldNames, expr.ifExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.thenExpr), replaceFieldIdentifiers(signatureName, fieldNames, expr.elseExpr), expr.position, expr.type)
+        is ArrowOperatorExpression -> ArrowOperatorExpression(expr.operator, replaceFieldIdentifiers(signatureName, fieldNames, expr.left), replaceFieldIdentifiers(signatureName, fieldNames, expr.right), expr.position, expr.type)
         is IntegerSetExpression -> expr
         else -> throw UnsupportedOperationException("Missing case in replaceFieldIdentifiers: $expr")
     }
@@ -422,6 +423,7 @@ class BTranslation(spec: AlloySpecification) {
             is BlockExpression -> translateExpression(e)
             is IfElseExpression -> translateExpression(e)
             is DeclListExpression -> translateExpression(e)
+            is ArrowOperatorExpression -> translateExpression(e)
             else -> throw UnsupportedOperationException(e.javaClass.canonicalName)
         }
     }
@@ -564,12 +566,6 @@ class BTranslation(spec: AlloySpecification) {
             IMPLICATION -> symbol = "=>"
             IFF -> symbol = "<=>"
             INVERSE -> symbol = "~"
-            CARTESIAN -> symbol = "*"
-            TOTAL_FUNCTION -> symbol = "-->"
-            PARTIAL_INJECTION -> symbol = ">+>"
-            TOTAL_INJECTION -> symbol = ">->"
-            PARTIAL_FUNCTION -> symbol = "+->"
-            BIJECTIVE_FUNCTION -> symbol = ">->>"
             INT_PLUS -> symbol = "+"
             INT_MINUS -> symbol = "-"
             INT_DIV -> symbol = "/"
@@ -579,6 +575,21 @@ class BTranslation(spec: AlloySpecification) {
         }
         return "(${translateExpression(qe.left)} $symbol ${translateExpression(qe.right)})"
     }
+
+    private fun translateExpression(ae: ArrowOperatorExpression): String {
+        val symbol: String
+        when (ae.operator) {
+            CARTESIAN -> symbol = "*"
+            TOTAL_FUNCTION -> symbol = "-->"
+            PARTIAL_INJECTION -> symbol = ">+>"
+            TOTAL_INJECTION -> symbol = ">->"
+            PARTIAL_FUNCTION -> symbol = "+->"
+            BIJECTIVE_FUNCTION -> symbol = ">->>"
+            else -> throw UnsupportedOperationException(ae.operator.name)
+        }
+        return "(${translateExpression(ae.left)} $symbol ${translateExpression(ae.right)})"
+    }
+
 
     private fun translateExpression(qe: UnaryOperatorExpression): String =
             when (qe.operator) {

@@ -134,6 +134,7 @@ class TypeChecker(spec: AlloySpecification) {
                 is QuantifiedExpression -> typeCheckExpr(te, expr)
                 is IdentityExpression -> typeCheckExpr(te, expr)
                 is UnivExpression -> typeCheckExpr(te, expr)
+                is ArrowOperatorExpression -> typeCheckExpr(te, expr)
                 else -> throw UnsupportedOperationException("\nTypeChecking failed for\n$expr.javaClass.canonicalName")
             }
 
@@ -158,6 +159,13 @@ class TypeChecker(spec: AlloySpecification) {
     private fun typeCheckExpr(@Suppress("UNUSED_PARAMETER") teIn: TypeEnvironment, expr: IntegerExpression) {
         expr.type.setType(Type(Integer()))
     }
+
+    private fun typeCheckExpr(teIn: TypeEnvironment, expr: ArrowOperatorExpression) {
+        typeCheckExpr(teIn, expr.left)
+        typeCheckExpr(teIn, expr.right)
+        expr.type.setType(Type(Relation(expr.left.type,expr.right.type)))
+    }
+
 
     private fun typeCheckExpr(teIn: TypeEnvironment, expr: IfExpression) {
         typeCheckExpr(teIn, expr.ifExpr)

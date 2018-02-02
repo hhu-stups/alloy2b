@@ -134,4 +134,16 @@ class TranslationTest {
         val expected = getResourceAsString("laws/RelLaws.mch")
         assertEquals(expected, BTranslation(parseResource("laws/RelLaws.als").toAst(false)).getTranslation())
     }
+
+    @test @Ignore
+    fun translateAddAddr() {
+        val expected = getResourceAsString("add_addr_correct.mch")
+        assertEquals(expected, BTranslation(parseResource("add_addr_correct.als").toAst(false)).getTranslation())
+    }
+
+    @test @Ignore
+    fun translateDelUndoesAdd() {
+        val expected = getResourceAsString("delUndoesAdd.mch")
+        assertEquals(expected, BTranslation(parseResource("delUndoesAdd.als").toAst(false)).getTranslation())
+    }
 }
