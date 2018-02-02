@@ -78,7 +78,7 @@ V.SS +  V.TT =  V.TT +  V.SS
   V.SS in (setX -> one setX) implies  V.SS in (setX -> lone setX) 
  // V.SS in (setX -> one setX & setX lone -> lone setX) implies  V.SS in (setX lone -> one setX) // multiplicity expression only allowed on its own
 
-  V.SS in (setX -> one setX) && V.SS in (setX lone -> lone setX)  implies  V.SS in (setX lone -> one setX) 
+  V.SS in (setX -> one setX) && V.SS in (setX lone -> lone setX)  implies  V.SS in (setX lone -> one setX)
 }
 
 assert Bug {
