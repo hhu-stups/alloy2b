@@ -5,8 +5,8 @@ SETS
 CONSTANTS
     a_, b_, c_, d_, e_, f_, g_, h_, i_, graph1_Node, graph2_Node, p_Node
 DEFINITIONS
-    permutation_ ==   ((p_Node ; p_Node~) <: id(Node_)) & (ran(p_Node) = Node_) ;
-    isomorph_ ==   permutation_ & !(n_).({n_} <: Node_ => (p_Node[graph1_Node[{n_}]] = graph2_Node[p_Node[{n_}]]))
+    permutation_ ==   (((p_Node ; p_Node~) <: id(Node_))) & ((ran(p_Node) = Node_)) ;
+    isomorph_ ==   (permutation_) & (!(n_).({n_} <: Node_ => ((p_Node[graph1_Node[{n_}]] = graph2_Node[p_Node[{n_}]]))))
 PROPERTIES
     {a_} <: Node_ &
     {b_} <: Node_ &
@@ -17,7 +17,7 @@ PROPERTIES
     {g_} <: Node_ &
     {h_} <: Node_ &
     {i_} <: Node_ &
-    (graph1_Node = ((((((((({a_} * {c_}) \/ ({b_} * {c_})) \/ ({c_} * {f_})) \/ ({d_} * {f_})) \/ ({e_} * {f_})) \/ ({h_} * {i_})) \/ ({i_} * {h_})) \/ ({f_} * {f_})) \/ ({g_} * {g_}))) & (graph2_Node = ((((((((({b_} * {e_}) \/ ({c_} * {e_})) \/ ({d_} * {e_})) \/ ({f_} * {d_})) \/ ({g_} * {d_})) \/ ({a_} * {i_})) \/ ({i_} * {a_})) \/ ({e_} * {e_})) \/ ({h_} * {h_}))) &
+    ((graph1_Node = ((((((((({a_} * {c_}) \/ ({b_} * {c_})) \/ ({c_} * {f_})) \/ ({d_} * {f_})) \/ ({e_} * {f_})) \/ ({h_} * {i_})) \/ ({i_} * {h_})) \/ ({f_} * {f_})) \/ ({g_} * {g_})))) & ((graph2_Node = ((((((((({b_} * {e_}) \/ ({c_} * {e_})) \/ ({d_} * {e_})) \/ ({f_} * {d_})) \/ ({g_} * {d_})) \/ ({a_} * {i_})) \/ ({i_} * {a_})) \/ ({e_} * {e_})) \/ ({h_} * {h_})))) &
     a_ /= b_ &
     a_ /= c_ &
     a_ /= d_ &

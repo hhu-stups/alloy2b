@@ -5,11 +5,11 @@ SETS
 CONSTANTS
     french_, german_, spanish_, tom_, david_, jeremy_, carol_, janet_, tracy_, male_, speaks_Personell, assign_Flight
 DEFINITIONS
-    allLanguages_ ==   !(f_).({f_} <: Flight_ => (speaks_Personell[assign_Flight[{f_}]] = Language_)) ;
-    allSexes_ ==   !(f_).({f_} <: Flight_ => (card((assign_Flight[{f_}] - male_)) > 0 & card((assign_Flight[{f_}] /\ male_)) > 0)) ;
-    scheduleOk_ ==   !(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => (({p_} <: assign_Flight[{f_}]) & ({p_} <: assign_Flight[next_Flight_(f_)])) => not(({p_} <: assign_Flight[next_Flight_(min(next_Flight_(f_)))]))) ;
-    everybodyInSchedule_ ==   (ran(assign_Flight) = Personell_) ;
-    crewAlloc_ ==   (((allLanguages_ & allSexes_) & scheduleOk_) & everybodyInSchedule_) ;
+    allLanguages_ ==   (!(f_).({f_} <: Flight_ => ((speaks_Personell[assign_Flight[{f_}]] = Language_)))) ;
+    allSexes_ ==   (!(f_).({f_} <: Flight_ => ((card((assign_Flight[{f_}] - male_)) > 0 & card((assign_Flight[{f_}] /\ male_)) > 0)))) ;
+    scheduleOk_ ==   (!(p_, f_).({p_} <: Personell_ & {f_} <: Flight_ => ((({p_} <: assign_Flight[{f_}]) & ({p_} <: assign_Flight[next_Flight_(f_)])) => not(({p_} <: assign_Flight[next_Flight_(min(next_Flight_(f_)))]))))) ;
+    everybodyInSchedule_ ==   ((ran(assign_Flight) = Personell_)) ;
+    crewAlloc_ ==   ((((allLanguages_ & allSexes_) & scheduleOk_) & everybodyInSchedule_)) ;
     next_Flight_(s) == {x|x=s+1 & x:Flight_} ;
     nexts_Flight_(s) == {x|x>s & x:Flight_} ;
     prev_Flight_(s) == {x|x=s-1 & x:Flight_} ;
@@ -26,8 +26,8 @@ PROPERTIES
     {janet_} <: Personell_ &
     {tracy_} <: Personell_ &
     male_ <: Personell_ &
-    (male_ = (({tom_} \/ {david_}) \/ {jeremy_})) &
-    (speaks_Personell = (((((({tom_} * {german_}) \/ ({david_} * {french_})) \/ ({jeremy_} * {german_})) \/ ({carol_} * {spanish_})) \/ ({janet_} * {french_})) \/ ({tracy_} * {spanish_}))) &
+    ((male_ = (({tom_} \/ {david_}) \/ {jeremy_}))) &
+    ((speaks_Personell = (((((({tom_} * {german_}) \/ ({david_} * {french_})) \/ ({jeremy_} * {german_})) \/ ({carol_} * {spanish_})) \/ ({janet_} * {french_})) \/ ({tracy_} * {spanish_})))) &
     french_ /= german_ &
     french_ /= spanish_ &
     german_ /= spanish_ &
