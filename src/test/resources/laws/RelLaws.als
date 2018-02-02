@@ -70,6 +70,8 @@ V.SS +  V.TT =  V.TT +  V.SS
  //#(V.SS)>1 implies #(V.SS->V.SS) >3 // Alloy incorrectly finds counterexample because of overflow
 #(V.SS->V.SS)=0 iff no V.SS
 #(V.SS -> V.TT)=0 iff ( no V.SS or no V.TT)
+ no (V.SS -> V.SS).(V.EmptyS) 
+//~(V.SS -> V.SS) = (V.SS -> V.SS) // ~ can only be used with binary relation
 
 // Relation Laws
   V.SS in setX -> one setX  implies #(V.SS)=#(setX)
