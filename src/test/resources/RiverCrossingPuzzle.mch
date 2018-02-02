@@ -5,7 +5,7 @@ SETS
 CONSTANTS
     Farmer_, Fox_, Chicken_, Grain_, eats_Object, near_State, far_State
 DEFINITIONS
-    crossRiver_(from_,from__,to_,to__) == from_ <: Object_ & from__ <: Object_ & to_ <: Object_ & to__ <: Object_  &  card({x_ | {x_} <: from_ & (from__ = (((from_ - {x_}) - {Farmer_}) - eats_Object[from__])) & (to__ = ((to_ \/ {x_}) \/ {Farmer_}))}) = 1 ;
+    crossRiver_(from_,from__,to_,to__) == from_ <: Object_ & from__ <: Object_ & to_ <: Object_ & to__ <: Object_  &  (card({x_ | {x_} <: from_ & (((from__ = (((from_ - {x_}) - {Farmer_}) - eats_Object[from__]))) & ((to__ = ((to_ \/ {x_}) \/ {Farmer_}))))}) = 1) ;
     next_State_(s) == {x|x=s+1 & x:State_} ;
     nexts_State_(s) == {x|x>s & x:State_} ;
     prev_State_(s) == {x|x=s-1 & x:State_} ;
@@ -16,9 +16,9 @@ PROPERTIES
     {Fox_} <: Object_ &
     {Chicken_} <: Object_ &
     {Grain_} <: Object_ &
-    (eats_Object = (({Fox_} * {Chicken_}) \/ ({Chicken_} * {Grain_}))) &
-    ((near_State[{min(State_)}] = Object_) & far_State[{min(State_)}] = {}) &
-    !(s_, s__).({s_} <: State_ & {s__} <: next_State_(s_) => (({Farmer_} <: near_State[{s_}]) => crossRiver_(near_State[{s_}], near_State[{s__}], far_State[{s_}], far_State[{s__}])) & (not(({Farmer_} <: near_State[{s_}])) => crossRiver_(far_State[{s_}], far_State[{s__}], near_State[{s_}], near_State[{s__}]))) &
+    ((eats_Object = (({Fox_} * {Chicken_}) \/ ({Chicken_} * {Grain_})))) &
+    (((near_State[{min(State_)}] = Object_) & far_State[{min(State_)}] = {})) &
+    (!(s_, s__).({s_} <: State_ & {s__} <: next_State_(s_) => ((({Farmer_} <: near_State[{s_}]) => crossRiver_(near_State[{s_}], near_State[{s__}], far_State[{s_}], far_State[{s__}])) & (not(({Farmer_} <: near_State[{s_}])) => crossRiver_(far_State[{s_}], far_State[{s__}], near_State[{s_}], near_State[{s__}]))))) &
     Farmer_ /= Fox_ &
     Farmer_ /= Chicken_ &
     Farmer_ /= Grain_ &

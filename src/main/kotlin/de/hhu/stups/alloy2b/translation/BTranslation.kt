@@ -255,15 +255,14 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(stmt: AssertionStatement) {
-        alloyAssertions[stmt.name] = "/* ${stmt.name} */ " + stmt.expressions
-                .joinToString(" & ") { e -> translateExpression(e) }
+        alloyAssertions[stmt.name] = "/* ${stmt.name} */ " + conjoin(stmt.expressions)
     }
 
     private fun translate(fdec: FactDeclaration) {
         if (fdec.expressions.isEmpty()) {
             return
         }
-        properties.add(fdec.expressions.joinToString(" & ") { e -> translateExpression(e) })
+        properties.add(conjoin(fdec.expressions))
     }
 
     private fun translate(fdec: FunDeclaration) {
@@ -276,7 +275,7 @@ class BTranslation(spec: AlloySpecification) {
             }}) == ")
         }
         val decls = translateDeclsExprList(fdec.decls)
-        val parameterExpressions = fdec.expressions.map { translateExpression(it) }.joinToString(" & ") { "temp : $it" }
+        val parameterExpressions = fdec.expressions.map { "(${translateExpression(it)})" }.joinToString(" & ") { "temp : $it" }
         // represent functions as set comprehensions
         builder.append("{ temp | $decls & $parameterExpressions}")
         definitions.add(builder.toString())
@@ -296,7 +295,7 @@ class BTranslation(spec: AlloySpecification) {
         }
         val decls = translateDeclsExprList(pdec.decls)
         builder.append("$predCall == $decls")
-        val blocks = pdec.expressions.joinToString(" & ") { translateExpression(it) }
+        val blocks = conjoin(pdec.expressions)
         if (blocks.isNotEmpty()) {
             builder.append(" ${if (decls.isEmpty()) "" else " & "} $blocks")
         } else {
@@ -464,7 +463,7 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translateExpression(be: BlockExpression): String {
-        return be.expressions.joinToString(" & ") { translateExpression(it) }
+        return conjoin(be.expressions)
     }
 
     private fun translateExpression(ie: IfExpression): String {
@@ -504,16 +503,11 @@ class BTranslation(spec: AlloySpecification) {
 
     private fun translateExpression(qe: QuantifierExpression): String =
             when (qe.operator) {
-                ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => " +
-                        "${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }})"
-                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} =>" +
-                        " ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}))"
-                ONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} &" +
-                        " ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) = 1"
-                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} &" +
-                        " ${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }}}) < 2"
-                SOME -> "#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => " +
-                        "${qe.expressions.joinToString(" & ") { e -> translateExpression(e) }})"
+                ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${conjoin(qe.expressions)})"
+                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} =>${conjoin(qe.expressions)})"
+                ONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${conjoin(qe.expressions)}}) = 1"
+                LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${conjoin(qe.expressions)}}) < 2"
+                SOME -> "#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${conjoin(qe.expressions)})"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 
@@ -523,11 +517,11 @@ class BTranslation(spec: AlloySpecification) {
         builder.append(le.letDecls.joinToString(", ") { it -> sanitizeIdentifier(it.name) })
         builder.append(" BE ")
         builder.append(le.letDecls.joinToString(" & ") { it ->
-            "${sanitizeIdentifier(it.name)} = " +
-                    translateExpression(it.expression)
+            "(${sanitizeIdentifier(it.name)} = " +
+                    translateExpression(it.expression) + ")"
         })
         builder.append(" IN ")
-        builder.append(le.expressions.joinToString(" & ") { it -> translateExpression(it) })
+        builder.append(conjoin(le.expressions))
         builder.append(" END")
         return builder.toString()
     }
@@ -709,6 +703,9 @@ class BTranslation(spec: AlloySpecification) {
             else -> throw UnsupportedOperationException("Cannot translate type to B set: $eType.")
         }
     }
+
+    private fun conjoin(expressions: List<Expression>) =
+            expressions.joinToString(" & ") { "(${translateExpression(it)})" }
 }
 
 
