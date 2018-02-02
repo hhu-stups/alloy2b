@@ -1,24 +1,28 @@
-
 open util/integer
 
 abstract sig setX { }
 one sig V {
-  SS: set setX,
-  TT: set setX,
-  VV: set setX,
-  Empty: set setX
+  SS:   setX -> setX,
+  TT:   setX -> setX,
+  VV:   setX -> setX,
+  xx: set setX,
+  yy: set setX,  
+  EmptyS: set setX,
+  Empty:   setX -> setX
 }
 
-fact EmptySet {  no V.Empty }
+fact EmptySet {  no V.EmptyS }
+fact EmptyRel {  no V.Empty }
 
 assert SetLaws {
+ // first some of the Laws from SetLaws
   V.SS + V.SS = V.SS
   no V.SS - V.SS
   V.SS = V.SS & V.SS
  V.SS - V.Empty = V.SS
  V.Empty =  V.SS -  V.SS
  V.Empty -  V.SS =  V.Empty
- V.SS +  V.TT =  V.TT +  V.SS
+V.SS +  V.TT =  V.TT +  V.SS
  V.SS &  V.TT =  V.TT &  V.SS
  V.SS +  (V.TT + V.VV) =  (V.SS +  V.TT) + V.VV
  V.SS &  (V.TT & V.VV) =  (V.SS &  V.TT) & V.VV
@@ -38,15 +42,16 @@ assert SetLaws {
  V.SS & V.TT in V.SS
  V.SS & V.TT in V.TT
  (V.VV in V.SS && V.VV in V.TT) implies (V.VV in V.SS & V.TT)
- all xx : V.SS | (xx in V.TT implies xx in V.SS & V.TT)
- all xx : V.SS | not(xx in V.TT) implies (xx in V.SS - V.TT && not(xx in V.TT))
- all xx : V.SS | (xx in V.TT && xx in V.VV) implies not(V.SS & V.TT & V.VV = V.Empty)
- all xx : V.SS | not(xx in V.TT) implies ( not(V.SS + V.TT = V.TT) && not(V.SS - V.TT = V.Empty))
+// Cannot be done because higher-order: 
+//all xx : V.SS | (xx in V.TT implies xx in V.SS & V.TT)
+ //all xx : V.SS | not(xx in V.TT) implies (xx in V.SS - V.TT && not(xx in V.TT))
+ //all xx : V.SS | (xx in V.TT && xx in V.VV) implies not(V.SS & V.TT & V.VV = V.Empty)
+ //all xx : V.SS | not(xx in V.TT) implies ( not(V.SS + V.TT = V.TT) && not(V.SS - V.TT = V.Empty))
  (V.SS in V.VV)  or not(V.SS in V.VV)
  V.SS in V.VV implies (#(V.SS) =< #(V.VV))
  #(V.SS) < #(V.VV) implies not(V.VV in V.SS)
  (#(V.SS + V.VV) =< plus[#(V.SS) , #(V.VV)])
- (V.SS & V.VV = V.Empty  iff V.SS in setX - V.VV)
+ (V.SS & V.VV = V.Empty  iff V.SS in (setX -> setX) - V.VV)
  one V.SS iff #(V.SS)=1
  lone V.SS iff #(V.SS) =<1
  some V.SS iff #(V.SS) > 0
@@ -59,33 +64,25 @@ assert SetLaws {
  lone V.SS implies lone (V.SS - V.TT)
  lone V.Empty
  not(some V.Empty)
+
 // some relation tests
- one V.SS implies #(V.SS->V.SS) = 1
- #(V.SS)>1 implies #(V.SS->V.SS) >3
+ one V.SS implies #(V.SS->V.SS) = 1  // this increases runtime quite a bit for 5 setX
+ //#(V.SS)>1 implies #(V.SS->V.SS) >3 // Alloy incorrectly finds counterexample because of overflow
 #(V.SS->V.SS)=0 iff no V.SS
 #(V.SS -> V.TT)=0 iff ( no V.SS or no V.TT)
- //all rr : (V.SS -> V.SS) | no rr.(V.Empty) // not allowed because of higher-order quantification
- (V.SS -> V.SS).(V.Empty) = V.Empty
-~(V.SS -> V.SS) = (V.SS -> V.SS)
-^(V.SS -> V.SS) = (V.SS -> V.SS)
-(V.SS -> V.SS) .(V.SS -> V.SS) = (V.SS -> V.SS)
-not(~(V.SS -> V.TT) = (V.SS -> V.TT)) implies not(V.SS = V.TT)
-// some laws above using cartesian products:
- (V.SS -> V.SS)+ ((V.TT -> V.TT) & (V.VV -> V.VV)) = ((V.SS -> V.SS) + (V.TT -> V.TT)) & ((V.SS -> V.SS) + (V.VV -> V.VV))
+
+// Relation Laws
+  V.SS in setX -> one setX  implies #(V.SS)=#(setX)
+  V.SS in (setX -> one setX) implies  V.SS in (setX -> lone setX) 
+ // V.SS in (setX -> one setX & setX lone -> lone setX) implies  V.SS in (setX lone -> one setX) // multiplicity expression only allowed on its own
+
+  V.SS in (setX -> one setX) && V.SS in (setX lone -> setX)  implies  V.SS in (setX lone -> one setX) 
 }
 
-assert SetLawsAlloyStrange {
-  (#(V.SS + V.VV) =< (#(V.SS) + #(V.VV))) // Counter Example found by Alloy ! because + is not arith. +
+assert Bug {
+ #(V.SS)>1 implies #(V.SS->V.SS) >3  // counter example with eg check Bug for 3 setX, 7 int
 }
 
-assert SetLawsFalse {
- V.SS - V.TT = V.SS
-}
+//check Bug for 3 setX, 7 int // for 8 int Translation capacity exceeded
 
-assert CheckLineBreakslFalse {
- V.SS = V.TT implies V.TT = V.VV
-  or V.SS=V.TT  V.SS = V.TT implies V.VV=V.TT
-}
-
-//check CheckLineBreakslFalse
-check SetLaws for 5 setX, 7 int
+check SetLaws for 3 setX, 7 int
