@@ -60,7 +60,7 @@ class CstAstMappingTest {
 
         assertTrue(errors.isEmpty())
 
-        val expectedAst = AlloySpecification(asList(SignatureDeclarations(signatures=asList(SignatureDeclaration(name=IdentifierExpression(name="s"), decls= asList(Decl(names=asList(IdentifierExpression(name="f")), expression=QuantifiedExpression(operator= Operator.ONE, expression=BinaryOperatorExpression(operator=Operator.TOTAL_INJECTION, left=IdentifierExpression(name="setX"), right=IdentifierExpression(name="setX"))))))))))
+        val expectedAst = AlloySpecification(asList(SignatureDeclarations(signatures=asList(SignatureDeclaration(name=IdentifierExpression(name="s"), decls= asList(Decl(names=asList(IdentifierExpression(name="f")), expression=QuantifiedExpression(operator= Operator.ONE, expression=ArrowOperatorExpression(operator=Operator.TOTAL_INJECTION, left=IdentifierExpression(name="setX"), right=IdentifierExpression(name="setX"))))))))))
         assertEquals(expectedAst, ast)
     }
 }
