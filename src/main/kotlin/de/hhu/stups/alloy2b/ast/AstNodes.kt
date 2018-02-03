@@ -150,6 +150,7 @@ data class SignatureDeclarations(val signatures: List<SignatureDeclaration>,
 
 data class TypescopeDeclaration(val typeName: IdentifierExpression,
                                 val scope: Long,
+                                val exactly: Boolean,
                                 override val position: Position? = null) : Statement
 
 data class ScopeDeclarations(val typeScopes: List<TypescopeDeclaration>,

@@ -56,9 +56,9 @@ fun ParagraphContext.toAst(considerPosition: Boolean = false): Statement {
 
 fun TypescopeContext.toAst(considerPosition: Boolean = false): TypescopeDeclaration {
     if (name() == null && INT() != null) {
-        return TypescopeDeclaration(IdentifierExpression("int"), NUMBER().text.toLong())
+        return TypescopeDeclaration(IdentifierExpression("Int"), NUMBER().text.toLong(), EXACTLY() != null)
     }
-    return TypescopeDeclaration(name().toAst(considerPosition), NUMBER().text.toLong())
+    return TypescopeDeclaration(name().toAst(considerPosition), NUMBER().text.toLong(), EXACTLY() != null)
 }
 
 fun ScopeContext.toAst(considerPosition: Boolean = false): ScopeDeclarations {
