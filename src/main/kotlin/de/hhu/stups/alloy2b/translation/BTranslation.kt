@@ -19,6 +19,7 @@ class BTranslation(spec: AlloySpecification) {
 
     private var runCounter = 1
     private var checkCounter = 1
+    private var globalScope = Pair<Boolean, Long>(false, 0)
 
     private val signatures = mutableListOf<IdentifierExpression>()
     private val signatureDeclarations = mutableMapOf<IdentifierExpression, SignatureDeclaration>()
@@ -36,8 +37,21 @@ class BTranslation(spec: AlloySpecification) {
         spec.declarations.forEach({ stmt -> translate(stmt) })
         addSignatureExtensionProperties()
         addSignatureFieldsExtensionProperties()
+        considerGlobalScope(globalScope)
         modelAnalysis(orderingAndScopeMap, translationPreferences, spec)
         // TODO: consider the translation preferences --> foreach DISTINCT_SIGNATURE_INTERACTION -> define parent type
+    }
+
+    private fun considerGlobalScope(globalScope: Pair<Boolean, Long>) {
+        if (globalScope.second == 0.toLong()) {
+            return
+        }
+        if (globalScope.first) {
+            // exactly
+            signatures.subtract(orderingAndScopeMap.keys).forEach { properties.add("card($it) = ${globalScope.second}") }
+        }
+        // upper bound
+        signatures.subtract(orderingAndScopeMap.keys).forEach { properties.add("card($it) <= ${globalScope.second}") }
     }
 
     fun getTranslation(): String {
@@ -329,18 +343,50 @@ class BTranslation(spec: AlloySpecification) {
     }
 
     private fun translate(typescopeDeclaration: TypescopeDeclaration) {
+        // TODO: consider keyword 'but'
         val sanitizedName = sanitizeIdentifier(typescopeDeclaration.typeName.name)
+        val scope = typescopeDeclaration.scope
         if (sanitizedName in orderingAndScopeMap) {
-            // now we know the scope and update the size of the ordered signature within the map
-            val sigName = translateExpression(typescopeDeclaration.typeName)
-            val scope = typescopeDeclaration.scope
-            orderingAndScopeMap.replace(sanitizedName, 0, scope)
-            // define next, nexts, prev and prevs for each ordering
-            definitions.add("next_$sigName(s) == {x|x=s+1 & x:$sanitizedName}")
-            definitions.add("nexts_$sigName(s) == {x|x>s & x:$sanitizedName}")
-            definitions.add("prev_$sigName(s) == {x|x=s-1 & x:$sanitizedName}")
-            definitions.add("prevs_$sigName(s) == {x|x<s & x:$sanitizedName}")
+            // now we know the scope and update the size of the ordered signature within the map and define the
+            // functions for next, nexts etc.
+            defineOrderingFunctions(typescopeDeclaration.typeName, sanitizedName, scope)
+            return
         }
+        if (typescopeDeclaration.typeName.name == "Int") {
+            setMaxAndMinInt(scope)
+            return
+        }
+        if (typescopeDeclaration.typeName.name.isEmpty()) {
+            globalScope = Pair(typescopeDeclaration.exactly, scope)
+        }
+        if (typescopeDeclaration.exactly) {
+            // exact size
+            properties.add("card($sanitizedName) = $scope")
+            return
+
+        }
+        // default signatures
+        properties.add("card($sanitizedName) <= $scope")
+    }
+
+    private fun defineOrderingFunctions(typeName: IdentifierExpression, sanitizedName: String, scope: Long) {
+        val sigName = translateExpression(typeName)
+        orderingAndScopeMap.replace(sanitizedName, 0, scope)
+        // define next, nexts, prev and prevs for each ordering
+        definitions.add("next_$sigName(s) == {x|x=s+1 & x:$sanitizedName}")
+        definitions.add("nexts_$sigName(s) == {x|x>s & x:$sanitizedName}")
+        definitions.add("prev_$sigName(s) == {x|x=s-1 & x:$sanitizedName}")
+        definitions.add("prevs_$sigName(s) == {x|x<s & x:$sanitizedName}")
+    }
+
+    private fun setMaxAndMinInt(scope: Long) {
+        val scope1 = scope - 1
+        val bound = Math.pow(2.toDouble(), scope1.toDouble())
+        val maxInt = bound - 1
+        val minInt = bound * -1
+        // set min and max int for ProB
+        definitions.add("SET_PREF_MAXINT == ${maxInt.toInt()}")
+        definitions.add("SET_PREF_MININT == ${minInt.toInt()}")
     }
 
     private fun translate(sdec: SignatureDeclarations) {
