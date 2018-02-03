@@ -7,6 +7,7 @@ CONSTANTS
 DEFINITIONS
     show_ ==   1=1
 PROPERTIES
+    card(Book_) <= 1 &
     addr_Book : Book_ --> (Name_ +-> Addr_)
 OPERATIONS
     run_show = PRE show_ THEN skip END

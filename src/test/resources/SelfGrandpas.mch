@@ -13,6 +13,7 @@ PROPERTIES
     not(#(p_).({p_} <: Person_ => ({p_} <: closure1((mother_Person \/ father_Person))[{p_}]))) &
     (wife_Person = husband_Person~) &
     (wife_Person /\ (closure((mother_Person \/ father_Person)) ; mother_Person)) = {} & (husband_Person /\ (closure((mother_Person \/ father_Person)) ; father_Person)) = {} &
+    card(Person_) <= 4 &
     Man_ /\ Woman_ = {} &
     Man_ \/ Woman_ = Person_ &
     father_Person : Person_ +-> Man_ &
