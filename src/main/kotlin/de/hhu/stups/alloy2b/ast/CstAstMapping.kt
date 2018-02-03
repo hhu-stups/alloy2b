@@ -145,7 +145,7 @@ fun ExprContext.toAst(considerPosition: Boolean = false): Expression =
                             left.toAst(considerPosition), right.toAst(considerPosition),
                             toPosition(considerPosition))
                 }
-            is ArrowOpExprContext -> BinaryOperatorExpression(Operator.fromString(this.arrowOp().text),
+            is ArrowOpExprContext -> ArrowOperatorExpression(Operator.fromString(this.arrowOp().text),
                     left.toAst(considerPosition), right.toAst(considerPosition),
                     toPosition(considerPosition))
             is LetExprContext -> LetExpression(this.letDecl().map { it.toAst(considerPosition) },
