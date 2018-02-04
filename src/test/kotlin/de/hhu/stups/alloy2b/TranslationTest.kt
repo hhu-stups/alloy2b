@@ -37,13 +37,15 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("FileSystem2.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
+    @Ignore
     fun translateFileSystem3() {
         val expected = getResourceAsString("FileSystem3.mch")
         assertEquals(expected, BTranslation(parseResource("FileSystem3.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
+    @Ignore
     fun translateExtendedFileSystem() {
         val expected = getResourceAsString("ExtendedFileSystem.mch")
         assertEquals(expected, BTranslation(parseResource("ExtendedFileSystem.als").toAst(false)).getTranslation())
@@ -87,10 +89,19 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("queens2.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
+    @Ignore
     fun translateQueens3() {
         val expected = getResourceAsString("queens3.mch")
         assertEquals(expected, BTranslation(parseResource("queens3.als").toAst(false)).getTranslation())
+    }
+
+    @test
+    @Ignore
+            // TODO: union of two different signatures -> universe?
+    fun translateQueens4() {
+        val expected = getResourceAsString("queens4.mch")
+        assertEquals(expected, BTranslation(parseResource("queens4.als").toAst(false)).getTranslation())
     }
 
     @test
@@ -135,7 +146,8 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("laws/RelLaws.als").toAst(false)).getTranslation())
     }
 
-    @test @Ignore
+    @test
+    @Ignore
     fun translateAddAddr() {
         val expected = getResourceAsString("add_addr_correct.mch")
         assertEquals(expected, BTranslation(parseResource("add_addr_correct.als").toAst(false)).getTranslation())

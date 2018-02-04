@@ -10,11 +10,10 @@ DEFINITIONS
     SET_PREF_MAXINT == 63 ;
     SET_PREF_MININT == -64
 PROPERTIES
-    ((card(Queens_) = 32)) &
-    card(Queens_) <= 32 &
+    card(Queens_) = 8 &
     /* from signature declaration */ !(this_).({this_} <: Queens_ => (((((row_Queens(this_) >= 0) & (row_Queens(this_) < card(Queens_))) & (col_Queens(this_) >= 0)) & (col_Queens(this_) < card(Queens_))))) &
-    row_Queens : Queens_ --> INTEGER &
-    col_Queens : Queens_ --> INTEGER
+    row_Queens : Queens_ --> INT &
+    col_Queens : Queens_ --> INT
 OPERATIONS
     run_valid = PRE valid_ THEN skip END
 END

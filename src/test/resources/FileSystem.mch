@@ -16,7 +16,7 @@ PROPERTIES
     parent_FSObject : FSObject_ +-> Dir_ &
     contents_FSObject : Dir_ <-> FSObject_
 OPERATIONS
-    check_acyclic = PRE not(/* acyclic */ (not(#(d_).({d_} <: Dir_ =>(({d_} <: closure1(contents_FSObject)[{d_}])))))) THEN skip END;
+    check_acyclic = PRE not(/* acyclic */ (not(#(d_).({d_} <: Dir_ & (({d_} <: closure1(contents_FSObject)[{d_}])))))) THEN skip END;
     check_oneRoot = PRE not(/* oneRoot */ (card({d_ | {d_} <: Dir_ & (parent_FSObject[{d_}] = {})}) = 1)) THEN skip END;
     check_oneLocation = PRE not(/* oneLocation */ (!(o_).({o_} <: FSObject_ => (card({d_ | {d_} <: Dir_ & (({o_} <: contents_FSObject[{d_}]))}) < 2)))) THEN skip END
 END
