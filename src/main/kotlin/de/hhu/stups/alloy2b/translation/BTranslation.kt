@@ -459,7 +459,7 @@ class BTranslation(spec: AlloySpecification) {
             is UnaryOperatorExpression -> translateExpression(e)
             is LetExpression -> translateExpression(e)
             is BoxJoinExpression -> translateExpression(e)
-            is IntegerSetExpression -> "INTEGER"
+            is IntegerSetExpression -> "INT"
             is IntegerCastExpression -> translateExpression(e)
             is IntegerExpression -> translateExpression(e)
             is QuantifiedExpression -> translateExpression(e)
@@ -552,10 +552,10 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(qe: QuantifierExpression): String =
             when (qe.operator) {
                 ALL -> "!(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${conjoin(qe.expressions)})"
-                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} =>${conjoin(qe.expressions)}))"
+                NO -> "not(#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} & ${conjoin(qe.expressions)}))"
                 ONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${conjoin(qe.expressions)}}) = 1"
                 LONE -> "card({${translateDeclsIDList(qe.decls)} | ${translateDeclsExprList(qe.decls)} & ${conjoin(qe.expressions)}}) < 2"
-                SOME -> "#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} => ${conjoin(qe.expressions)})"
+                SOME -> "#(${translateDeclsIDList(qe.decls)}).(${translateDeclsExprList(qe.decls)} & ${conjoin(qe.expressions)})"
                 else -> throw UnsupportedOperationException(qe.operator.name)
             }
 

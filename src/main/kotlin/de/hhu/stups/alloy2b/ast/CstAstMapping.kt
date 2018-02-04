@@ -63,7 +63,7 @@ fun TypescopeContext.toAst(considerPosition: Boolean = false): TypescopeDeclarat
 
 fun ScopeContext.toAst(considerPosition: Boolean = false): ScopeDeclarations {
     // TODO: there may be more scope definitions
-    return ScopeDeclarations(typescope().map { it.toAst(considerPosition) })
+    return ScopeDeclarations(typescope().filter { it.name() != null || it.INT() != null }.map { it.toAst(considerPosition) })
 }
 
 fun SigDeclContext.toAst(considerPosition: Boolean = false): SignatureDeclarations {
