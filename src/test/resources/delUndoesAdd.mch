@@ -5,8 +5,8 @@ SETS
 CONSTANTS
     addr_Book
 DEFINITIONS
-    add_(b_,b__, n_, a_) == {b_} <: Book_ & {b__} <: Book_ & {n_} <: Name_ & {a_} <: Addr_  &  ((addr_Book[{b__}] = (addr_Book[{b_}] \/ ({n_} * {a_})))) ;
-    del_(b_,b__, n_) == {b_} <: Book_ & {b__} <: Book_ & {n_} <: Name_  &  ((addr_Book[{b__}] = (addr_Book[{b_}] - ({n_} * Addr_))))
+    add_(b_,b__, n_, a_) == {b_} <: Book_ & {b__} <: Book_ & {n_} <: Name_ & {a_} <: Addr_  &  ((addr_Book[{b__}] = (addr_Book[{b_}] \/ ({n_} <-> {a_})))) ;
+    del_(b_,b__, n_) == {b_} <: Book_ & {b__} <: Book_ & {n_} <: Name_  &  ((addr_Book[{b__}] = (addr_Book[{b_}] - ({n_} <-> Addr_))))
 PROPERTIES
     addr_Book : Book_ --> (Name_ +-> Addr_)
 OPERATIONS

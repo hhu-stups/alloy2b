@@ -27,7 +27,7 @@ PROPERTIES
     {tracy_} <: Personell_ &
     male_ <: Personell_ &
     ((male_ = (({tom_} \/ {david_}) \/ {jeremy_}))) &
-    ((speaks_Personell = (((((({tom_} * {german_}) \/ ({david_} * {french_})) \/ ({jeremy_} * {german_})) \/ ({carol_} * {spanish_})) \/ ({janet_} * {french_})) \/ ({tracy_} * {spanish_})))) &
+    ((speaks_Personell = (((((({tom_} <-> {german_}) \/ ({david_} <-> {french_})) \/ ({jeremy_} <-> {german_})) \/ ({carol_} <-> {spanish_})) \/ ({janet_} <-> {french_})) \/ ({tracy_} <-> {spanish_})))) &
     french_ /= german_ &
     french_ /= spanish_ &
     german_ /= spanish_ &

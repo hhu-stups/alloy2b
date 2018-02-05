@@ -625,7 +625,7 @@ class BTranslation(spec: AlloySpecification) {
     private fun translateExpression(ae: ArrowOperatorExpression): String {
         val symbol: String
         when (ae.operator) {
-            CARTESIAN -> symbol = "*"
+            RELATION -> symbol = "<->"
             TOTAL_FUNCTION -> symbol = "-->"
             PARTIAL_INJECTION -> symbol = ">+>"
             TOTAL_INJECTION -> symbol = ">->"

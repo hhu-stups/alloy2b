@@ -147,7 +147,6 @@ class TranslationTest {
     }
 
     @test
-    @Ignore
     fun translateAddAddr() {
         val expected = getResourceAsString("add_addr_correct.mch")
         assertEquals(expected, BTranslation(parseResource("add_addr_correct.als").toAst(false)).getTranslation())

@@ -207,7 +207,7 @@ class TypeChecker(spec: AlloySpecification) {
             typeCheckJoinExpr(te, expr)
             return
         }
-        if (expr.operator == CARTESIAN) {
+        if (expr.operator == RELATION) {
             expr.type.setType(Type(Relation(expr.left.type,expr.right.type)))
             return
         }

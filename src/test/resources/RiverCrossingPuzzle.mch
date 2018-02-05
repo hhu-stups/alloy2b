@@ -16,7 +16,7 @@ PROPERTIES
     {Fox_} <: Object_ &
     {Chicken_} <: Object_ &
     {Grain_} <: Object_ &
-    ((eats_Object = (({Fox_} * {Chicken_}) \/ ({Chicken_} * {Grain_})))) &
+    ((eats_Object = (({Fox_} <-> {Chicken_}) \/ ({Chicken_} <-> {Grain_})))) &
     (((near_State[{min(State_)}] = Object_) & far_State[{min(State_)}] = {})) &
     (!(s_, s__).({s_} <: State_ & {s__} <: next_State_(s_) => ((({Farmer_} <: near_State[{s_}]) => crossRiver_(near_State[{s_}], near_State[{s__}], far_State[{s_}], far_State[{s__}])) & (not(({Farmer_} <: near_State[{s_}])) => crossRiver_(far_State[{s_}], far_State[{s__}], near_State[{s_}], near_State[{s__}]))))) &
     Farmer_ /= Fox_ &
