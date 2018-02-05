@@ -680,6 +680,13 @@ class BTranslation(spec: AlloySpecification) {
         if (jeLeftType is Relation && (jeRightType is Set || jeRightType is Scalar)) {
             return "$leftExpression~[$rightExpression]"
         }
+        if (jeLeftType is Scalar && jeRightType is Relation) {
+            val rightSubType = jeRightType.rightType.currentType
+            // TODO: right type should be integer but is set(integer) --> we want to use the alloy typecker anyway
+            if (rightSubType is Set && rightSubType.subType.currentType is Integer) {
+                return "$rightExpression(${leftExpression.replace("{", "").replace("}", "")})"
+            }
+        }
         if ((jeLeftType is Set || jeLeftType is Scalar) && jeRightType is Relation) {
             return "$rightExpression[$leftExpression]"
         }
