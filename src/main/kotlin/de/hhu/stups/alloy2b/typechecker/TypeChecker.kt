@@ -270,12 +270,26 @@ class TypeChecker(spec: AlloySpecification) {
             je.type.setType(Type(jeRightType))
             return
         }
+        if ((jeLeftType is Scalar || jeLeftType is Set) && jeRightType is Untyped) {
+            // first, last
+            je.right.type.setType(je.left.type)
+            je.type.setType(Type(jeLeftType))
+            return
+        }
         if (jeRightType is Relation && jeLeftType is Untyped) {
             // first, last for signature fields
             val rightType = je.right.type.currentType as Relation
             val setType = rightType.leftType.currentType as Set
             je.left.type.setType(Type(Scalar(setType.subType)))
             je.type.setType(Type(jeRightType))
+            return
+        }
+        if (jeLeftType is Relation && jeRightType is Untyped) {
+            // first, last for signature fields
+            val leftType = je.left.type.currentType as Relation
+            val setType = leftType.leftType.currentType as Set
+            je.right.type.setType(Type(Scalar(setType.subType)))
+            je.type.setType(Type(jeLeftType))
             return
         }
         if (jeLeftType is Scalar && jeRightType is Relation) {
