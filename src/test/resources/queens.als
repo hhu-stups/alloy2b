@@ -17,4 +17,4 @@ pred valid { all q1,q2 : Queens |
     q1 != q2 => nothreat[q1, q2]
  }
 
-run valid for exactly 8 Queens, 7 int
+run valid for exactly 8 Queens, 5 int
