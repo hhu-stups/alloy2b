@@ -8,6 +8,17 @@ import edu.mit.csail.sdg.alloy4compiler.ast.Sig
 import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
 
 class AlloyAstTranslation(spec: CompModule) {
+
+    companion object {
+        /**
+         * Concatenate underscore to all variables in order to prevent collision with B keywords
+         * replace all ' with _ (allowed in Alloy)
+         * remove this/
+         */
+        fun sanitizeIdentifier(id: String) =
+                "${id.replace("'", "_").replace("this/", "")}_"
+    }
+
     private val sets = mutableListOf<String>()
     private val constants = mutableListOf<String>()
     private val definitions = mutableListOf<String>()
@@ -50,23 +61,29 @@ class AlloyAstTranslation(spec: CompModule) {
 
                 val declExpr = it.decl().expr
                 var symbol = "<->"
-                if(declExpr is ExprUnary) {
+                if (declExpr is ExprUnary) {
                     symbol = when (declExpr.op) {
-                                ExprUnary.Op.LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
-                                ExprUnary.Op.ONEOF -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
-                                ExprUnary.Op.SETOF -> "<->"
-                                else -> TODO("implementation missing")
-                            }
+                        ExprUnary.Op.LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
+                        ExprUnary.Op.ONEOF -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
+                        ExprUnary.Op.SETOF -> "<->"
+                        else -> TODO("implementation missing")
+                    }
                 }
-                properties.add("${sanitizeIdentifier(it.label)} : ${it.sig.accept(exprTranslator)} $symbol ${it.decl().expr.accept(exprTranslator)}")
+                properties.add("${sanitizeIdentifier(it.label)} : " +
+                        "${it.sig.accept(exprTranslator)} $symbol ${it.decl().expr.accept(exprTranslator)}")
             }
         }
     }
 
     private fun translateFunctions(allFunc: SafeList<Func>) {
         allFunc.forEach {
-            val parameters = if (it.params().isEmpty()) "" else "(${it.params().map { it.accept(exprTranslator) }.joinToString(",")})"
-            definitions.add("${sanitizeIdentifier(it.label)}$parameters == ${it.body.accept(exprTranslator)}")
+            val parameters = if (it.params().isEmpty()) "" else
+                "(${it.params().joinToString(",") { it.accept(exprTranslator) }})"
+            definitions.add("${sanitizeIdentifier(it.label)}$parameters == " +
+                    "${it.decls.map { it.get().accept(exprTranslator) }
+                            .zip(it.decls.map { it.expr.accept(exprTranslator) })
+                            .map { "${it.first} ${it.second}" }
+                            .joinToString(" & ")} & ${it.body.accept(exprTranslator)}")
         }
     }
 
@@ -114,14 +131,6 @@ class AlloyAstTranslation(spec: CompModule) {
         builder.appendln(sectionName)
         builder.appendln("    " + list.joinToString(delimiter))
     }
-
-    /**
-     * Concatenate underscore to all variables in order to prevent collision with B keywords
-     * replace all ' with _ (allowed in Alloy)
-     * replace all / with _ (flatten Alloy pathes)
-     */
-    private fun sanitizeIdentifier(id: String) =
-            "${id.replace("'", "_").replace("/","_")}_"
 }
 
 
