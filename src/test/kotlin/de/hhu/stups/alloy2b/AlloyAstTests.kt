@@ -1,7 +1,7 @@
 package de.hhu.stups.alloy2b
 
-import de.hhu.stups.alloy2b.ast.toAst
-import de.hhu.stups.alloy2b.translation.BTranslation
+import de.hhu.stups.alloy2b.translation.AlloyAstTranslation
+import edu.mit.csail.sdg.alloy4.A4Reporter
 import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 import org.junit.Assert
 import org.junit.Test
@@ -11,9 +11,9 @@ class AlloyAstTests {
     fun translateCards() {
         val expected = getResourceAsString("cards.mch")
 
-        val astRoot = CompUtil.parseOneModule(getResourceAsString("cards.als"))
-        astRoot.rootModule.allSigs.forEach {println(it)}
+        val res = object {}.javaClass.getResource("/cards.als")
+        val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, res.file)
 
-        //Assert.assertEquals(expected, BTranslation(parseResource("cards.als").toAst(false)).getTranslation())
+        Assert.assertEquals(expected, AlloyAstTranslation(astRoot).getTranslation())
     }
 }
