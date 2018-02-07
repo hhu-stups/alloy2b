@@ -9,14 +9,18 @@ import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
 
 class AlloyAstTranslation(spec: CompModule) {
 
-    companion object {
-        /**
-         * Concatenate underscore to all variables in order to prevent collision with B keywords
-         * replace all ' with _ (allowed in Alloy)
-         * remove this/
-         */
-        fun sanitizeIdentifier(id: String) =
-                "${id.replace("'", "_").replace("this/", "")}_"
+    /**
+     * Concatenate underscore to all variables in order to prevent collision with B keywords
+     * replace all ' with _ (allowed in Alloy)
+     * remove this/
+     */
+    fun sanitizeIdentifier(id: String): String {
+        val sanitizedIdentifier = "${id.replace("'", "_").replace("this/", "")}_"
+        if (signatureFieldParents.keys.contains(id)) {
+            // add parent signature name as a suffix to get unique names for signature fields
+            return "$sanitizedIdentifier${signatureFieldParents[id]}"
+        }
+        return sanitizedIdentifier
     }
 
     private val sets = mutableListOf<String>()
@@ -26,11 +30,12 @@ class AlloyAstTranslation(spec: CompModule) {
     private val assertions = mutableListOf<String>()
     private val operations = mutableListOf<String>()
     private val orderingAndScopeMap = mutableMapOf<String, Long>()
+    private val signatureFieldParents = mutableMapOf<String, String>()
     private val translationPreferences = hashMapOf(
             TranslationPreference.ORDERED_UNORDERED_SIGNATURE_INTERACTION to mutableMapOf<String, String>(),
             TranslationPreference.DISTINCT_SIGNATURE_INTERACTION to mutableMapOf())
 
-    private val exprTranslator = ExpressionTranslator()
+    private val exprTranslator = ExpressionTranslator(this)
 
     private var runCounter = 1
     private var checkCounter = 1
@@ -54,10 +59,13 @@ class AlloyAstTranslation(spec: CompModule) {
 
     private fun translateSignatures(allSigs: SafeList<Sig>) {
         allSigs.forEach {
-            sets.add(sanitizeIdentifier(it.label))
+            val sanitizedSigName = sanitizeIdentifier(it.label)
+            sets.add(sanitizedSigName)
 
             it.fields.forEach {
-                constants.add(sanitizeIdentifier(it.label))
+                signatureFieldParents[it.label] = sanitizedSigName
+                val sanitizedFieldName = sanitizeIdentifier(it.label)
+                constants.add(sanitizedFieldName)
 
                 val declExpr = it.decl().expr
                 var symbol = "<->"
@@ -66,7 +74,8 @@ class AlloyAstTranslation(spec: CompModule) {
                         ExprUnary.Op.LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
                         ExprUnary.Op.ONEOF -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
                         ExprUnary.Op.SETOF -> "<->"
-                        else -> TODO("implementation missing")
+                        else -> throw UnsupportedOperationException("Unary operator for field declaration of signature " +
+                                "not implemented: ${declExpr.op}")
                     }
                 }
                 properties.add("${sanitizeIdentifier(it.label)} : " +

@@ -2,10 +2,11 @@ package de.hhu.stups.alloy2b.translation
 
 import edu.mit.csail.sdg.alloy4compiler.ast.*
 
-class ExpressionTranslator : VisitReturn<String>() {
+class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation) : VisitReturn<String>() {
+
     override fun visit(p0: ExprBinary): String =
             when (p0.op) {
-                ExprBinary.Op.EQUALS -> "${p0.left.accept(this)} = ${p0.right.accept(this)}"
+                ExprBinary.Op.EQUALS -> "(${p0.left.accept(this)} = ${p0.right.accept(this)})"
                 ExprBinary.Op.JOIN -> translateJoin(p0.left, p0.right)
                 else -> throw UnsupportedOperationException("Binary operator not implemented: " + p0.op)
             }
@@ -25,7 +26,7 @@ class ExpressionTranslator : VisitReturn<String>() {
             // do not sanitize integers
             return p0.toString()
         }
-        return AlloyAstTranslation.sanitizeIdentifier(p0.toString())
+        return alloyAstTranslation.sanitizeIdentifier(p0.toString())
     }
 
     override fun visit(p0: ExprITE?): String {
@@ -50,22 +51,22 @@ class ExpressionTranslator : VisitReturn<String>() {
             }
 
     override fun visit(p0: ExprVar): String =
-            AlloyAstTranslation.sanitizeIdentifier(p0.toString())
+            alloyAstTranslation.sanitizeIdentifier(p0.toString())
 
     override fun visit(p0: Sig): String =
-            AlloyAstTranslation.sanitizeIdentifier(p0.label)
+            alloyAstTranslation.sanitizeIdentifier(p0.label)
 
     override fun visit(p0: Sig.Field): String =
-            AlloyAstTranslation.sanitizeIdentifier(p0.label)
+            alloyAstTranslation.sanitizeIdentifier(p0.label)
 
     private fun translateJoin(left: Expr, right: Expr): String {
         val tLeft = left.accept(this)
         val tRight = right.accept(this)
         if (left.type().arity() == 1 && right.type().arity() == 2) {
-            return "$tRight[$tLeft]"
+            return "($tRight[$tLeft])"
         }
         if (left.type().arity() == 2 && right.type().arity() == 1) {
-            return "$tLeft~[$tRight]"
+            return "($tLeft~[$tRight])"
         }
         if (left.type().arity() == 2 && right.type().arity() == 2) {
             return "($tLeft ; $tRight)"
