@@ -4,7 +4,7 @@ import de.hhu.stups.alloy2b.translation.prolog.AlloyAstToProlog
 import org.junit.Ignore
 import org.junit.Test
 
-class AlloyAstToPrologTests {
+class AlloyAstToPrologTest {
     @Test
     @Ignore
     fun translateFileSystem() {
