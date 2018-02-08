@@ -8,6 +8,7 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
             when (p0.op) {
                 ExprBinary.Op.EQUALS -> "(${p0.left.accept(this)} = ${p0.right.accept(this)})"
                 ExprBinary.Op.JOIN -> translateJoin(p0.left, p0.right)
+                ExprBinary.Op.ARROW -> "(${p0.left.accept(this)} * ${p0.right.accept(this)})"
                 else -> throw UnsupportedOperationException("Binary operator not implemented: " + p0.op)
             }
 
@@ -47,6 +48,7 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
                 ExprUnary.Op.CARDINALITY -> "card(${p0.sub.accept(this)})"
                 ExprUnary.Op.ONEOF -> p0.sub.accept(this) // TODO do something here
                 ExprUnary.Op.SETOF -> "<: ${p0.sub.accept(this)}"
+                ExprUnary.Op.NO -> "(${p0.sub.accept(this)} = {})"
                 else -> throw UnsupportedOperationException("Unary operator not implemented: " + p0.op)
             }
 

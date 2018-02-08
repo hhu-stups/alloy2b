@@ -9,20 +9,6 @@ import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
 
 class AlloyAstTranslation(spec: CompModule) {
 
-    /**
-     * Concatenate underscore to all variables in order to prevent collision with B keywords
-     * replace all ' with _ (allowed in Alloy)
-     * remove this/
-     */
-    fun sanitizeIdentifier(id: String): String {
-        val sanitizedIdentifier = "${id.replace("'", "_").replace("this/", "")}_"
-        if (signatureFieldParents.keys.contains(id)) {
-            // add parent signature name as a suffix to get unique names for signature fields
-            return "$sanitizedIdentifier${signatureFieldParents[id]}"
-        }
-        return sanitizedIdentifier
-    }
-
     private val sets = mutableListOf<String>()
     private val constants = mutableListOf<String>()
     private val definitions = mutableListOf<String>()
@@ -139,6 +125,20 @@ class AlloyAstTranslation(spec: CompModule) {
         }
         builder.appendln(sectionName)
         builder.appendln("    " + list.joinToString(delimiter))
+    }
+
+    /**
+     * Concatenate underscore to all variables in order to prevent collision with B keywords
+     * replace all ' with _ (allowed in Alloy)
+     * remove this/
+     */
+    fun sanitizeIdentifier(id: String): String {
+        val sanitizedIdentifier = "${id.replace("'", "_").replace("this/", "")}_"
+        if (signatureFieldParents.keys.contains(id)) {
+            // add parent signature name as a suffix to get unique names for signature fields
+            return "$sanitizedIdentifier${signatureFieldParents[id]}"
+        }
+        return sanitizedIdentifier
     }
 }
 
