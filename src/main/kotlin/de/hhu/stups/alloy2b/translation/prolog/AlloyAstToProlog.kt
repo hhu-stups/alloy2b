@@ -41,12 +41,21 @@ class AlloyAstToProlog(alloyModelPath: String) {
      *
      */
 
-    private val prologTerm: String
+    private var prologTerm = ""
     private val expressionTranslator = ExpressionToProlog(this)
 
     init {
-        val res = object {}.javaClass.getResource(alloyModelPath)
-        val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, res.file)
+        var path = ""
+        try {
+            // either from resources
+            path = object {}.javaClass.getResource(alloyModelPath).file
+        } catch (exception: IllegalStateException) {
+            if (path == "") {
+                // or an absolute path
+                path = alloyModelPath
+            }
+        }
+        val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, path)
         val listOfFacts = astRoot.rootModule.allFacts
                 .map { toPrologTerm(it) }.filter { it != "" }.joinToString(",")
         val listOfAssertions = astRoot.rootModule.allAssertions
