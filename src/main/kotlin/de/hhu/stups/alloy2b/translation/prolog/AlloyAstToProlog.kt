@@ -23,9 +23,11 @@ class AlloyAstToProlog(alloyModelPath: String) {
      *      functor is either check or run
      *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),bitwidth(BitWidth),Pos)
      *
-     * function/2, predicate/2::
-     *      functor is either function or predicate
-     *      functor(BodyExpr,Pos)
+     * function/2:
+     *      function(Name,Body)
+     *
+     * predicate/2:
+     *      predicate(Name,Body)
      *
      * signature/5:
      *      signature(Name,ListOfFieldDecl,ListOfFact,Options,Pos)
@@ -85,7 +87,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
         } else {
             "function"
         }
-        return "$functor(${toPrologTerm(astNode?.body)},pos(${astNode?.pos?.x},${astNode?.pos?.y}))"
+        return "$functor(${astNode?.label?.toLowerCase()},${toPrologTerm(astNode?.body)})"
     }
 
     private fun toPrologTerm(astNode: Expr?): String {
