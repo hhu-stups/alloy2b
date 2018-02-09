@@ -1,5 +1,7 @@
 package de.hhu.stups.alloy2b.translation
 
+import de.hhu.stups.alloy2b.ast.Operator
+import edu.mit.csail.sdg.alloy4.ConstList
 import edu.mit.csail.sdg.alloy4compiler.ast.*
 
 class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation) : VisitReturn<String>() {
@@ -9,6 +11,10 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
                 ExprBinary.Op.EQUALS -> "(${p0.left.accept(this)} = ${p0.right.accept(this)})"
                 ExprBinary.Op.JOIN -> translateJoin(p0.left, p0.right)
                 ExprBinary.Op.ARROW -> "(${p0.left.accept(this)} * ${p0.right.accept(this)})"
+                ExprBinary.Op.INTERSECT -> "(${p0.left.accept(this)} /\\ ${p0.right.accept(this)})"
+                ExprBinary.Op.MINUS -> "(${p0.left.accept(this)} /\\ ${p0.right.accept(this)})"
+                ExprBinary.Op.IMPLIES -> "(${p0.left.accept(this)} => ${p0.right.accept(this)})"
+                ExprBinary.Op.IN -> "(${p0.left.accept(this)} <: ${p0.right.accept(this)})"
                 else -> throw UnsupportedOperationException("Binary operator not implemented: " + p0.op)
             }
 
@@ -18,9 +24,12 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
                 else -> throw UnsupportedOperationException("List operator not implemented: " + p0.op)
             }
 
-    override fun visit(p0: ExprCall?): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun visit(p0: ExprCall): String =
+            if(p0.args.isEmpty()) {
+                alloyAstTranslation.sanitizeIdentifier(p0.`fun`.label)
+            } else {
+                "${alloyAstTranslation.sanitizeIdentifier(p0.`fun`.label)}(${p0.args.joinToString(", ") { it.accept(this) }})"
+            }
 
     override fun visit(p0: ExprConstant?): String {
         if (p0?.toString()?.toIntOrNull() != null) {
@@ -38,9 +47,11 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun visit(p0: ExprQt?): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun visit(p0: ExprQt): String =
+            when (p0.op) {
+                ExprQt.Op.ALL -> "!(${translateDeclsIDList(p0.decls)}).(${translateDeclsExprList(p0.decls)} => ${p0.sub.accept(this)})"
+                else -> throw UnsupportedOperationException("Quantifier not implemented: " + p0.op)
+            }
 
     override fun visit(p0: ExprUnary): String =
             when (p0.op) {
@@ -49,6 +60,8 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
                 ExprUnary.Op.ONEOF -> p0.sub.accept(this) // TODO do something here
                 ExprUnary.Op.SETOF -> "<: ${p0.sub.accept(this)}"
                 ExprUnary.Op.NO -> "(${p0.sub.accept(this)} = {})"
+                ExprUnary.Op.SOME -> "card(${p0.sub.accept(this)}) > 1"
+                ExprUnary.Op.NOT -> "not(${p0.sub.accept(this)})"
                 else -> throw UnsupportedOperationException("Unary operator not implemented: " + p0.op)
             }
 
@@ -74,5 +87,17 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
             return "($tLeft ; $tRight)"
         }
         throw UnsupportedOperationException("Join translation failed.")
+    }
+
+    private fun translateDeclsIDList(decls: ConstList<Decl>) =
+            // sanitizing string instead of identifier expression avoids set expansion to {id}
+            decls.joinToString(", ") { it.names.joinToString(", ") { alloyAstTranslation.sanitizeIdentifier(it.label) } }
+
+    private fun translateDeclsExprList(decls: ConstList<Decl>): String {
+        return decls.joinToString(" & ") {
+            it.names.joinToString(" & ") { n ->
+                "${alloyAstTranslation.sanitizeIdentifier(n.label)} <: ${it.expr.accept(this)}"
+            }
+        }
     }
 }

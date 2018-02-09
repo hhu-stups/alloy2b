@@ -51,16 +51,17 @@ class AlloyAstTranslation(spec: CompModule) {
                 val sanitizedFieldName = sanitizeIdentifier(it.label) + sanitizeIdentifier(it.sig.label)
                 constants.add(sanitizedFieldName)
 
-                val declExpr = it.decl().expr
+                var declExpr = it.decl().expr
                 var symbol = "<->"
                 if (declExpr is ExprUnary) {
                     symbol = when (declExpr.op) {
-                        ExprUnary.Op.LONE -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
+                        ExprUnary.Op.LONEOF -> "+->" // one-to-one mapping, i.e. function, LONE = 0 or 1 target
                         ExprUnary.Op.ONEOF -> "-->" // one-to-one mapping, i.e. function, ONE = exactly 1 target
                         ExprUnary.Op.SETOF -> "<->"
                         else -> throw UnsupportedOperationException("Unary operator for field declaration of signature " +
                                 "not implemented: ${declExpr.op}")
                     }
+                    declExpr = declExpr.sub
                 }
                 properties.add("$sanitizedFieldName : " +
                         "${it.sig.accept(exprTranslator)} $symbol ${it.decl().expr.accept(exprTranslator)}")
