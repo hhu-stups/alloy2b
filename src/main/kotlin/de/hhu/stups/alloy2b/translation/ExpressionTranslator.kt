@@ -59,7 +59,7 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
             alloyAstTranslation.sanitizeIdentifier(p0.label)
 
     override fun visit(p0: Sig.Field): String =
-            alloyAstTranslation.sanitizeIdentifier(p0.label)
+            alloyAstTranslation.sanitizeIdentifier(p0.label) + alloyAstTranslation.sanitizeIdentifier(p0.sig.label)
 
     private fun translateJoin(left: Expr, right: Expr): String {
         val tLeft = left.accept(this)

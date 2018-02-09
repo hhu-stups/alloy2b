@@ -16,7 +16,6 @@ class AlloyAstTranslation(spec: CompModule) {
     private val assertions = mutableListOf<String>()
     private val operations = mutableListOf<String>()
     private val orderingAndScopeMap = mutableMapOf<String, Long>()
-    private val signatureFieldParents = mutableMapOf<String, String>()
     private val translationPreferences = hashMapOf(
             TranslationPreference.ORDERED_UNORDERED_SIGNATURE_INTERACTION to mutableMapOf<String, String>(),
             TranslationPreference.DISTINCT_SIGNATURE_INTERACTION to mutableMapOf())
@@ -49,8 +48,7 @@ class AlloyAstTranslation(spec: CompModule) {
             sets.add(sanitizedSigName)
 
             it.fields.forEach {
-                signatureFieldParents[it.label] = sanitizedSigName
-                val sanitizedFieldName = sanitizeIdentifier(it.label)
+                val sanitizedFieldName = sanitizeIdentifier(it.label) + sanitizeIdentifier(it.sig.label)
                 constants.add(sanitizedFieldName)
 
                 val declExpr = it.decl().expr
@@ -64,7 +62,7 @@ class AlloyAstTranslation(spec: CompModule) {
                                 "not implemented: ${declExpr.op}")
                     }
                 }
-                properties.add("${sanitizeIdentifier(it.label)} : " +
+                properties.add("$sanitizedFieldName : " +
                         "${it.sig.accept(exprTranslator)} $symbol ${it.decl().expr.accept(exprTranslator)}")
             }
         }
@@ -134,10 +132,6 @@ class AlloyAstTranslation(spec: CompModule) {
      */
     fun sanitizeIdentifier(id: String): String {
         val sanitizedIdentifier = "${id.replace("'", "_").replace("this/", "")}_"
-        if (signatureFieldParents.keys.contains(id)) {
-            // add parent signature name as a suffix to get unique names for signature fields
-            return "$sanitizedIdentifier${signatureFieldParents[id]}"
-        }
         return sanitizedIdentifier
     }
 }
