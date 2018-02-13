@@ -1,22 +1,43 @@
 package de.hhu.stups.alloy2b.translation
 
-import de.hhu.stups.alloy2b.ast.Operator
 import edu.mit.csail.sdg.alloy4.ConstList
 import edu.mit.csail.sdg.alloy4compiler.ast.*
 
 class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation) : VisitReturn<String>() {
 
-    override fun visit(p0: ExprBinary): String =
-            when (p0.op) {
-                ExprBinary.Op.EQUALS -> "(${p0.left.accept(this)} = ${p0.right.accept(this)})"
-                ExprBinary.Op.JOIN -> translateJoin(p0.left, p0.right)
-                ExprBinary.Op.ARROW -> "(${p0.left.accept(this)} * ${p0.right.accept(this)})"
-                ExprBinary.Op.INTERSECT -> "(${p0.left.accept(this)} /\\ ${p0.right.accept(this)})"
-                ExprBinary.Op.MINUS -> "(${p0.left.accept(this)} /\\ ${p0.right.accept(this)})"
-                ExprBinary.Op.IMPLIES -> "(${p0.left.accept(this)} => ${p0.right.accept(this)})"
-                ExprBinary.Op.IN -> "(${p0.left.accept(this)} <: ${p0.right.accept(this)})"
-                else -> throw UnsupportedOperationException("Binary operator not implemented: " + p0.op)
-            }
+    override fun visit(p0: ExprBinary): String {
+        val symbol: String
+        when (p0.op) {
+            ExprBinary.Op.EQUALS -> symbol = "="
+            ExprBinary.Op.NOT_EQUALS -> symbol = "/="
+            ExprBinary.Op.JOIN -> return translateJoin(p0.left, p0.right)
+            ExprBinary.Op.ARROW -> symbol = "*"
+            ExprBinary.Op.INTERSECT -> symbol = "/\\"
+            ExprBinary.Op.MINUS -> symbol = "-"
+            ExprBinary.Op.DIV -> symbol = "/"
+            ExprBinary.Op.MUL -> symbol = "*"
+            ExprBinary.Op.PLUS -> symbol = "\\/"
+            ExprBinary.Op.IPLUS -> symbol = "+"
+            ExprBinary.Op.IMINUS -> symbol = "-"
+            ExprBinary.Op.REM -> symbol = "mod"
+            ExprBinary.Op.IMPLIES -> symbol = "=>"
+            ExprBinary.Op.IFF -> symbol = "<=>"
+            ExprBinary.Op.AND -> symbol = "&"
+            ExprBinary.Op.OR -> symbol = "or"
+            ExprBinary.Op.GT -> symbol = ">"
+            ExprBinary.Op.NOT_GT -> symbol = "<="
+            ExprBinary.Op.GTE -> symbol = ">="
+            ExprBinary.Op.NOT_GTE -> symbol = "<"
+            ExprBinary.Op.LT -> symbol = "<"
+            ExprBinary.Op.NOT_LT -> symbol = ">="
+            ExprBinary.Op.LTE -> symbol = "<="
+            ExprBinary.Op.NOT_LTE -> symbol = ">"
+            ExprBinary.Op.IN -> symbol = "<:"
+            ExprBinary.Op.NOT_IN -> symbol = "/:"
+            else -> throw UnsupportedOperationException("Binary operator not implemented: " + p0.op)
+        }
+        return "(${p0.left.accept(this)} $symbol ${p0.right.accept(this)})"
+    }
 
     override fun visit(p0: ExprList): String =
             when (p0.op) {
@@ -25,10 +46,11 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
             }
 
     override fun visit(p0: ExprCall): String =
-            if(p0.args.isEmpty()) {
+            if (p0.args.isEmpty()) {
                 alloyAstTranslation.sanitizeIdentifier(p0.`fun`.label)
             } else {
-                "${alloyAstTranslation.sanitizeIdentifier(p0.`fun`.label)}(${p0.args.joinToString(", ") { it.accept(this) }})"
+                "${alloyAstTranslation.sanitizeIdentifier(p0.`fun`.label)}(" +
+                        "${p0.args.joinToString(", ") { it.accept(this) }})"
             }
 
     override fun visit(p0: ExprConstant?): String {
@@ -49,7 +71,8 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
 
     override fun visit(p0: ExprQt): String =
             when (p0.op) {
-                ExprQt.Op.ALL -> "!(${translateDeclsIDList(p0.decls)}).(${translateDeclsExprList(p0.decls)} => ${p0.sub.accept(this)})"
+                ExprQt.Op.ALL -> "!(${translateDeclsIDList(p0.decls)}).(" +
+                        "${translateDeclsExprList(p0.decls)} => ${p0.sub.accept(this)})"
                 else -> throw UnsupportedOperationException("Quantifier not implemented: " + p0.op)
             }
 
@@ -58,9 +81,10 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
                 ExprUnary.Op.NOOP -> p0.sub.accept(this)
                 ExprUnary.Op.CARDINALITY -> "card(${p0.sub.accept(this)})"
                 ExprUnary.Op.ONEOF -> p0.sub.accept(this) // TODO do something here
-                ExprUnary.Op.SETOF -> "<: ${p0.sub.accept(this)}"
+                ExprUnary.Op.SETOF -> p0.sub.accept(this)
                 ExprUnary.Op.NO -> "(${p0.sub.accept(this)} = {})"
-                ExprUnary.Op.SOME -> "card(${p0.sub.accept(this)}) > 1"
+                ExprUnary.Op.SOME -> "card(${p0.sub.accept(this)}) >= 1"
+                ExprUnary.Op.LONE -> "card(${p0.sub.accept(this)}) <= 1"
                 ExprUnary.Op.NOT -> "not(${p0.sub.accept(this)})"
                 else -> throw UnsupportedOperationException("Unary operator not implemented: " + p0.op)
             }
@@ -77,6 +101,12 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
     private fun translateJoin(left: Expr, right: Expr): String {
         val tLeft = left.accept(this)
         val tRight = right.accept(this)
+        if (tLeft.toString() == "univ") {
+            return "ran($tRight)"
+        }
+        if (tRight.toString() == "univ") {
+            return "dom($tRight)"
+        }
         if (left.type().arity() == 1 && right.type().arity() == 2) {
             return "($tRight[$tLeft])"
         }
@@ -91,7 +121,8 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
 
     private fun translateDeclsIDList(decls: ConstList<Decl>) =
             // sanitizing string instead of identifier expression avoids set expansion to {id}
-            decls.joinToString(", ") { it.names.joinToString(", ") { alloyAstTranslation.sanitizeIdentifier(it.label) } }
+            decls.joinToString(", ") {
+                it.names.joinToString(", ") { alloyAstTranslation.sanitizeIdentifier(it.label) } }
 
     private fun translateDeclsExprList(decls: ConstList<Decl>): String {
         return decls.joinToString(" & ") {
