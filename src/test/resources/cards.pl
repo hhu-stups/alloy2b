@@ -1,0 +1,1 @@
+alloy_model(facts([]),assertions([]),commands([]),functions([predicate(this/threeofakind,and([equal(card(join(hand,suit,pos(8,4)),pos(3,4)),1,pos(13,4)), equal(card(hand,pos(20,4)),3,pos(25,4))],pos(16,4)),pos(1,3)]),signatures([signature(this/card,[oneof(this/suit,pos(16,1))],[],[],pos(5,1)),signature(this/suit,[],[],[],pos(5,2))])).
