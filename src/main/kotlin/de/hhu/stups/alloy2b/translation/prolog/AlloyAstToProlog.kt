@@ -52,16 +52,11 @@ class AlloyAstToProlog(alloyModelPath: String) {
             }
         }
         val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, path)
-        val listOfFacts = astRoot.rootModule.allFacts
-                .map { toPrologTerm(it) }.filter { it != "" }.joinToString(",")
-        val listOfAssertions = astRoot.rootModule.allAssertions
-                .map { toPrologTerm(it) }.filter { it != "" }.joinToString(",")
-        val listOfCommands = astRoot.rootModule.allCommands
-                .map { toPrologTerm(it) }.filter { it != "" }.joinToString(",")
-        val listOfFunctions = astRoot.rootModule.allFunc
-                .map { toPrologTerm(it) }.filter { it != "" }.joinToString(",")
-        val listOfSignatures = astRoot.rootModule.allSigs
-                .map { toPrologTerm(it) }.filter { it != "" }.joinToString(",")
+        val listOfFacts = astRoot.rootModule.allFacts.joinToString(",") { toPrologTerm(it) }
+        val listOfAssertions = astRoot.rootModule.allAssertions.joinToString(",") { toPrologTerm(it) }
+        val listOfCommands = astRoot.rootModule.allCommands.joinToString(",") { toPrologTerm(it) }
+        val listOfFunctions = astRoot.rootModule.allFunc.joinToString(",") { toPrologTerm(it) }
+        val listOfSignatures = astRoot.rootModule.allSigs.joinToString(",") { toPrologTerm(it) }
         prologTerm = "alloy_model(facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
                 "functions([$listOfFunctions]),signatures([$listOfSignatures]))."
     }
