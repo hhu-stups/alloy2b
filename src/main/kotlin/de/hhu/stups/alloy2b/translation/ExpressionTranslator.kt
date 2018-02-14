@@ -53,12 +53,12 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation,
                         "${p0.args.joinToString(", ") { it.accept(this) }})"
             }
 
-    override fun visit(p0: ExprConstant?): String {
-        if (p0?.toString()?.toIntOrNull() != null) {
+    override fun visit(p0: ExprConstant): String {
+        if (p0.toString().toIntOrNull() != null) {
             // do not sanitize integers
             return p0.toString()
         }
-        return alloyAstTranslation.sanitizeIdentifier(p0.toString())
+        return sanitizeTypedIdentifier(p0)
     }
 
     override fun visit(p0: ExprITE?): String {
@@ -130,16 +130,18 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation,
     private fun translateDeclsExprList(decls: ConstList<Decl>): String {
         return decls.joinToString(" & ") {
             it.names.joinToString(" & ") { n ->
-                "${alloyAstTranslation.sanitizeIdentifier(n.label)} <: ${it.expr.accept(this)}"
+                "${sanitizeTypedIdentifier(n.label, singletonAnnotator.isSingleton(it.expr))} <: ${it.expr.accept(this)}"
             }
         }
     }
 
-    private fun sanitizeTypedIdentifier(id: Expr): String {
-        if(singletonAnnotator.isSingleton(id)) {
-            return "{${alloyAstTranslation.sanitizeIdentifier(id.toString())}}"
+    private fun sanitizeTypedIdentifier(label: String, isSingleton: Boolean): String {
+        if(isSingleton) {
+            return "{${alloyAstTranslation.sanitizeIdentifier(label)}}"
         } else {
-            return alloyAstTranslation.sanitizeIdentifier(id.toString())
+            return alloyAstTranslation.sanitizeIdentifier(label)
         }
     }
+
+    private fun sanitizeTypedIdentifier(id: Expr): String = sanitizeTypedIdentifier(id.toString(), singletonAnnotator.isSingleton(id))
 }
