@@ -23,7 +23,7 @@ class AlloyAstTranslation(spec: CompModule) {
     private val extendingSignatures = mutableMapOf<String, MutableList<String>>()
 
     private val singletonAnnotator = AlloyAstSingletonAnnotator(spec)
-    private val exprTranslator = ExpressionTranslator(this,singletonAnnotator)
+    private val exprTranslator = ExpressionTranslator(this, singletonAnnotator)
 
     private var commandCounter = 0
 
@@ -56,6 +56,7 @@ class AlloyAstTranslation(spec: CompModule) {
     }
 
     private fun translateCommands(allCommands: ConstList<Command>) {
+        // TODO: precondition has been negated in the prior implementation, why?
         allCommands.forEach {
             // additional scope for run commands
             val tScope = if (!it.check) translateScopes(it) else ""
@@ -133,8 +134,9 @@ class AlloyAstTranslation(spec: CompModule) {
 
                 val declExpr = it.decl().expr
                 val symbol = getUnaryDeclSymbol(declExpr)
-                properties.add("$sanitizedFieldName : " +
-                        "${it.sig.accept(exprTranslator)} $symbol ${it.decl().expr.accept(exprTranslator)}")
+                val rhs = if (declExpr is ExprUnary) declExpr.sub.accept(exprTranslator) else
+                    declExpr.accept(exprTranslator)
+                properties.add("$sanitizedFieldName : ${it.sig.accept(exprTranslator)} $symbol $rhs")
             }
             if (it is Sig.SubsetSig) {
                 // in
@@ -150,9 +152,9 @@ class AlloyAstTranslation(spec: CompModule) {
                 if (subSigs != null) {
                     subSigs.add(sanitizedSigName)
                 } else {
-                    extendingSignatures.put(sanitizedParent, mutableListOf(sanitizedSigName))
+                    extendingSignatures[sanitizedParent] = mutableListOf(sanitizedSigName)
                 }
-                properties.add("$sanitizedSigName : ${sanitizeIdentifier(sanitizedParent)}")
+                properties.add("$sanitizedSigName : $sanitizedParent")
             }
             if (it.isAbstract != null) {
                 abstractSignatures.add(sanitizedSigName)
@@ -168,12 +170,28 @@ class AlloyAstTranslation(spec: CompModule) {
         allFunc.forEach {
             val parameters = if (it.params().isEmpty()) "" else
                 "(${it.params().joinToString(",") { it.accept(exprTranslator) }})"
-            val tDecls = it.decls.map { it.get().accept(exprTranslator) }
-                    .zip(it.decls.map { it.expr.accept(exprTranslator) })
-                    .joinToString(" & ") { "${it.first} ${it.second}" }
+            val tDecls = mutableSetOf<String>()
+            it.decls.forEach { decl ->
+                val declExpr = decl.expr
+                val declLhs = sanitizeTypedIdentifier(decl.get())
+                if (declExpr is ExprUnary) {
+                    if (declExpr.op == ExprUnary.Op.SETOF) {
+                        tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)}")
+                    } else if (declExpr.op == ExprUnary.Op.ONE) {
+                        tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) = 1")
+                    } else if (declExpr.op == ExprUnary.Op.SOME) {
+                        tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) > 0")
+                    } else if (declExpr.op == ExprUnary.Op.LONE) {
+                        tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) <= 1")
+                    } else {
+                        throw UnsupportedOperationException("Field declaration not implemented for unary operator " +
+                                "${declExpr.op}.")
+                    }
+                }
+            }
             val sanitizedName = sanitizeIdentifier(it.label)
-            definitions.add("$sanitizedName$parameters == " +
-                    (if (tDecls.isNotEmpty()) "$tDecls & " else "") + getBodyFromFunction(it))
+            val decls = if (tDecls.isNotEmpty()) "${tDecls.joinToString(" & ")} & " else ""
+            definitions.add("$sanitizedName$parameters == ($decls ${getBodyFromFunction(it)})")
             predsAndFuncs.add(sanitizedName)
         }
     }
@@ -258,7 +276,13 @@ class AlloyAstTranslation(spec: CompModule) {
         return sanitizedIdentifier
     }
 
-    fun isExtendingSignature(sig: Sig): Boolean {
+    fun sanitizeTypedIdentifier(label: String, isSingleton: Boolean) =
+            if (isSingleton) "{${sanitizeIdentifier(label)}}" else sanitizeIdentifier(label)
+
+    fun sanitizeTypedIdentifier(id: Expr): String =
+            sanitizeTypedIdentifier(id.toString(), singletonAnnotator.isSingleton(id))
+
+    private fun isExtendingSignature(sig: Sig): Boolean {
         // TODO: there is most likely a better way to identify extending signatures
         val isSubSig = sig.isSubsig
         return sig is Sig.PrimSig && isSubSig != null && (isSubSig.x != isSubSig.x2 || isSubSig.y != isSubSig.y2)
