@@ -22,11 +22,13 @@ class AlloyAstTranslation(spec: CompModule) {
     private val singletonSignatures = mutableSetOf<String>()
     private val extendingSignatures = mutableMapOf<String, MutableList<String>>()
 
-    private val exprTranslator = ExpressionTranslator(this)
+    private val singletonAnnotator = AlloyAstSingletonAnnotator(spec)
+    private val exprTranslator = ExpressionTranslator(this,singletonAnnotator)
 
     private var commandCounter = 0
 
     init {
+        //
         translateSignatures(spec.rootModule.allSigs)
         translateFunctions(spec.allFunc)
         translateFacts(spec.allFacts)

@@ -3,7 +3,7 @@ package de.hhu.stups.alloy2b.translation
 import edu.mit.csail.sdg.alloy4.ConstList
 import edu.mit.csail.sdg.alloy4compiler.ast.*
 
-class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation) : VisitReturn<String>() {
+class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation, private val singletonAnnotator: AlloyAstSingletonAnnotator) : VisitReturn<String>() {
 
     override fun visit(p0: ExprBinary): String {
         val symbol: String
@@ -92,7 +92,7 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
             }
 
     override fun visit(p0: ExprVar): String =
-            alloyAstTranslation.sanitizeIdentifier(p0.toString())
+            sanitizeTypedIdentifier(p0)
 
     override fun visit(p0: Sig): String =
             alloyAstTranslation.sanitizeIdentifier(p0.label)
@@ -132,6 +132,14 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
             it.names.joinToString(" & ") { n ->
                 "${alloyAstTranslation.sanitizeIdentifier(n.label)} <: ${it.expr.accept(this)}"
             }
+        }
+    }
+
+    private fun sanitizeTypedIdentifier(id: Expr): String {
+        if(singletonAnnotator.isSingleton(id)) {
+            return "{${alloyAstTranslation.sanitizeIdentifier(id.toString())}}"
+        } else {
+            return alloyAstTranslation.sanitizeIdentifier(id.toString())
         }
     }
 }
