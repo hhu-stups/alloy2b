@@ -78,14 +78,16 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
 
     override fun visit(p0: ExprUnary): String =
             when (p0.op) {
-                ExprUnary.Op.NOOP -> p0.sub.accept(this)
                 ExprUnary.Op.CARDINALITY -> "card(${p0.sub.accept(this)})"
                 ExprUnary.Op.ONEOF -> p0.sub.accept(this) // TODO do something here
-                ExprUnary.Op.SETOF -> p0.sub.accept(this)
+                ExprUnary.Op.SETOF -> "<: ${p0.sub.accept(this)}"
                 ExprUnary.Op.NO -> "(${p0.sub.accept(this)} = {})"
                 ExprUnary.Op.SOME -> "card(${p0.sub.accept(this)}) >= 1"
                 ExprUnary.Op.LONE -> "card(${p0.sub.accept(this)}) <= 1"
                 ExprUnary.Op.NOT -> "not(${p0.sub.accept(this)})"
+                ExprUnary.Op.NOOP,
+                ExprUnary.Op.CAST2SIGINT,
+                ExprUnary.Op.CAST2INT -> p0.sub.accept(this)
                 else -> throw UnsupportedOperationException("Unary operator not implemented: " + p0.op)
             }
 
@@ -122,7 +124,8 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation)
     private fun translateDeclsIDList(decls: ConstList<Decl>) =
             // sanitizing string instead of identifier expression avoids set expansion to {id}
             decls.joinToString(", ") {
-                it.names.joinToString(", ") { alloyAstTranslation.sanitizeIdentifier(it.label) } }
+                it.names.joinToString(", ") { alloyAstTranslation.sanitizeIdentifier(it.label) }
+            }
 
     private fun translateDeclsExprList(decls: ConstList<Decl>): String {
         return decls.joinToString(" & ") {

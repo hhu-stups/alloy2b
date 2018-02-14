@@ -1,8 +1,6 @@
 package de.hhu.stups.alloy2b
 
-import de.hhu.stups.alloy2b.ast.toAst
 import de.hhu.stups.alloy2b.translation.AlloyAstTranslation
-import de.hhu.stups.alloy2b.translation.BTranslation
 import edu.mit.csail.sdg.alloy4.A4Reporter
 import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 import org.junit.Assert
