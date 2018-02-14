@@ -31,8 +31,12 @@ class AlloyAstSingletonAnnotator(spec: CompModule) : VisitReturn<Unit>() {
         allFuncs.forEach {
             it.decls.forEach {
                 it.expr.accept(this)
+                currentSingletonIDs.put(it.names.joinToString("/"),isSingleton(it.expr))
             }
             it.body.accept(this)
+            it.decls.forEach {
+                currentSingletonIDs.remove(it.names.joinToString("/"))
+            }
         }
     }
 
@@ -58,8 +62,10 @@ class AlloyAstSingletonAnnotator(spec: CompModule) : VisitReturn<Unit>() {
             }
         }
 
-        override fun visit(p0: ExprITE?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        override fun visit(p0: ExprITE) {
+            p0.cond.accept(this)
+            p0.left.accept(this)
+            p0.right.accept(this)
         }
 
         override fun visit(p0: ExprLet) {
