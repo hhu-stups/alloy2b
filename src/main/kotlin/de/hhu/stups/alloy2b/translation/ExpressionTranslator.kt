@@ -5,6 +5,25 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 
 class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation, private val singletonAnnotator: AlloyAstSingletonAnnotator) : VisitReturn<String>() {
 
+    override fun visit(p0: ExprUnary): String =
+            when (p0.op) {
+                ExprUnary.Op.CARDINALITY -> "card(${p0.sub.accept(this)})"
+                ExprUnary.Op.NO -> "(${p0.sub.accept(this)} = {})"
+                ExprUnary.Op.SOME -> "card(${p0.sub.accept(this)}) >= 1"
+                ExprUnary.Op.LONE -> "card(${p0.sub.accept(this)}) <= 1"
+                ExprUnary.Op.NOT -> "not(${p0.sub.accept(this)})"
+                ExprUnary.Op.RCLOSURE -> "closure(${p0.sub.accept(this)})"
+                ExprUnary.Op.CLOSURE -> "closure1(${p0.sub.accept(this)})"
+                ExprUnary.Op.TRANSPOSE -> "${p0.sub.accept(this)}~"
+                ExprUnary.Op.NOOP,
+                ExprUnary.Op.SETOF,
+                ExprUnary.Op.ONEOF,
+                ExprUnary.Op.LONEOF,
+                ExprUnary.Op.CAST2SIGINT,
+                ExprUnary.Op.CAST2INT -> p0.sub.accept(this) // either implemented within the context it is used or nothing to do
+                else -> throw UnsupportedOperationException("Unary operator not implemented: " + p0.op)
+            }
+
     override fun visit(p0: ExprBinary): String {
         val symbol: String
         when (p0.op) {
@@ -34,6 +53,9 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation,
             ExprBinary.Op.NOT_LTE -> symbol = ">"
             ExprBinary.Op.IN -> symbol = "<:"
             ExprBinary.Op.NOT_IN -> symbol = "/:"
+            ExprBinary.Op.PLUSPLUS -> symbol = "<+"
+            ExprBinary.Op.DOMAIN -> symbol = "<|"
+            ExprBinary.Op.RANGE -> symbol = "|>"
             else -> throw UnsupportedOperationException("Binary operator not implemented: " + p0.op)
         }
         return "(${p0.left.accept(this)} $symbol ${p0.right.accept(this)})"
@@ -58,7 +80,7 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation,
             // do not sanitize integers
             return p0.toString()
         }
-        return sanitizeTypedIdentifier(p0)
+        return alloyAstTranslation.sanitizeTypedIdentifier(p0)
     }
 
     override fun visit(p0: ExprITE?): String {
@@ -73,26 +95,19 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation,
             when (p0.op) {
                 ExprQt.Op.ALL -> "!(${translateDeclsIDList(p0.decls)}).(" +
                         "${translateDeclsExprList(p0.decls)} => ${p0.sub.accept(this)})"
+                ExprQt.Op.NO -> "not(#(${translateDeclsIDList(p0.decls)}).(" +
+                        "${translateDeclsExprList(p0.decls)} & ${p0.sub.accept(this)}))"
+                ExprQt.Op.SOME -> "#(${translateDeclsIDList(p0.decls)}).(" +
+                        "${translateDeclsExprList(p0.decls)} & ${p0.sub.accept(this)})"
+                ExprQt.Op.ONE -> "card({${translateDeclsIDList(p0.decls)} | " +
+                        "${translateDeclsExprList(p0.decls)} & ${p0.sub.accept(this)}}) = 1"
+                ExprQt.Op.LONE -> "card({${translateDeclsIDList(p0.decls)} | " +
+                        "${translateDeclsExprList(p0.decls)} & ${p0.sub.accept(this)}}) <= 1"
                 else -> throw UnsupportedOperationException("Quantifier not implemented: " + p0.op)
             }
 
-    override fun visit(p0: ExprUnary): String =
-            when (p0.op) {
-                ExprUnary.Op.CARDINALITY -> "card(${p0.sub.accept(this)})"
-                ExprUnary.Op.ONEOF -> p0.sub.accept(this) // TODO do something here
-                ExprUnary.Op.SETOF -> "<: ${p0.sub.accept(this)}"
-                ExprUnary.Op.NO -> "(${p0.sub.accept(this)} = {})"
-                ExprUnary.Op.SOME -> "card(${p0.sub.accept(this)}) >= 1"
-                ExprUnary.Op.LONE -> "card(${p0.sub.accept(this)}) <= 1"
-                ExprUnary.Op.NOT -> "not(${p0.sub.accept(this)})"
-                ExprUnary.Op.NOOP,
-                ExprUnary.Op.CAST2SIGINT,
-                ExprUnary.Op.CAST2INT -> p0.sub.accept(this)
-                else -> throw UnsupportedOperationException("Unary operator not implemented: " + p0.op)
-            }
-
     override fun visit(p0: ExprVar): String =
-            sanitizeTypedIdentifier(p0)
+            alloyAstTranslation.sanitizeTypedIdentifier(p0)
 
     override fun visit(p0: Sig): String =
             alloyAstTranslation.sanitizeIdentifier(p0.label)
@@ -130,18 +145,10 @@ class ExpressionTranslator(private val alloyAstTranslation: AlloyAstTranslation,
     private fun translateDeclsExprList(decls: ConstList<Decl>): String {
         return decls.joinToString(" & ") {
             it.names.joinToString(" & ") { n ->
-                "${sanitizeTypedIdentifier(n.label, singletonAnnotator.isSingleton(it.expr))} <: ${it.expr.accept(this)}"
+                "${alloyAstTranslation.sanitizeTypedIdentifier(n.label, singletonAnnotator.isSingleton(it.expr))} <: " +
+                        it.expr.accept(this)
             }
         }
     }
 
-    private fun sanitizeTypedIdentifier(label: String, isSingleton: Boolean): String {
-        if(isSingleton) {
-            return "{${alloyAstTranslation.sanitizeIdentifier(label)}}"
-        } else {
-            return alloyAstTranslation.sanitizeIdentifier(label)
-        }
-    }
-
-    private fun sanitizeTypedIdentifier(id: Expr): String = sanitizeTypedIdentifier(id.toString(), singletonAnnotator.isSingleton(id))
 }
