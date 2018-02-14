@@ -61,7 +61,7 @@ class AlloyAstTranslation(spec: CompModule) {
             // check and run
             val alloyAssertion = alloyAssertions[sanitizeIdentifier(it.label)]
             if (alloyAssertion != null) {
-                operations.add("${prefix}_${it.label} = PRE $tScope${alloyAssertion} THEN skip END")
+                operations.add("${prefix}_${it.label} = PRE $tScope$alloyAssertion THEN skip END")
                 return
             }
             val sanitizedSigName = sanitizeIdentifier(it.label)
@@ -94,10 +94,7 @@ class AlloyAstTranslation(spec: CompModule) {
                 // TODO: we do not consider endingScope by now, what is the Alloy syntax?
                 tScopes.add(getScopeCmpOp(sanitizedSigName, commandScope))
             }
-            if (commandScope.sig != null && commandScope.sig.label == "Int") {
-                // bitwidth
-                setMaxAndMinInt(commandScope.startingScope)
-            }
+            // we skip the bitwidth here
         }
         // set global scopes for the remaining signatures if defined
         if (runCommand.overall != -1) {
@@ -174,7 +171,7 @@ class AlloyAstTranslation(spec: CompModule) {
                     .joinToString(" & ") { "${it.first} ${it.second}" }
             val sanitizedName = sanitizeIdentifier(it.label)
             definitions.add("$sanitizedName$parameters == " +
-                    if (tDecls.isNotEmpty()) "$tDecls &" else "" + getBodyFromFunction(it))
+                    (if (tDecls.isNotEmpty()) "$tDecls & " else "") + getBodyFromFunction(it))
             predsAndFuncs.add(sanitizedName)
         }
     }
@@ -228,17 +225,6 @@ class AlloyAstTranslation(spec: CompModule) {
     private fun getBodyFromFunction(func: Func): String {
         val tBody = func.body.accept(exprTranslator)
         return if (tBody.isEmpty()) "1=1" else tBody
-    }
-
-    private fun setMaxAndMinInt(scope: Int) {
-        // TODO: if there are several run commands defining a bitwidth, we need to set min and max int at runtime, i.e. in the precondition of the corresponding operation
-        val scope1 = scope - 1
-        val bound = Math.pow(2.toDouble(), scope1.toDouble())
-        val maxInt = bound - 1
-        val minInt = bound * -1
-        // set min and max int for ProB
-        definitions.add("SET_PREF_MAXINT == ${maxInt.toInt()}")
-        definitions.add("SET_PREF_MININT == ${minInt.toInt()}")
     }
 
     private fun getUnaryDeclSymbol(declExpr: Expr): String {
