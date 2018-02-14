@@ -10,7 +10,7 @@ class AlloyAstSingletonAnnotator(spec: CompModule) : VisitReturn<Unit>() {
     private val isSingleton = mutableMapOf<Expr, Boolean>()
 
     fun isSingleton(expr: Expr): Boolean = isSingleton.getOrDefault(expr, false)
-    fun setSingleton(expr: Expr) = isSingleton.put(expr, true)
+    fun setSingleton(expr: Expr, singleton: Boolean = true) = isSingleton.put(expr, singleton)
 
     private val currentSingletonIDs: Env<String, Boolean> = Env()
 
@@ -31,11 +31,12 @@ class AlloyAstSingletonAnnotator(spec: CompModule) : VisitReturn<Unit>() {
         allFuncs.forEach {
             it.decls.forEach {
                 it.expr.accept(this)
-                currentSingletonIDs.put(it.names.joinToString("/"), isSingleton(it.expr))
+                setSingleton(it.get(), isSingleton(it.expr))
+                currentSingletonIDs.put(it.get().label, isSingleton(it.expr))
             }
             it.body.accept(this)
             it.decls.forEach {
-                currentSingletonIDs.remove(it.names.joinToString("/"))
+                currentSingletonIDs.remove(it.get().label)
             }
         }
     }
@@ -78,11 +79,12 @@ class AlloyAstSingletonAnnotator(spec: CompModule) : VisitReturn<Unit>() {
     override fun visit(p0: ExprQt) {
         p0.decls.forEach {
             it.expr.accept(this)
-            currentSingletonIDs.put(it.names.joinToString("/"), isSingleton(it.expr))
+            setSingleton(it.get(),isSingleton(it.expr))
+            currentSingletonIDs.put(it.get().label, isSingleton(it.expr))
         }
         p0.sub.accept(this)
         p0.decls.forEach {
-            currentSingletonIDs.remove(it.names.joinToString("/"))
+            currentSingletonIDs.remove(it.get().label)
         }
     }
 
