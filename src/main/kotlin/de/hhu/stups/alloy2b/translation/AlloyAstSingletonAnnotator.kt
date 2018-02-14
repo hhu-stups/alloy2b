@@ -52,16 +52,21 @@ class AlloyAstSingletonAnnotator(spec: CompModule) : VisitReturn<Unit>() {
             p0.args.forEach { it.accept(this) }
         }
 
-        override fun visit(p0: ExprConstant?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        override fun visit(p0: ExprConstant) {
+            if(p0.type().is_int || p0.type().is_bool) {
+                setSingleton(p0)
+            }
         }
 
         override fun visit(p0: ExprITE?) {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
 
-        override fun visit(p0: ExprLet?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        override fun visit(p0: ExprLet) {
+            p0.expr.accept(this)
+            currentSingletonIDs.put(p0.`var`.label,isSingleton(p0.expr))
+            p0.sub.accept(this)
+            currentSingletonIDs.remove(p0.`var`.label)
         }
 
         override fun visit(p0: ExprQt) {
