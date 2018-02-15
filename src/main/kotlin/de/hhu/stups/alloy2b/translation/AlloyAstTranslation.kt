@@ -16,11 +16,10 @@ class AlloyAstTranslation(spec: CompModule) {
     private val operations = mutableSetOf<String>()
     private val alloyAssertions = mutableMapOf<String, String>()
 
-    private val signatures = mutableSetOf<String>()
     private val predsAndFuncs = mutableSetOf<String>()
-    private val abstractSignatures = mutableSetOf<String>()
-    private val singletonSignatures = mutableSetOf<String>()
-    private val extendingSignatures = mutableMapOf<String, MutableList<String>>()
+    private val signatures = mutableSetOf<Expr>()
+    private val abstractSignatures = mutableSetOf<Expr>()
+    private val extendingSignatures = mutableMapOf<Expr, MutableList<Expr>>()
 
     private val singletonAnnotator = AlloyAstSingletonAnnotator(spec)
     private val exprTranslator = ExpressionTranslator(this, singletonAnnotator)
@@ -103,7 +102,10 @@ class AlloyAstTranslation(spec: CompModule) {
         if (runCommand.overall != -1) {
             // TODO: how to determine if the global scope in runcommand.overall is exact?
             signatures.subtract(scopedSignatures)
-                    .forEach { tScopes.add(getScopeCmpOp(it, true, runCommand.overall)) }
+                    .forEach {
+                        tScopes.add(getScopeCmpOp(sanitizeIdentifier((it as Sig).label), true,
+                                runCommand.overall))
+                    }
         }
         return if (tScopes.isNotEmpty()) tScopes.joinToString(" & ") + " & " else ""
     }
@@ -121,7 +123,7 @@ class AlloyAstTranslation(spec: CompModule) {
     private fun translateSignatures(allSigs: SafeList<Sig>) {
         allSigs.forEach {
             val sanitizedSigName = sanitizeIdentifier(it.label)
-            signatures.add(sanitizedSigName)
+            signatures.add(it)
             if (it is Sig.SubsetSig || isExtendingSignature(it)) {
                 constants.add(sanitizedSigName)
             } else {
@@ -148,20 +150,17 @@ class AlloyAstTranslation(spec: CompModule) {
             if (isExtendingSignature(it)) {
                 // extends
                 val sanitizedParent = sanitizeIdentifier((it as Sig.PrimSig).parent.label)
-                val subSigs = extendingSignatures[sanitizedParent]
+                val subSigs = extendingSignatures[it.parent]
                 if (subSigs != null) {
-                    subSigs.add(sanitizedSigName)
+                    subSigs.add(it)
                 } else {
-                    extendingSignatures[sanitizedParent] = mutableListOf(sanitizedSigName)
+                    extendingSignatures[it.parent] = mutableListOf()
+                    extendingSignatures[it.parent]?.add(it)
                 }
                 properties.add("$sanitizedSigName : $sanitizedParent")
             }
             if (it.isAbstract != null) {
-                abstractSignatures.add(sanitizedSigName)
-            }
-
-            if (it.isOne != null) {
-                singletonSignatures.add(sanitizedSigName)
+                abstractSignatures.add(it)
             }
         }
     }
@@ -175,17 +174,17 @@ class AlloyAstTranslation(spec: CompModule) {
                 val declExpr = decl.expr
                 val declLhs = sanitizeTypedIdentifier(decl.get())
                 if (declExpr is ExprUnary) {
-                    if (declExpr.op == ExprUnary.Op.SETOF) {
-                        tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)}")
-                    } else if (declExpr.op == ExprUnary.Op.ONE) {
-                        tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) = 1")
-                    } else if (declExpr.op == ExprUnary.Op.SOME) {
-                        tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) > 0")
-                    } else if (declExpr.op == ExprUnary.Op.LONE) {
-                        tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) <= 1")
-                    } else {
-                        throw UnsupportedOperationException("Field declaration not implemented for unary operator " +
-                                "${declExpr.op}.")
+                    when {
+                        declExpr.op == ExprUnary.Op.SETOF ->
+                            tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)}")
+                        declExpr.op == ExprUnary.Op.ONE ->
+                            tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) = 1")
+                        declExpr.op == ExprUnary.Op.SOME ->
+                            tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) > 0")
+                        declExpr.op == ExprUnary.Op.LONE ->
+                            tDecls.add("$declLhs <: ${decl.expr.accept(exprTranslator)} & card(${decl.get()}) <= 1")
+                        else -> throw UnsupportedOperationException("Field declaration not implemented for unary " +
+                                "operator ${declExpr.op}.")
                     }
                 }
             }
@@ -198,33 +197,36 @@ class AlloyAstTranslation(spec: CompModule) {
 
     private fun addSignatureExtensionProperties() {
         // two signatures extending the same base signature are distinct
-        extendingSignatures.values.forEach({
-            for (i1 in 0 until it.size) {
-                for (i2 in i1 until it.size) {
-                    addSignatureExtensionIfNotEqual(it[i1], it[i2])
+        extendingSignatures.values.forEach({ sigs ->
+            for (i1 in 0 until sigs.size) {
+                for (i2 in i1 until sigs.size) {
+                    addSignatureExtensionIfNotEqual(sigs[i1], sigs[i2])
                 }
             }
         })
         // abstract signatures are exhaustively divided into their sub signatures
         abstractSignatures.forEach({ absSigName ->
-            if (extendingSignatures[absSigName] != null && extendingSignatures[absSigName]!!.isNotEmpty()) {
-                properties.add("${extendingSignatures[absSigName]
-                        ?.map { if (singletonSignatures.contains(it)) "{$it}" else it } // consider singleton sets
-                        ?.joinToString(" \\/ ") { it }} = $absSigName")
+            val extendingSigs = extendingSignatures[absSigName]
+            if (extendingSigs != null && extendingSigs.isNotEmpty()) {
+                properties.add("${extendingSigs
+                        .map { sanitizeTypedIdentifier(it) }
+                        .joinToString(" \\/ ") { it }} = ${sanitizeTypedIdentifier(absSigName)}")
             }
         })
     }
 
-    private fun addSignatureExtensionIfNotEqual(sig1: String, sig2: String) {
+    private fun addSignatureExtensionIfNotEqual(sig1: Expr, sig2: Expr) {
+        val sanitizedSig1Name = sanitizeTypedIdentifier(sig1)
+        val sanitizedSig2Name = sanitizeTypedIdentifier(sig2)
         if (sig1 == sig2) {
             return
         }
-        if (singletonSignatures.contains(sig1) && singletonSignatures.contains(sig2)) {
+        if (singletonAnnotator.isSingleton(sig1) && singletonAnnotator.isSingleton(sig2)) {
             // inequality if both are singletons
-            properties.add("$sig1 /= $sig2")
+            properties.add("$sanitizedSig1Name /= $sanitizedSig2Name")
             return
         }
-        properties.add("$sig1 /\\ $sig2 = {}")
+        properties.add("$sanitizedSig1Name /\\ $sanitizedSig2Name = {}")
     }
 
     private fun appendIfNotEmpty(builder: StringBuilder, list: Set<String>, delimiter: String, sectionName: String) {
@@ -234,7 +236,6 @@ class AlloyAstTranslation(spec: CompModule) {
         builder.appendln(sectionName)
         builder.appendln("    " + list.joinToString(delimiter))
     }
-
 
     private fun getScopeCmpOp(sanitizedSigName: String, runCommand: CommandScope) =
             getScopeCmpOp(sanitizedSigName, runCommand.isExact, runCommand.startingScope)
@@ -265,16 +266,8 @@ class AlloyAstTranslation(spec: CompModule) {
      * replace all ' with _ (allowed in Alloy)
      * remove this/
      */
-    fun sanitizeIdentifier(id: String): String {
-        if (id == "univ" || id == "iden") {
-            return id
-        }
-        val sanitizedIdentifier = "${id.replace("'", "_").replace("this/", "")}_"
-        if (singletonSignatures.contains(sanitizedIdentifier)) {
-            return "{$sanitizedIdentifier}"
-        }
-        return sanitizedIdentifier
-    }
+    fun sanitizeIdentifier(id: String): String =
+            if (id == "univ" || id == "iden") id else "${id.replace("'", "_").replace("this/", "")}_"
 
     fun sanitizeTypedIdentifier(label: String, isSingleton: Boolean) =
             if (isSingleton) "{${sanitizeIdentifier(label)}}" else sanitizeIdentifier(label)
