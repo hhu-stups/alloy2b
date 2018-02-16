@@ -2,7 +2,6 @@ package de.hhu.stups.alloy2b
 
 import de.hhu.stups.alloy2b.translation.prolog.AlloyAstToProlog
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 
 class AlloyAstToPrologTests {
@@ -31,7 +30,6 @@ class AlloyAstToPrologTests {
     }
 
     @Test
-    @Ignore
     fun translateQueens2() {
         val expected = getResourceAsString("queens2.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/queens2.als").getPrologTerm())
