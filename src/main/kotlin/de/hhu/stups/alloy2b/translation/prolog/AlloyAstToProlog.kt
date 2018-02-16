@@ -19,6 +19,9 @@ class AlloyAstToProlog(alloyModelPath: String) {
      * fact/2:
      *      fact(Expr,Pos)
      *
+     * field/2:
+     *      field(Name,Expr)
+     *
      * check/5, run/5 (functor is either check or run):
      *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),bitwidth(BitWidth),Pos)
      *
@@ -32,8 +35,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
      * pos/2:
      *      tuple of x and y position
      *
-     * Binary and unary operators are self-explanatory, for instance, a join is represented as the term join/3
-     * with left and right expression and position information.
+     * Binary and unary operators are self-explanatory, for instance, a join is represented as the term join/4
+     * with left and right expression, type/1 and position information.
      *
      */
 
@@ -80,7 +83,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private fun toPrologTerm(astNode: Func): String {
         // function or predicate
         val functor = if (astNode.isPred) "predicate" else "function"
-        return "$functor(${astNode.label.toLowerCase()},${toPrologTerm(astNode.body)}," +
+        return "$functor(\"${astNode.label}\",${toPrologTerm(astNode.body)}," +
                 "pos(${astNode.pos.x},${astNode.pos.y})"
     }
 
@@ -90,14 +93,14 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     private fun toPrologTerm(astNode: Sig) =
             // signature
-            "signature(${astNode.label.toLowerCase()}," +
+            "signature(\"${astNode.label}\"," +
                     "[${astNode.fieldDecls?.joinToString(",") { toPrologTerm(it) }}]," +
                     "[${astNode.facts?.joinToString(",") { toPrologTerm(it) }}]," +
                     "${collectSignatureOptionsToPrologList(astNode)},pos(${astNode.pos.x},${astNode.pos.y}))"
 
     fun toPrologTerm(astNode: Decl): String =
         // declaration
-        astNode.expr.accept(expressionTranslator)
+        "field(\"${astNode.get().label}\",${astNode.expr.accept(expressionTranslator)}"
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
         val lstOptions = mutableListOf<String>()
