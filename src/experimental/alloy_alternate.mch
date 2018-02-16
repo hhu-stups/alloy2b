@@ -1,4 +1,4 @@
-MACHINE alloy
+MACHINE alloy_alternate // using ternary relation
 /* open util/integer
 abstract sig setX { }
 one sig V {
@@ -8,11 +8,13 @@ assert Bug {
  #(V.SS)>1 implies #(V.SS->V.SS) >3  
 }
 */
-SETS setx; v 
-CONSTANTS ss 
+SETS 
+ setx; v 
+CONSTANTS 
+  ss 
 PROPERTIES    card(setx) = 2 &
    card(v)=1 &
-   ss : v --> POW((setx * setx))
+   ss : POW(v*(setx * setx))
 ASSERTIONS
 ((card(ss[v]) > 1) => (card((ss[v] * ss[v])) > 3))
 END
