@@ -7,31 +7,31 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
 
     override fun visit(p0: ExprBinary): String =
             "${getOperator(p0.op.toString())}(${p0.left.accept(this)},${p0.right.accept(this)}," +
-                    "pos(${p0.pos.x},${p0.pos.y}))"
+                    "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
 
     override fun visit(p0: ExprList): String =
             "${getOperator(p0.op.toString())}(${p0.args.map { it.accept(this) }},pos(${p0.pos.x},${p0.pos.y}))"
 
-    override fun visit(p0: ExprCall?): String {
-        return "expr_call(${p0?.`fun`},${p0?.args?.map { it.accept(this) }}" +
-                ",(${p0?.pos?.x},${p0?.pos?.y})"
+    override fun visit(p0: ExprCall): String {
+        return "expr_call(${p0.`fun`},${p0.args?.map { it.accept(this) }}" +
+                "${getType(p0.type())},(${p0.pos?.x},${p0.pos?.y})"
     }
 
-    override fun visit(p0: ExprConstant?): String {
-        return p0.toString().toLowerCase()
+    override fun visit(p0: ExprConstant): String {
+        return "\"$p0\""
     }
 
-    override fun visit(p0: ExprITE?): String =
-            "exprITE(${p0?.cond?.accept(this)},${p0?.left?.accept(this)},${p0?.right?.accept(this)}" +
-                    ",(${p0?.pos?.x},${p0?.pos?.y})"
+    override fun visit(p0: ExprITE): String =
+            "exprITE(${p0.cond?.accept(this)},${p0.left?.accept(this)},${p0.right?.accept(this)}" +
+                    ",${getType(p0.type())},(${p0.pos?.x},${p0.pos?.y})"
 
-    override fun visit(p0: ExprLet?): String =
-            "let(${p0?.expr?.accept(this)},${p0?.sub?.accept(this)}" +
-                    ",(${p0?.pos?.x},${p0?.pos?.y})"
+    override fun visit(p0: ExprLet): String =
+            "let(${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
+                    ",${getType(p0.type())},(${p0.pos?.x},${p0.pos?.y})"
 
-    override fun visit(p0: ExprQt?): String =
-            "${getOperator(p0?.op.toString())}(${p0?.decls?.map { alloyAstToProlog.toPrologTerm(it) }}," +
-                    "${p0?.sub?.accept(this)},(${p0?.pos?.x},${p0?.pos?.y})"
+    override fun visit(p0: ExprQt): String =
+            "${getOperator(p0.op.toString())}(${p0.decls?.map { alloyAstToProlog.toPrologTerm(it) }}," +
+                    "${getType(p0.type())},${p0.sub?.accept(this)},(${p0.pos?.x},${p0.pos?.y})"
 
     override fun visit(p0: ExprUnary): String {
         if (p0.op == ExprUnary.Op.NOOP) {
@@ -40,15 +40,16 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
         if (p0.op == ExprUnary.Op.CAST2INT || p0.op == ExprUnary.Op.CAST2SIGINT) {
             return "integer_cast(${p0.sub.accept(this)},pos(${p0.pos.x},${p0.pos.y}))"
         }
-        return "${getOperator(p0.op.toString())}(${p0.sub.accept(this)},pos(${p0.pos.x},${p0.pos.y}))"
+        return "${getOperator(p0.op.toString())}(${p0.sub.accept(this)},${getType(p0.type())}," +
+                "pos(${p0.pos.x},${p0.pos.y}))"
 
     }
 
-    override fun visit(p0: ExprVar): String = p0.toString().toLowerCase()
+    override fun visit(p0: ExprVar): String = "\"$p0\""
 
-    override fun visit(p0: Sig): String = p0.label.toLowerCase()
+    override fun visit(p0: Sig): String = "\"$p0\""
 
-    override fun visit(p0: Sig.Field): String = p0.label.toLowerCase()
+    override fun visit(p0: Sig.Field): String = "\"$p0\""
 
     private fun getOperator(op: String): String {
         return try {
@@ -56,5 +57,9 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
         } catch (exception: UnsupportedOperationException) {
             op.toLowerCase().replace(" ", "")
         }
+    }
+
+    private fun getType(type: Type) : String {
+        return "type(${type.toString().replace("{","").replace("}","")}"
     }
 }
