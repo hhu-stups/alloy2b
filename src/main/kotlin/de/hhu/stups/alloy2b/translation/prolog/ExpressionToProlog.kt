@@ -50,11 +50,11 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
 
     }
 
-    override fun visit(p0: ExprVar): String = "\"$p0\""
+    override fun visit(p0: ExprVar): String = "$p0"
 
-    override fun visit(p0: Sig): String = "\"$p0\""
+    override fun visit(p0: Sig): String = "$p0"
 
-    override fun visit(p0: Sig.Field): String = "\"$p0\""
+    override fun visit(p0: Sig.Field): String = "$p0"
 
     private fun getOperator(op: String): String {
         return try {
