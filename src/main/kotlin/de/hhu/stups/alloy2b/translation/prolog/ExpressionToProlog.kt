@@ -18,6 +18,11 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
     }
 
     override fun visit(p0: ExprConstant): String {
+        if(p0.type().is_int) {
+            return "integer($p0)"
+        } else if (p0.type().is_bool) {
+            return "boolean($p0)"
+        }
         return "\"$p0\""
     }
 
