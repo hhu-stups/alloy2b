@@ -83,7 +83,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private fun toPrologTerm(astNode: Func): String {
         // function or predicate
         val functor = if (astNode.isPred) "predicate" else "function"
-        return "$functor(\"${astNode.label}\",${toPrologTerm(astNode.body)}," +
+        return "$functor(${astNode.label},${toPrologTerm(astNode.body)}," +
                 "pos(${astNode.pos.x},${astNode.pos.y})"
     }
 
@@ -93,14 +93,14 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     private fun toPrologTerm(astNode: Sig) =
             // signature
-            "signature(\"${astNode.label}\"," +
+            "signature(${astNode.label}," +
                     "[${astNode.fieldDecls?.joinToString(",") { toPrologTerm(it) }}]," +
                     "[${astNode.facts?.joinToString(",") { toPrologTerm(it) }}]," +
                     "${collectSignatureOptionsToPrologList(astNode)},pos(${astNode.pos.x},${astNode.pos.y}))"
 
     fun toPrologTerm(astNode: Decl): String =
         // declaration
-        "field(\"${astNode.get().label}\",${astNode.expr.accept(expressionTranslator)}"
+        "field(${astNode.get().label},${astNode.expr.accept(expressionTranslator)}"
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
         val lstOptions = mutableListOf<String>()
