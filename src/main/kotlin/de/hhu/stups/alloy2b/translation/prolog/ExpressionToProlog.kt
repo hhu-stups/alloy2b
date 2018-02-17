@@ -13,8 +13,8 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
             "${getOperator(p0.op.toString())}(${p0.args.map { it.accept(this) }},pos(${p0.pos.x},${p0.pos.y}))"
 
     override fun visit(p0: ExprCall): String {
-        return "expr_call(${p0.`fun`},${p0.args?.map { it.accept(this) }}" +
-                "${getType(p0.type())},(${p0.pos?.x},${p0.pos?.y})"
+        return "expr_call(${p0.`fun`},${p0.args?.map { it.accept(this) }}," +
+                "${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
     }
 
     override fun visit(p0: ExprConstant): String {
@@ -28,15 +28,15 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
 
     override fun visit(p0: ExprITE): String =
             "exprITE(${p0.cond?.accept(this)},${p0.left?.accept(this)},${p0.right?.accept(this)}" +
-                    ",${getType(p0.type())},(${p0.pos?.x},${p0.pos?.y})"
+                    ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
 
     override fun visit(p0: ExprLet): String =
             "let(${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
-                    ",${getType(p0.type())},(${p0.pos?.x},${p0.pos?.y})"
+                    ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
 
     override fun visit(p0: ExprQt): String =
             "${getOperator(p0.op.toString())}(${p0.decls?.map { alloyAstToProlog.toPrologTerm(it) }}," +
-                    "${getType(p0.type())},${p0.sub?.accept(this)},(${p0.pos?.x},${p0.pos?.y})"
+                    "${getType(p0.type())},${p0.sub?.accept(this)},pos(${p0.pos?.x},${p0.pos?.y})"
 
     override fun visit(p0: ExprUnary): String {
         if (p0.op == ExprUnary.Op.NOOP) {
