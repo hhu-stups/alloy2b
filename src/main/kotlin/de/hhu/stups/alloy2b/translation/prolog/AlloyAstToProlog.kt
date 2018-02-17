@@ -19,8 +19,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
      * fact/2:
      *      fact(Expr,Pos)
      *
-     * field/2:
-     *      field(Name,Expr)
+     * field/3:
+     *      field(Name,Expr,Pos)
      *
      * check/5, run/5 (functor is either check or run):
      *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),bitwidth(BitWidth),Pos)
@@ -36,7 +36,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
      *      tuple of x and y position
      *
      * Binary and unary operators are self-explanatory, for instance, a join is represented as the term join/4
-     * with left and right expression, type/1 and position information.
+     * with left and right expression as well as type and position information like
+     * join(Lhs,Rhs,type/1,pos/2).
      *
      */
 

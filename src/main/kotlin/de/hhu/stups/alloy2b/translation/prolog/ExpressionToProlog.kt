@@ -13,7 +13,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
             "${getOperator(p0.op.toString())}(${p0.args.map { it.accept(this) }},pos(${p0.pos.x},${p0.pos.y}))"
 
     override fun visit(p0: ExprCall): String {
-        return "expr_call(${p0.`fun`},${p0.args?.map { it.accept(this) }}," +
+        return "expr_call(${p0.`fun`} , ${p0.args?.map { it.accept(this) }}," +
                 "${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
     }
 
@@ -65,6 +65,6 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
     }
 
     private fun getType(type: Type) : String {
-        return "type(${type.toString().replace("{","").replace("}","")}"
+            return "type([${type.map { it.toString().replace("{", "").replace("}", "")}.joinToString(",")}])"
     }
 }
