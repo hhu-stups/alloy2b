@@ -34,4 +34,16 @@ class AlloyAstToPrologTests {
         val expected = getResourceAsString("queens2.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/queens2.als").getPrologTerm())
     }
+
+    @Test
+    fun translateRiverCrossing() {
+        val expected = getResourceAsString("RiverCrossingPuzzle.pl")
+        Assert.assertEquals(expected, AlloyAstToProlog("/RiverCrossingPuzzle.als").getPrologTerm())
+    }
+
+    @Test
+    fun translateHanoi() {
+        val expected = getResourceAsString("hanoi.pl")
+        Assert.assertEquals(expected, AlloyAstToProlog("/hanoi.als").getPrologTerm())
+    }
 }

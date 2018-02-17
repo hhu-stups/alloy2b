@@ -13,17 +13,18 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
             "${getOperator(p0.op.toString())}(${p0.args.map { it.accept(this) }},pos(${p0.pos.x},${p0.pos.y}))"
 
     override fun visit(p0: ExprCall): String {
-        return "expr_call(${p0.`fun`} , ${p0.args?.map { it.accept(this) }}," +
+        val functor = if (p0.`fun`.isPred) "pred_call" else "fun_call"
+        return "$functor(${alloyAstToProlog.sanitizeIdentifier(p0.`fun`.label)},${p0.args?.map { it.accept(this) }}," +
                 "${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
     }
 
     override fun visit(p0: ExprConstant): String {
-        if(p0.type().is_int) {
+        if (p0.type().is_int) {
             return "integer($p0,pos(${p0.pos.x},${p0.pos.y}))"
         } else if (p0.type().is_bool) {
             return "boolean($p0,pos(${p0.pos.x},${p0.pos.y}))"
         }
-        return "\'$p0\'"
+        return "$p0"
     }
 
     override fun visit(p0: ExprITE): String =
@@ -38,33 +39,29 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
             "${getOperator(p0.op.toString())}(${p0.decls?.map { alloyAstToProlog.toPrologTerm(it) }}," +
                     "${getType(p0.type())},${p0.sub?.accept(this)},pos(${p0.pos?.x},${p0.pos?.y})"
 
-    override fun visit(p0: ExprUnary): String {
-        if (p0.op == ExprUnary.Op.NOOP) {
-            return p0.sub.accept(this)
-        }
-        if (p0.op == ExprUnary.Op.CAST2INT || p0.op == ExprUnary.Op.CAST2SIGINT) {
-            return "integer_cast(${p0.sub.accept(this)},pos(${p0.pos.x},${p0.pos.y}))"
-        }
-        return "${getOperator(p0.op.toString())}(${p0.sub.accept(this)},${getType(p0.type())}," +
-                "pos(${p0.pos.x},${p0.pos.y}))"
+    override fun visit(p0: ExprUnary) =
+            when (p0.op) {
+                ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
+                ExprUnary.Op.CAST2INT,
+                ExprUnary.Op.CAST2SIGINT -> "integer_cast(${p0.sub.accept(this)},pos(${p0.pos.x},${p0.pos.y}))"
+                else -> "${getOperator(p0.op.toString())}(${p0.sub.accept(this)},${getType(p0.type())}," +
+                        "pos(${p0.pos.x},${p0.pos.y}))"
+            }
 
-    }
+    override fun visit(p0: ExprVar): String = alloyAstToProlog.sanitizeIdentifier(p0.label)
 
-    override fun visit(p0: ExprVar): String = "$p0"
+    override fun visit(p0: Sig): String = alloyAstToProlog.sanitizeIdentifier(p0.label)
 
-    override fun visit(p0: Sig): String = "$p0"
+    override fun visit(p0: Sig.Field): String = alloyAstToProlog.sanitizeIdentifier(p0.label)
 
-    override fun visit(p0: Sig.Field): String = "$p0"
+    private fun getOperator(op: String) =
+            try {
+                Operator.fromString(op).toString().toLowerCase()
+            } catch (exception: UnsupportedOperationException) {
+                op.toLowerCase().replace(" ", "")
+            }
 
-    private fun getOperator(op: String): String {
-        return try {
-            Operator.fromString(op).toString().toLowerCase()
-        } catch (exception: UnsupportedOperationException) {
-            op.toLowerCase().replace(" ", "")
-        }
-    }
-
-    private fun getType(type: Type) : String {
-            return "type([${type.map { it.toString().replace("{", "").replace("}", "")}.joinToString(",")}])"
-    }
+    private fun getType(type: Type) =
+            "type([${type.map { alloyAstToProlog.sanitizeIdentifier(it.toString()) }
+                    .joinToString(",") { it.replace("{", "").replace("}", "") }}])"
 }

@@ -77,14 +77,14 @@ class AlloyAstToProlog(alloyModelPath: String) {
         // command
         val functor = if (astNode.check) "check" else "run"
         return "$functor(${astNode.formula.accept(expressionTranslator)},global_scope(${astNode.overall})," +
-                "exact_scopes(${astNode.additionalExactScopes.map { it.label }}),bitwidth(${astNode.bitwidth})," +
-                "pos(${astNode.pos.x},${astNode.pos.y})"
+                "exact_scopes(${astNode.additionalExactScopes.map { sanitizeIdentifier(it.label) }})," +
+                "bitwidth(${astNode.bitwidth}),pos(${astNode.pos.x},${astNode.pos.y})"
     }
 
     private fun toPrologTerm(astNode: Func): String {
         // function or predicate
         val functor = if (astNode.isPred) "predicate" else "function"
-        return "$functor(${astNode.label},${toPrologTerm(astNode.body)}," +
+        return "$functor(${sanitizeIdentifier(astNode.label)},${toPrologTerm(astNode.body)}," +
                 "pos(${astNode.pos.x},${astNode.pos.y})"
     }
 
@@ -94,15 +94,15 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     private fun toPrologTerm(astNode: Sig) =
             // signature
-            "signature(${astNode.label}," +
+            "signature(${sanitizeIdentifier(astNode.label)}," +
                     "[${astNode.fieldDecls?.joinToString(",") { toPrologTerm(it) }}]," +
                     "[${astNode.facts?.joinToString(",") { toPrologTerm(it) }}]," +
                     "${collectSignatureOptionsToPrologList(astNode)},pos(${astNode.pos.x},${astNode.pos.y}))"
 
     fun toPrologTerm(astNode: Decl): String =
-        // declaration
-        "field(${astNode.get().label},${astNode.expr.accept(expressionTranslator)}," +
-                "pos(${astNode.get().pos.x},${astNode.get().pos.y})"
+            // declaration
+            "field(${sanitizeIdentifier(astNode.get().label)},${astNode.expr.accept(expressionTranslator)}," +
+                    "pos(${astNode.get().pos.x},${astNode.get().pos.y})"
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
         val lstOptions = mutableListOf<String>()
@@ -135,11 +135,17 @@ class AlloyAstToProlog(alloyModelPath: String) {
         }
         return lstOptions.toString()
     }
+
     private fun isExtendingSignature(sig: Sig): Boolean {
         // TODO: there is most likely a better way to identify extending signatures
         val isSubSig = sig.isSubsig
         return sig is Sig.PrimSig && isSubSig != null && (isSubSig.x != isSubSig.x2 || isSubSig.y != isSubSig.y2)
     }
 
+    /**
+     * Replace ticks by underscores.
+     */
+    fun sanitizeIdentifier(identifier: String) =
+            identifier.replace("'","_").split("/").joinToString("/")
 }
 
