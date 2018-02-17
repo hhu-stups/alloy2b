@@ -19,11 +19,11 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
 
     override fun visit(p0: ExprConstant): String {
         if(p0.type().is_int) {
-            return "integer($p0)"
+            return "integer($p0,pos(${p0.pos.x},${p0.pos.y}))"
         } else if (p0.type().is_bool) {
-            return "boolean($p0)"
+            return "boolean($p0,pos(${p0.pos.x},${p0.pos.y}))"
         }
-        return "\"$p0\""
+        return "\'$p0\'"
     }
 
     override fun visit(p0: ExprITE): String =

@@ -100,7 +100,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     fun toPrologTerm(astNode: Decl): String =
         // declaration
-        "field(${astNode.get().label},${astNode.expr.accept(expressionTranslator)}"
+        "field(${astNode.get().label},${astNode.expr.accept(expressionTranslator)}," +
+                "pos(${astNode.get().pos.x},${astNode.get().pos.y})"
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
         val lstOptions = mutableListOf<String>()
@@ -128,11 +129,16 @@ class AlloyAstToProlog(alloyModelPath: String) {
         if (astNode.isSubset != null) {
             lstOptions.add("subset")
         }
-        val isSubSig = astNode.isSubsig
-        if (astNode is Sig.PrimSig && isSubSig != null && (isSubSig.x != isSubSig.x2 || isSubSig.y != isSubSig.y2)) {
+        if (isExtendingSignature(astNode)) {
             lstOptions.add("subsig")
         }
         return lstOptions.toString()
     }
+    private fun isExtendingSignature(sig: Sig): Boolean {
+        // TODO: there is most likely a better way to identify extending signatures
+        val isSubSig = sig.isSubsig
+        return sig is Sig.PrimSig && isSubSig != null && (isSubSig.x != isSubSig.x2 || isSubSig.y != isSubSig.y2)
+    }
+
 }
 
