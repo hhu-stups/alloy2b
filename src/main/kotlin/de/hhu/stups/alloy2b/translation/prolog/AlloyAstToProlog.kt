@@ -25,8 +25,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
      * check/5, run/5 (functor is either check or run):
      *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),bitwidth(BitWidth),Pos)
      *
-     * function/3, predicate/3 (functor is either function or predicate):
-     *      functor(Name,Body,Pos)
+     * function/5, predicate/5 (functor is either function or predicate):
+     *      functor(Name,Params,Decls,Body,Pos)
      *
      * signature/5:
      *      signature(Name,ListOfFieldDecl,ListOfFact,Options,Pos)
@@ -84,8 +84,9 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private fun toPrologTerm(astNode: Func): String {
         // function or predicate
         val functor = if (astNode.isPred) "predicate" else "function"
-        return "$functor(${sanitizeIdentifier(astNode.label)},${toPrologTerm(astNode.body)}," +
-                "pos(${astNode.pos.x},${astNode.pos.y}))"
+        return "$functor(${sanitizeIdentifier(astNode.label)},${astNode.params().map { toPrologTerm(it) }}," +
+                astNode.decls.map { toPrologTerm(it) }.toString() +
+                ",${toPrologTerm(astNode.body)},pos(${astNode.pos.x},${astNode.pos.y}))"
     }
 
     private fun toPrologTerm(astNode: Expr) =
@@ -146,6 +147,6 @@ class AlloyAstToProlog(alloyModelPath: String) {
      * Replace ticks by underscores.
      */
     fun sanitizeIdentifier(identifier: String) =
-            identifier.replace("'","_").split("/").joinToString("/")
+            identifier.replace("'", "_").split("/").joinToString("/")
 }
 
