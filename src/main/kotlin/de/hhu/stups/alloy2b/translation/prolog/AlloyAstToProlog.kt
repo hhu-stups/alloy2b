@@ -132,7 +132,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
             lstOptions.add("subset(${(astNode as Sig.SubsetSig).parents.map { sanitizeIdentifier(it.label) }}")
         }
         if (isExtendingSignature(astNode)) {
-            lstOptions.add("subsig(${(astNode as Sig.PrimSig).parent})")
+            lstOptions.add("subsig(${sanitizeIdentifier((astNode as Sig.PrimSig).parent.label)})")
         }
         return lstOptions.toString()
     }
@@ -144,9 +144,10 @@ class AlloyAstToProlog(alloyModelPath: String) {
     }
 
     /**
-     * Replace ticks by underscores.
+     * Replace ticks by underscores and use single quotes for identifiers since strings with capital letter first are
+     * variables in Prolog.
      */
     fun sanitizeIdentifier(identifier: String) =
-            identifier.replace("'", "_").split("/").joinToString("/")
+            identifier.replace("'", "_").split("/").joinToString("/") { "'$it'" }
 }
 
