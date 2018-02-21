@@ -28,7 +28,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
     }
 
     override fun visit(p0: ExprITE): String =
-            "exprITE(${p0.cond?.accept(this)},${p0.left?.accept(this)},${p0.right?.accept(this)}" +
+            "if_then_else(${p0.cond?.accept(this)},${p0.left?.accept(this)},${p0.right?.accept(this)}" +
                     ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
 
     override fun visit(p0: ExprLet): String =
