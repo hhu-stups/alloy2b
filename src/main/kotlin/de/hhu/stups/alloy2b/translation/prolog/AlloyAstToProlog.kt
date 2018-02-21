@@ -72,17 +72,15 @@ class AlloyAstToProlog(alloyModelPath: String) {
     }
 
     private fun collectPropertiesFromInclude(it: CompModule.Open) {
-        if("util/ordering" == it.filename) {
+        if ("util/ordering" == it.filename) {
             val prefixedSignatures = it.args.map { if (it.startsWith("this")) it else "this/" + it }
             orderedSignatures.addAll(prefixedSignatures)
         }
     }
 
-    fun getPrologTerm(): String {
-        return prologTerm
-    }
+    fun getPrologTerm() = prologTerm
 
-    private fun toPrologTerm(astNode: Pair<String, Expr>): String =
+    private fun toPrologTerm(astNode: Pair<String, Expr>) =
             // fact
             "fact(${astNode.b?.accept(expressionTranslator)},(${astNode.b?.pos?.x},${astNode.b?.pos?.y}))"
 
@@ -113,7 +111,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
                     "[${astNode.facts?.joinToString(",") { toPrologTerm(it) }}]," +
                     "${collectSignatureOptionsToPrologList(astNode)},pos(${astNode.pos.x},${astNode.pos.y}))"
 
-    fun toPrologTerm(astNode: Decl): String =
+    fun toPrologTerm(astNode: Decl) =
             // declaration
             "field(${sanitizeIdentifier(astNode.get().label)},${astNode.expr.accept(expressionTranslator)}," +
                     "pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
@@ -161,9 +159,9 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     /**
      * Replace ticks by underscores and use single quotes for identifiers since strings with capital letter first are
-     * variables in Prolog.
+     * variables in Prolog. Set an underscore as the suffix of an identifier to avoid collisions with B keywords.
      */
     fun sanitizeIdentifier(identifier: String) =
-            identifier.replace("'", "_").split("/").joinToString("/") { "'$it'" }
+            identifier.replace("'", "_").split("/").joinToString("/") { if (it == "this") "'$it'" else "'${it}_'" }
 }
 
