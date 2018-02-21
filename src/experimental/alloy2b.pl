@@ -3,9 +3,10 @@
 :- use_module(library(lists)).
 
 build_machine_ast(ListOfMachineParts,MachineAst) :- 
+    % TODO: build term classical_b
     MachineAst = ListOfMachineParts.
 
-empty_machine_acc(b_machine([sets([]),constants([]),properties([]),assertions([]),operations([])])).
+empty_machine_acc(b_machine([sets([]),constants([]),definitions([]),properties([]),assertions([]),operations([])])).
 
 extend_machine_acc(Functor,b_machine(MachineParts),New,b_machine([NewMachinePart|RestMachineParts])) :- 
     MachinePart =.. [Functor,List] , 
@@ -40,10 +41,13 @@ translate_signature(MAcc,signature(Name,Fields,Facts,Options,_Pos),NewMAcc) :-
     map_translate(fact,MAcc2,Facts,NewMAcc).
 
 % field
-translate_field(MAcc,field(Name,Expr,_Pos),NewMAcc) :- 
-    translate_e_p(Expr,TExpr) , 
-    % TODO: we may need a quantification over this_
-    extend_machine_acc(properties,MAcc,member(none,identifier(none,Name),TExpr),NewMAcc).
+translate_field(MAcc,Field,NewMAcc) :- 
+    translate_field_aux(Field,TField) , 
+    extend_machine_acc(properties,MAcc,TField,NewMAcc).
+translate_field_aux(field(Name,Expr,_Pos),TField) :- 
+    % TODO: we may need a quantification over this_ (see Kotlin code)
+    translate_e_p(Name,TID) , 
+    decl_special_cases(Expr,TID,TField) , !.
 
 % fact
 translate_fact(MAcc,fact(Expr,_Pos),NewMAcc) :- 
@@ -55,15 +59,16 @@ translate_function(MAcc,FunctionOrPredicate,NewMAcc) :-
     FunctionOrPredicate =.. [Functor,Name,Params,Decls,Body,_Pos] , 
     ((Functor = function , UFunctor = expression_definition) ; (Functor = predicate , UFunctor = predicate_definition)) , 
     maplist(translate_e_p,Params,TParams) , 
-    maplist(translate_e_p,Decls,TDecls) , 
+    maplist(translate_field_aux,Decls,TDecls) , 
     translate_e_p(Body,TBody) , 
-    conjunct_predicates([TBody|TDecls],Behavior) , 
+    append(TDecls,[TBody],BehaviorList) , 
+    conjunct_predicates(BehaviorList,Behavior) , 
     UAst =.. [UFunctor,none,Name,TParams,Behavior] , 
     extend_machine_acc(definitions,MAcc,UAst,NewMAcc).
 
 % subset
 define_sig_as_set_or_constant(MAcc,Name,Options,_Pos,NewMAcc) :- 
-    member(subset(Parents),Options) , ! , 
+    memberchk(subset(Parents),Options) , ! , 
     define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,MAcc1) , 
     % TODO: consider several parents -> we need the universe type
     Parents = [Parent|_] , 
@@ -83,15 +88,15 @@ define_sig_as_set_or_constant_aux(SetsOrConstants,MAcc,Name,_Options,_Pos,NewMAc
     extend_machine_acc(SetsOrConstants,MAcc,identifier(none,Name),NewMAcc).
 
 translate_e_p(A,TA) :- 
-    translate_unary_e_p(A,TA).
+    translate_unary_e_p(A,TA) , !.
 translate_e_p(A,TA) :- 
-    translate_binary_e_p(A,TA).
+    translate_binary_e_p(A,TA) , !.
 translate_e_p(A,_) :- 
     format("Translation failed for ~w.~n",[A]).
 
 % unary expressions and predicates
 translate_unary_e_p(ID,identifier(none,ID)) :- atom(ID) , !.
-translate_unary_e_p(this/ID,identifier(none,ID)) :- !.
+translate_unary_e_p('this'/ID,identifier(none,ID)) :- !.
 translate_unary_e_p(integer(A,_Pos),integer(none,A)) :- !.
 translate_unary_e_p(boolean(A,_Pos),TA) :- ! , 
     alloy_to_b_operator(A,TA).
@@ -103,11 +108,31 @@ translate_unary_e_p(UnaryP,TUnaryP) :-
 
 % binary expressions and predicates
 translate_binary_e_p(BinaryP,TBinaryP) :- 
-    BinaryP =.. [Op,Arg1,Arg2,_Type,_Pos] , 
+    % and/or possibly defines a list of ast nodes
+    BinaryP =.. [Op,ArgList|_] , 
+    memberchk(Op,[and,or]) , 
+    is_list(ArgList) , ! , 
+    maplist(translate_e_p,ArgList,TArgList) , 
+    conjunct_predicates(TArgList,TBinaryP).
+translate_binary_e_p(Binary,TBinary) :- 
+    Binary =.. [Op,Arg1,Arg2|_] , 
     translate_e_p(Arg1,TArg1) , 
     translate_e_p(Arg2,TArg2) , 
     alloy_to_b_operator(Op,BOp) , 
-    TBinaryP =.. [BOp,none,TArg1,TArg2].
+    TBinary =.. [BOp,none,TArg1,TArg2].
+
+decl_special_cases(DeclTerm,TFieldID,TField) :- 
+    DeclTerm =.. [_,SetID|_] , 
+    translate_e_p(SetID,TSetID) , 
+    decl_special_cases_aux(DeclTerm,TSetID,TFieldID,TField).
+
+decl_special_cases_aux(setof(_,_,_),TSetID,TFieldID,member(none,TFieldID,TSetID)).
+decl_special_cases_aux(oneof(_,_,_),TSetID,TFieldID,
+    conjunct(none,member(none,TFieldID,TSetID),equal(none,card(none,TFieldID),integer(none,1)))).
+decl_special_cases_aux(someof(_,_,_),TSetID,TFieldID,
+    conjunct(none,member(none,TFieldID,TSetID),greater(none,card(none,TFieldID),integer(none,0)))).
+decl_special_cases_aux(loneof(_,_,_),TSetID,TFieldID,
+    conjunct(none,member(none,TFieldID,TSetID),less_equal(none,card(none,TFieldID),integer(none,1)))).
 
 % most of the operators can be translated straightforwardly from Alloy to B
 alloy_to_b_operator(in,subset) :- !.
@@ -121,11 +146,11 @@ is_identifier(this/ID,ID) :- signature(this/ID,_,_,_,_).
 is_identifier(ID,ID) :- is_field(_,ID,_).
  
 is_field(Set,Name,Type) :- signature(Set,Fields,_,_,_),
-     member(field(Name,Type,_Pos),Fields).
+     memberchk(field(Name,Type,_Pos),Fields).
 
 singleton_set(S) :- 
     signature(this/S,_,_,Options,_) , 
-    member(one,Options).
+    memberchk(one,Options).
 
 conjunct_predicates([],b(truth,pred,[])).
 conjunct_predicates([H|T],Conjoined) :- 
