@@ -3,6 +3,7 @@ package de.hhu.stups.alloy2b.translation.prolog
 import edu.mit.csail.sdg.alloy4.A4Reporter
 import edu.mit.csail.sdg.alloy4.Pair
 import edu.mit.csail.sdg.alloy4compiler.ast.*
+import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
 import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 
 /**
@@ -44,6 +45,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private var prologTerm = ""
     private val expressionTranslator = ExpressionToProlog(this)
 
+    private val orderedSignatures = mutableListOf<String>()
+
     init {
         var path = ""
         try {
@@ -56,6 +59,9 @@ class AlloyAstToProlog(alloyModelPath: String) {
             }
         }
         val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, path)
+
+        astRoot.opens.forEach { collectPropertiesFromInclude(it) }
+
         val listOfFacts = astRoot.rootModule.allFacts.joinToString(",") { toPrologTerm(it) }
         val listOfAssertions = astRoot.rootModule.allAssertions.joinToString(",") { toPrologTerm(it) }
         val listOfCommands = astRoot.rootModule.allCommands.joinToString(",") { toPrologTerm(it) }
@@ -63,6 +69,13 @@ class AlloyAstToProlog(alloyModelPath: String) {
         val listOfSignatures = astRoot.rootModule.allSigs.joinToString(",") { toPrologTerm(it) }
         prologTerm = "alloy_model(facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
                 "functions([$listOfFunctions]),signatures([$listOfSignatures]))."
+    }
+
+    private fun collectPropertiesFromInclude(it: CompModule.Open) {
+        if("util/ordering" == it.filename) {
+            val prefixedSignatures = it.args.map { if (it.startsWith("this")) it else "this/" + it }
+            orderedSignatures.addAll(prefixedSignatures)
+        }
     }
 
     fun getPrologTerm(): String {
@@ -107,6 +120,9 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
         val lstOptions = mutableListOf<String>()
+        if (orderedSignatures.contains(astNode.label)) {
+            lstOptions.add("ordered")
+        }
         if (astNode.isAbstract != null) {
             lstOptions.add("abstract")
         }
