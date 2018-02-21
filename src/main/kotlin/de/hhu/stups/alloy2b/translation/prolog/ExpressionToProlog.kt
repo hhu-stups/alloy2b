@@ -15,7 +15,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
     override fun visit(p0: ExprCall): String {
         val functor = if (p0.`fun`.isPred) "pred_call" else "fun_call"
         return "$functor(${alloyAstToProlog.sanitizeIdentifier(p0.`fun`.label)},${p0.args?.map { it.accept(this) }}," +
-                "${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
+                "${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
     }
 
     override fun visit(p0: ExprConstant): String {
@@ -29,15 +29,15 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
 
     override fun visit(p0: ExprITE): String =
             "if_then_else(${p0.cond?.accept(this)},${p0.left?.accept(this)},${p0.right?.accept(this)}" +
-                    ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
+                    ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprLet): String =
             "let(${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
-                    ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y})"
+                    ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprQt): String =
             "${getOperator(p0.op.toString())}(${p0.decls?.map { alloyAstToProlog.toPrologTerm(it) }}," +
-                    "${getType(p0.type())},${p0.sub?.accept(this)},pos(${p0.pos?.x},${p0.pos?.y})"
+                    "${p0.sub?.accept(this)},${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprUnary) =
             when (p0.op) {

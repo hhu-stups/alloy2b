@@ -91,7 +91,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
         val functor = if (astNode.check) "check" else "run"
         return "$functor(${astNode.formula.accept(expressionTranslator)},global_scope(${astNode.overall})," +
                 "exact_scopes(${astNode.additionalExactScopes.map { sanitizeIdentifier(it.label) }})," +
-                "bitwidth(${astNode.bitwidth}),pos(${astNode.pos.x},${astNode.pos.y})"
+                "bitwidth(${astNode.bitwidth}),pos(${astNode.pos.x},${astNode.pos.y}))"
     }
 
     private fun toPrologTerm(astNode: Func): String {
