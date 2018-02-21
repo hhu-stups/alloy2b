@@ -49,7 +49,9 @@ translate_field_aux(field(Name,Expr,_Pos),TField) :-
     decl_special_cases(Expr,TID,TField) , !.
 
 % fact
-translate_fact(MAcc,fact(Expr,_Pos),NewMAcc) :- 
+translate_fact(MAcc,Fact,NewMAcc) :- 
+    % either the term fact/2 or an expression (for instance, if defined within a signature)
+    (Fact = fact(Expr,_Pos) ; Expr = Fact) , 
     translate_e_p(Expr,TExpr) , 
     extend_machine_acc(properties,MAcc,TExpr,NewMAcc).
 
@@ -61,37 +63,59 @@ translate_function(MAcc,FunctionOrPredicate,NewMAcc) :-
     maplist(translate_field_aux,Decls,TDecls) , 
     translate_e_p(Body,TBody) , 
     append(TDecls,[TBody],BehaviorList) , 
-    conjunct_predicates(BehaviorList,Behavior) , 
+    join_predicates_aux(conjunct,BehaviorList,Behavior) , 
     UAst =.. [UFunctor,none,Name,TParams,Behavior] , 
     extend_machine_acc(definitions,MAcc,UAst,NewMAcc).
 
-% subset
-define_sig_as_set_or_constant(MAcc,Name,Options,_Pos,NewMAcc) :- 
+% assertion
+translate_assertion(MAcc,Assertion,NewMAcc) :- 
+    translate_fact(MAcc,Assertion,NewMAcc).
+
+% signature in (subset)
+define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
     memberchk(subset(Parents),Options) , ! , 
-    define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,MAcc1) , 
+    define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,Pos,MAcc1) , 
     % TODO: consider several parents -> we need the universe type
     Parents = [Parent|_] , 
     extend_machine_acc(properties,MAcc1,
         member(none,identifier(none,Name),identifier(none,Parent)),NewMAcc).
-% extends
-define_sig_as_set_or_constant(MAcc,Name,Options,_Pos,NewMAcc) :- 
+% signature extends
+define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
     member(subsig(Parent),Options) , ! , 
-    define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,MAcc1) ,
+    define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,Pos,MAcc1) ,
     extend_machine_acc(properties,MAcc1,
         member(identifier(none,Name),identifier(none,Parent)),NewMAcc).
 % default signature
-define_sig_as_set_or_constant(MAcc,Name,Options,_Pos,NewMAcc) :- 
-    define_sig_as_set_or_constant_aux(sets,MAcc,Name,Options,_Pos,NewMAcc).
+define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
+    define_sig_as_set_or_constant_aux(sets,MAcc,Name,Options,Pos,NewMAcc).
 
 define_sig_as_set_or_constant_aux(SetsOrConstants,MAcc,Name,_Options,_Pos,NewMAcc) :- 
     extend_machine_acc(SetsOrConstants,MAcc,identifier(none,Name),NewMAcc).
 
+% translate expression or predicate
 translate_e_p(A,TA) :- 
     translate_unary_e_p(A,TA) , !.
 translate_e_p(A,TA) :- 
     translate_binary_e_p(A,TA) , !.
+translate_e_p(A,TA) :- 
+    translate_quantifier_e(A,TA) , !.
 translate_e_p(A,_) :- 
     format("Translation failed for ~w.~n",[A]).
+
+% quantifiers
+translate_quantifier_e(Quantifier,TQuantifier) :- 
+    Quantifier =.. [Functor,Params,Fields,Body,_Type,_Pos] , 
+    maplist(translate_e_p,Params,TParams) , 
+    maplist(translate_field_aux,Fields,TFieldsList) , 
+    join_predicates_aux(conjunct,TFieldsList,TFields) , 
+    translate_e_p(Body,TBody) , 
+    translate_quantifier_e_aux(Functor,TParams,TFields,TBody,TQuantifier).
+
+translate_quantifier_e_aux(all,TParams,TFields,TBody,forall(none,TParams,implication(none,TFields,TBody))).
+translate_quantifier_e_aux(no,TParams,TFields,TBody,not(exists(none,TParams,conjunct(none,TFields,TBody)))).
+translate_quantifier_e_aux(some,TParams,TFields,TBody,exists(none,TParams,conjunct(none,TFields,TBody))).
+translate_quantifier_e_aux(one,TParams,TFields,TBody,equals(none,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
+translate_quantifier_e_aux(lone,TParams,TFields,TBody,less_equal(none,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
 
 % unary expressions and predicates
 translate_unary_e_p(ID,identifier(none,ID)) :- atom(ID) , !.
@@ -107,12 +131,12 @@ translate_unary_e_p(UnaryP,TUnaryP) :-
 
 % binary expressions and predicates
 translate_binary_e_p(BinaryP,TBinaryP) :- 
-    % and/or possibly defines a list of ast nodes
+    % and/or defines a list of ast nodes
     BinaryP =.. [Op,ArgList|_] , 
     memberchk(Op,[and,or]) , 
     is_list(ArgList) , ! , 
     maplist(translate_e_p,ArgList,TArgList) , 
-    conjunct_predicates(TArgList,TBinaryP).
+    join_predicates(Op,TArgList,TBinaryP).
 translate_binary_e_p(Binary,TBinary) :- 
     Binary =.. [Op,Arg1,Arg2|_] , 
     translate_e_p(Arg1,TArg1) , 
@@ -139,6 +163,8 @@ alloy_to_b_operator(plus,union) :- !.
 alloy_to_b_operator(minus,set_subtraction) :- !.
 alloy_to_b_operator(true,boolean_true(none)) :- !.
 alloy_to_b_operator(false,boolean_false(none)) :- !.
+alloy_to_b_operator(and,conjunct) :- !.
+alloy_to_b_operator(or,disjunct) :- !.
 alloy_to_b_operator(Op,Op).
 
 is_identifier(this/ID,ID) :- signature(this/ID,_,_,_,_).
@@ -151,10 +177,16 @@ singleton_set(S) :-
     signature(this/S,_,_,Options,_) , 
     memberchk(one,Options).
 
-conjunct_predicates([],b(truth,pred,[])).
-conjunct_predicates([H|T],Conjoined) :- 
-    conjunct_predicates(T,H,Conjoined).
+% Join a list of untyped B ASTs using either conjunct/3 or disjunct/3.
+join_predicates(Op,TArgList,TBinaryP) :- 
+    alloy_to_b_operator(Op,BOp) , 
+    join_predicates_aux(BOp,TArgList,TBinaryP).
 
-conjunct_predicates([],Acc,Acc).
-conjunct_predicates([H|T],Acc,Conjoined) :- 
-    conjunct_predicates(T,conjunct(none,H,Acc),Conjoined).
+join_predicates_aux(_,[],b(truth,pred,[])).
+join_predicates_aux(BOp,[H|T],Conjoined) :- 
+    join_predicates_aux(BOp,T,H,Conjoined).
+
+join_predicates_aux(_,[],Acc,Acc).
+join_predicates_aux(BOp,[H|T],Acc,Conjoined) :- 
+    NewAcc =.. [BOp,none,H,Acc] , 
+    join_predicates_aux(BOp,T,NewAcc,Conjoined).
