@@ -2,17 +2,16 @@
 
 :- use_module(library(lists)).
 
-build_machine_ast(ListOfMachineParts,MachineAst) :- 
-    % TODO: build term classical_b
-    MachineAst = ListOfMachineParts.
+build_machine_ast(b_machine(ListOfMachineParts),machine(generated(none,AbstractMachine))) :- 
+    AbstractMachine =.. [abstract_machine,none,machine(none),machine_header(none,alloytranslation,[])|ListOfMachineParts].
 
-empty_machine_acc(b_machine([sets([]),constants([]),definitions([]),properties([]),assertions([]),operations([])])).
+empty_machine_acc(b_machine([sets(none,[]),constants(none,[]),definitions(none,[]),properties(none,[]),assertions(none,[]),operations(none,[])])).
 
 extend_machine_acc(Functor,b_machine(MachineParts),New,b_machine([NewMachinePart|RestMachineParts])) :- 
-    MachinePart =.. [Functor,List] , 
+    MachinePart =.. [Functor,none,List] , 
     member(MachinePart,MachineParts) , 
     delete(MachineParts,MachinePart,RestMachineParts) , 
-    NewMachinePart =.. [Functor,[New|List]].
+    NewMachinePart =.. [Functor,none,[New|List]].
 
 translate_model(alloy_model(facts(Facts),assertions(Assertions),commands(Commands),functions(Functions),signatures(Signatures)),BAst) :- 
     retractall(signature(_,_,_,_,_)) , 
