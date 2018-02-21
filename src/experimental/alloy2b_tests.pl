@@ -30,4 +30,8 @@ test(field_lone_of,[]) :-
     alloy2b:translate_field_aux(field('suit',loneof('this'/'Suit',type(['this'/'Suit']),pos(16,1)),pos(11,1)),Translated) , ! , 
     Translated == conjunct(none,member(none,identifier(none,suit),identifier(none,'Suit')),less_equal(none,card(none,identifier(none,suit)),integer(none,1))).
 
+test(expr_and,[]) :- 
+    alloy2b:translate_e_p(and([equal(card(join('hand','suit',type(['this'/'Suit']),pos(8,4)),type(['Int']),pos(3,4)),integer(1,pos(14,4)),type([]),pos(13,4)), equal(card('hand',type(['Int']),pos(20,4)),integer(3,pos(26,4)),type([]),pos(25,4))],pos(16,4)),Translated) , ! , 
+    Translated == conjunct(none,equal(none,card(none,identifier(none,hand)),integer(none,3)),equal(none,card(none,join(none,identifier(none,hand),identifier(none,suit))),integer(none,1))).
+
 :- end_tests(single_expr_translation).
