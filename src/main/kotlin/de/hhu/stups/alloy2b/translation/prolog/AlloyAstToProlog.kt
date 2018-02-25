@@ -164,7 +164,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
      * variables in Prolog. Set an underscore as the suffix of an identifier to avoid collisions with B keywords.
      */
     fun sanitizeIdentifier(identifier: String) =
-            identifier.replace("'", "_").split("/").joinToString("/") { if (it == "this") "'$it'" else "'${it}_'" }
+            identifier.replace("'", "_").split("/").filter{ it != "this"}.joinToString("") { "'${it}_'" }
 
     fun getType(type: Type): String {
         val tType = type.map { sanitizeIdentifier(it.toString()) }
