@@ -87,8 +87,10 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private fun toPrologTerm(astNode: Command): String {
         // command
         val functor = if (astNode.check) "check" else "run"
+        val exactScopes = astNode.scope.filter { it.isExact }
+                .map { "(${sanitizeIdentifier(it.sig.label)},${it.startingScope})" }
         return "$functor(${astNode.formula.accept(expressionTranslator)},global_scope(${astNode.overall})," +
-                "exact_scopes(${astNode.additionalExactScopes.map { sanitizeIdentifier(it.label) }})," +
+                "exact_scopes($exactScopes)," +
                 "bitwidth(${astNode.bitwidth}),pos(${astNode.pos.x},${astNode.pos.y}))"
     }
 
@@ -114,7 +116,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
     fun toPrologTerm(astNode: Decl) =
             // declaration
             "field(${sanitizeIdentifier(astNode.get().label)},${astNode.expr.accept(expressionTranslator)}," +
-                    "pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
+                    "${getType(astNode.expr.type())},pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
         val lstOptions = mutableListOf<String>()
@@ -163,5 +165,11 @@ class AlloyAstToProlog(alloyModelPath: String) {
      */
     fun sanitizeIdentifier(identifier: String) =
             identifier.replace("'", "_").split("/").joinToString("/") { if (it == "this") "'$it'" else "'${it}_'" }
+
+    fun getType(type: Type): String {
+        val tType = type.map { sanitizeIdentifier(it.toString()) }
+                .joinToString(",") { it.replace("{", "").replace("}", "") }
+        return "type(${if (tType.isEmpty()) "untyped" else tType})"
+    }
 }
 
