@@ -145,7 +145,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
             lstOptions.add("some")
         }
         if (astNode.isSubset != null) {
-            lstOptions.add("subset(${(astNode as Sig.SubsetSig).parents.map { sanitizeIdentifier(it.label) }}")
+            lstOptions.add("subset(${(astNode as Sig.SubsetSig).parents.map { sanitizeIdentifier(it.label) }})")
         }
         if (isExtendingSignature(astNode)) {
             lstOptions.add("subsig(${sanitizeIdentifier((astNode as Sig.PrimSig).parent.label)})")
