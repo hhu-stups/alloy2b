@@ -1,6 +1,11 @@
 :- module(alloy2b,[translate_model/2]).
 
-:- use_module(library(lists),[maplist/3,is_list/1,sublist/5,select/3]).
+:- use_module(library(lists),[maplist/3,maplist/2,is_list/1,sublist/5,select/3]).
+
+:- dynamic singleton_set/1, command_counter/1.
+:- volatile singleton_set/1, command_counter/1.
+
+command_counter(0).
 
 % An automated translation from Alloy to classical B.
 % The Alloy abstract syntax tree is translated to an untyped B AST as supported by ProB.
@@ -16,7 +21,7 @@ translate_model(alloy_model(facts(Facts),assertions(Assertions),commands(Command
     map_translate(function,MAcc3,Functions,MAcc4) , 
     map_translate(fact,MAcc4,Facts,MAcc5) , ! , 
     build_machine_ast(MAcc5,BAst) , 
-    retract_state(MAcc5).
+    retract_state.
 
 % Map the translation over a list and accumulate the results. 
 % Type is one of signature, assertion, command, function, field or fact.
@@ -28,9 +33,9 @@ map_translate(Type,MAcc,[Part|T],Res) :-
     map_translate(Type,NewMAcc,T,Res).
 
 % signature
-translate_signature(MAcc,signature(Name,Fields,Facts,Options,Pos),NewMAcc) :- 
+translate_signature(MAcc,signature(Name,Fields,Facts,Options,_Pos),NewMAcc) :- 
     % assert signatures for singleton checks
-    assert_signature_term(signature(Name,Fields,Facts,Options,Pos)) , 
+    assert_singleton_set(Options,Name) , 
     extend_machine_acc(signatures,MAcc,[Name],MAcc1) ,  
     define_sig_as_set_or_constant(MAcc1,Name,Options,_Pos,MAcc2) ,
     translate_fields(MAcc2,Name,Fields,MAcc3) , 
@@ -58,8 +63,9 @@ translate_field_aux(TSignatureName,MAcc,field(Name,Expr,type(_Type,_Arity),_Pos)
     field_decl_special_cases(TSignatureName,Expr,TName,TField) , !.
 
 translate_function_field(field(Name,Expr,type(_Type,_Arity),_Pos),TField) :- 
-    translate_e_p(Name,TID) , 
-    fun_or_pred_decl_special_cases(Expr,TID,TField) , !.
+    assert_singleton_set([one],Name) , 
+    translate_e_p(Name,TName) , 
+    fun_or_pred_decl_special_cases(Expr,TName,TField) , !.
 
 % fact
 translate_fact(MAcc,Fact,NewMAcc) :- 
@@ -93,8 +99,9 @@ translate_command(MAcc,Command,NewMAcc) :-
     get_signature_names_from_machine_acc(MAcc,SignatureNames) , 
     translate_scopes(SignatureNames,GlobalScope,ExactScopes,BitWidth,TScopesPred) , 
     Precondition = conjunct(none,TScopesPred,TBody) , 
-    % TODO: generate unique operation name
-    Operation = operation(none,identifier(none,Functor),[],[],precondition(none,Precondition,skip(none))) , 
+    get_command_counter_atom(CommandCounter) , 
+    atom_concat(Functor,CommandCounter,OperationName) , 
+    Operation = operation(none,identifier(none,OperationName),[],[],precondition(none,Precondition,skip(none))) , 
     extend_machine_acc(operations,MAcc,Operation,NewMAcc).
 
 % global scope, exact scopes and bitwidth
@@ -170,7 +177,9 @@ translate_e_p(A,_) :-
 % quantifiers
 translate_quantifier_e(Quantifier,TQuantifier) :- 
     Quantifier =.. [Functor,Params,Fields,Body,_Type,_Pos] , 
+    member(Functor,[all,no,some,one,lone]) , 
     maplist(translate_e_p,Params,TParams) , 
+    maplist(assert_singleton_set([one]),Params) , 
     maplist(translate_function_field,Fields,TFieldsList) , 
     join_predicates_aux(conjunct,TFieldsList,TFields) , 
     translate_e_p(Body,TBody) , 
@@ -184,6 +193,8 @@ translate_quantifier_e_aux(lone,TParams,TFields,TBody,less_equal(none,card(none,
 
 % unary expressions and predicates
 translate_unary_e_p(Int,integer(none,Int)) :- integer(Int) , !.
+translate_unary_e_p(identifier(ID,_Type,_Pos),set_extension(none,[identifier(none,ID)])) :- 
+    on_exception(_,singleton_set(ID),fail) , !.
 translate_unary_e_p(identifier(ID,_Type,_Pos),identifier(none,ID)) :- !.
 translate_unary_e_p(ID,identifier(none,ID)) :- atom(ID) , !.
 translate_unary_e_p(integer(A,_Pos),integer(none,A)) :- !.
@@ -291,7 +302,8 @@ alloy_to_b_operator_aux(predicate,predicate_definition).
 alloy_to_b_operator_aux(Op,Op).
 
 %%% 
-% Accumulate the translated machine parts during the translation and build the machine AST afterwards.
+% Accumulate the translated machine parts and signature names during the translation and build the machine AST afterwards.
+% We may need the signature names later on if translating a global scope.
 build_machine_ast(b_machine(ListOfMachineParts,_SignatureNames),machine(generated(none,AbstractMachine))) :- 
     % filter empty machine parts
     findall(MachinePart,(member(MachinePart,ListOfMachineParts) , MachinePart =.. [_,_,L] , L \= []),TempListOfUsedMachineParts) , 
@@ -310,35 +322,28 @@ extend_machine_acc(Functor,b_machine(MachineParts,SignatureNames),New,b_machine(
     NewMachinePart =.. [Functor,none,[New|List]].
 
 get_signature_names_from_machine_acc(b_machine(_MachineParts,SignatureNames),SignatureNames).
+
+% Get the value of command_counter/1 as codes and assert the increased counter.
+get_command_counter_atom(CommandCounterAtom) :- 
+    command_counter(CommandCounter) , 
+    number_codes(CommandCounter,CommandCounterCodes) , 
+    atom_codes(CommandCounterAtom,CommandCounterCodes) , 
+    retractall(command_counter(_)) , 
+    NewCommandCounter is CommandCounter + 1 , 
+    asserta(command_counter(NewCommandCounter)).
 %%%
 
-%%% Assert signatures for singleton checks.
-% Asserts signature_ID(Fields,Options) for variable ID.
-% Options is a subset of [abstract,enum,meta,lone,one,private,some,subset,subsig,top_level].
-assert_signature_term(signature(ID,Fields,_,Options,_)) :- 
-    atom_concat_safe(signature_,ID,Functor) , 
-    SignatureTerm =.. [Functor,Fields,Options] , 
-    asserta(SignatureTerm).
+% Assert signatures for singleton checks.
+assert_singleton_set(Options,Name) :- 
+    member(one,Options) , ! , 
+    (on_exception(_,singleton_set(Name),fail) ; 
+     asserta(singleton_set(Name))).
+assert_singleton_set(_,_).
 
-retract_state(b_machine(_MachineParts,SignatureNames)) :- 
-    retract_state_aux(signature_,SignatureNames).
-
-retract_state_aux(_,[]).
-retract_state_aux(Prefix,[ID|T]) :- 
-    atom_concat_safe(Prefix,ID,Functor) , 
-    Term =.. [Functor,_,_] , 
-    retractall(Term) , 
-    retract_state_aux(Prefix,T).
-
-get_fields_and_options_from_signature(ID,Fields,Options) :- 
-    atom_concat_safe(signature_,ID,Functor) , 
-    SignatureTerm =.. [Functor,Fields,Options] , 
-    on_exception(_,call(SignatureTerm),fail).
-
-%is_singleton_set(ID) :- 
-%    atom_or_identifier_term(ID,IDName) , 
-%    get_fields_and_options_from_signature(IDName,_,Options) , 
-%    memberchk(one,Options).
+retract_state :- 
+    retractall(command_counter(_)) , 
+    asserta(command_counter(0)) , 
+    retractall(singleton_set(_)).
 
 is_unary_relation(AlloyTerm) :- 
     get_type_and_arity_from_alloy_term(AlloyTerm,_Type,Arity) , 
@@ -354,7 +359,6 @@ get_type_and_arity_from_alloy_term(AlloyTerm,Type,Arity) :-
 
 atom_or_identifier_term(ID,ID) :- atom(ID).
 atom_or_identifier_term(identifier(IDName,_,_),IDName).
-%%%
 
 % Join a list of untyped B ASTs using either conjunct/3 or disjunct/3.
 join_predicates(Op,TArgList,TBinaryP) :- 
