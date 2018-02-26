@@ -162,14 +162,15 @@ class AlloyAstToProlog(alloyModelPath: String) {
     /**
      * Replace ticks by underscores and use single quotes for identifiers since strings with capital letter first are
      * variables in Prolog. Set an underscore as the suffix of an identifier to avoid collisions with B keywords.
+     * The arity is also added to the Prolog term.
      */
     fun sanitizeIdentifier(identifier: String) =
-            identifier.replace("'", "_").split("/").filter{ it != "this"}.joinToString("") { "'${it}_'" }
+            identifier.replace("'", "_").split("/").filter { it != "this" }.joinToString("") { "'${it}_'" }
 
     fun getType(type: Type): String {
         val tType = type.map { sanitizeIdentifier(it.toString()) }
-                .joinToString(",") { it.replace("{", "").replace("}", "") }
-        return "type(${if (tType.isEmpty()) "untyped" else tType})"
+                .map { it.replace("{", "").replace("}", "") }
+        return "type(${if (tType.isEmpty()) "[untyped]" else tType.toString()},${type.arity()})"
     }
 }
 
