@@ -203,28 +203,29 @@ translate_binary_e_p(Binary,TBinary) :-
     alloy_to_b_operator(Op,BOp) , 
     TBinary =.. [BOp,none,TArg1,TArg2].
 
+% Translation of the dot join operator has several special cases depending on the arity of the arguments.
 translate_join(Arg1,Arg2,TBinaryJoin) :- 
     translate_e_p(Arg1,TArg1) , 
     translate_e_p(Arg2,TArg2) , 
     translate_join_aux(Arg1,Arg2,TArg1,TArg2,TBinaryJoin).
 
-/* TODO: join with 'univ'
-if (tLeft.toString() == "univ") {
-    return "ran($tRight)"
-}
-if (tRight.toString() == "univ") {
-    return "dom($tRight)"
-}
-*/
+% univ._
+translate_join_aux(identifier('univ_',type(['univ_'],1),_),_Arg2,_TArg1,TArg2,ran(none,TArg2)).
+% _.univ
+translate_join_aux(_Arg1,identifier('univ_',type(['univ_'],1),_),TArg1,_TArg2,dom(none,TArg1)).
+% unary._
 translate_join_aux(Arg1,_Arg2,TArg1,TArg2,image(none,TArg2,TArg1)) :- 
     is_unary_relation(Arg1).
+% binary.unary
 translate_join_aux(Arg1,Arg2,TArg1,TArg2,image(none,reverse(none,TArg1),TArg2)) :- 
     is_binary_relation(Arg1) , is_unary_relation(Arg2).
+% binary.binary
 translate_join_aux(Arg1,Arg2,TArg1,TArg2,parallel_product(none,TArg1,TArg2)) :-
     is_binary_relation(Arg1) , is_binary_relation(Arg2).
 translate_join_aux(Arg1,Arg2,_TArg1,_TArg2,empty_set(none)) :- 
     format("Join not supported this way:~nLeft: ~w~nRight: ~w~n",[Arg1,Arg2]).
 
+% Field declarations have several special cases depending on the keywords set, one, some or lone.
 decl_special_cases(DeclTerm,TFieldID,TField) :- 
     DeclTerm =.. [_,SetID|_] , 
     translate_e_p(SetID,TSetID) , 
@@ -286,32 +287,32 @@ retract_state(b_machine(_MachineParts,SignatureNames)) :-
 
 retract_state_aux(_,[]).
 retract_state_aux(Prefix,[ID|T]) :- 
-    (ID = this/TID ; ID = TID) , 
-    atom_concat_safe(Prefix,TID,Functor) , 
+    atom_concat_safe(Prefix,ID,Functor) , 
     Term =.. [Functor,_,_] , 
     retractall(Term) , 
     retract_state_aux(Prefix,T).
 
 get_fields_and_options_from_signature(ID,Fields,Options) :- 
-    (ID = this/TID ; ID = TID) , 
-    atom_concat_safe(signature_,TID,Functor) , 
+    atom_concat_safe(signature_,ID,Functor) , 
     SignatureTerm =.. [Functor,Fields,Options] , 
     on_exception(_,call(SignatureTerm),fail).
 
-is_singleton_set(ID) :- 
-    atom_or_identifier_term(ID,IDName) , 
-    get_fields_and_options_from_signature(IDName,_,Options) , 
-    memberchk(one,Options).
+%is_singleton_set(ID) :- 
+%    atom_or_identifier_term(ID,IDName) , 
+%    get_fields_and_options_from_signature(IDName,_,Options) , 
+%    memberchk(one,Options).
 
 is_unary_relation(AlloyTerm) :- 
-    AlloyTerm =.. [_|Args] , 
-    member(type(_Type,Arity),Args) , 
+    get_type_and_arity_from_alloy_term(AlloyTerm,_Type,Arity) , 
     Arity == 1.
 
 is_binary_relation(AlloyTerm) :- 
-    AlloyTerm =.. [_|Args] , 
-    member(type(_Type,Arity),Args) , 
+    get_type_and_arity_from_alloy_term(AlloyTerm,_Type,Arity) , 
     Arity == 2.
+
+get_type_and_arity_from_alloy_term(AlloyTerm,Type,Arity) :- 
+    AlloyTerm =.. [_|Args] , 
+    member(type(Type,Arity),Args) , !.
 
 atom_or_identifier_term(ID,ID) :- atom(ID).
 atom_or_identifier_term(identifier(IDName,_,_),IDName).
