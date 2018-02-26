@@ -40,14 +40,14 @@ translate_field(MAcc,Field,NewMAcc) :-
     translate_field_aux(MAcc,Field,TField,MAcc1) , 
     extend_machine_acc(properties,MAcc1,TField,NewMAcc).
 
-translate_field_aux(MAcc,field(Name,Expr,type(Type),_Pos),TField,NewMAcc) :- 
+translate_field_aux(MAcc,field(Name,Expr,type(Type,_Arity),_Pos),TField,NewMAcc) :- 
     % TODO: we may need a quantification over this_ (see Kotlin code)
     translate_e_p(Name,TID) , 
     assert_field_term(Name,Type) , 
     extend_machine_acc(fields,MAcc,[Name],NewMAcc) , 
     decl_special_cases(Expr,TID,TField) , !.
 
-translate_field_aux(field(Name,Expr,type(_),_Pos),TField) :- 
+translate_field_aux(field(Name,Expr,type(_Type,_Arity),_Pos),TField) :- 
     translate_e_p(Name,TID) , 
     decl_special_cases(Expr,TID,TField) , !.
 
@@ -224,7 +224,7 @@ translate_join_aux(Arg1,Arg2,TArg1,TArg2,image(none,reverse(none,TArg1),TArg2)) 
     is_binary_relation(Arg1) , is_unary_relation(Arg2).
 translate_join_aux(Arg1,Arg2,TArg1,TArg2,parallel_product(none,TArg1,TArg2)) :-
     is_binary_relation(Arg1) , is_binary_relation(Arg2).
-translate_join_aux(Arg1,Arg2,TArg1,TArg2,empty_set(none)) :- 
+translate_join_aux(Arg1,Arg2,_TArg1,_TArg2,empty_set(none)) :- 
     format("Join not supported this way:~nLeft: ~w~nRight: ~w~n",[Arg1,Arg2]).
 
 decl_special_cases(DeclTerm,TFieldID,TField) :- 
@@ -309,39 +309,23 @@ get_fields_and_options_from_signature(ID,Fields,Options) :-
     SignatureTerm =.. [Functor,Fields,Options] , 
     on_exception(_,call(SignatureTerm),fail).
 
-get_field_type(ID,Type) :- 
-    atom_concat_safe(field_,ID,Functor) , 
-    FieldTerm =.. [Functor,Type] , 
-    on_exception(_,call(FieldTerm),fail).
-
 is_singleton_set(ID) :- 
     atom_or_identifier_term(ID,IDName) , 
     get_fields_and_options_from_signature(IDName,_,Options) , 
     memberchk(one,Options).
 
-is_unary_relation(Term) :- 
-    Term =.. [_|Args] , 
-    member(type(Type),Args) , 
-    get_arity_from_type_atom(Type,Arity) , 
+is_unary_relation(AlloyTerm) :- 
+    AlloyTerm =.. [_|Args] , 
+    member(type(_Type,Arity),Args) , 
     Arity == 1.
 
-is_binary_relation(Term) :- 
-    Term =.. [_|Args] , 
-    member(type(Type),Args) , 
-    get_arity_from_type_atom(Type,Arity) , 
+is_binary_relation(AlloyTerm) :- 
+    AlloyTerm =.. [_|Args] , 
+    member(type(_Type,Arity),Args) , 
     Arity == 2.
 
 atom_or_identifier_term(ID,ID) :- atom(ID).
 atom_or_identifier_term(identifier(IDName,_,_),IDName).
-
-% Relations are split by '->' in the type atom like S1->S2.
-% We thus count '->' using its atom code [45,62] within the type and add one to the occurences.
-get_arity_from_type_atom(Type,Arity) :- 
-    (Type = this/TType ; TType = Type) , 
-    atom_codes(TType,TypeCodes) , 
-    findall(X,(X = [45,62] , sublist(TypeCodes,X,_,_,_)),ArityList) , 
-    length(ArityList,TempArity) , ! , 
-    Arity is TempArity + 1.
 %%%
 
 % Join a list of untyped B ASTs using either conjunct/3 or disjunct/3.
