@@ -37,14 +37,12 @@ translate_signature(MAcc,signature(Name,Fields,Facts,Options,Pos),NewMAcc) :-
 
 % field
 translate_field(MAcc,Field,NewMAcc) :- 
-    translate_field_aux(MAcc,Field,TField,MAcc1) , 
-    extend_machine_acc(properties,MAcc1,TField,NewMAcc).
+    translate_field_aux(Field,TField) , 
+    extend_machine_acc(properties,MAcc,TField,NewMAcc).
 
-translate_field_aux(MAcc,field(Name,Expr,type(Type,_Arity),_Pos),TField,NewMAcc) :- 
+translate_field_aux(field(Name,Expr,type(_Type,_Arity),_Pos),TField) :- 
     % TODO: we may need a quantification over this_ (see Kotlin code)
     translate_e_p(Name,TID) , 
-    assert_field_term(Name,Type) , 
-    extend_machine_acc(fields,MAcc,[Name],NewMAcc) , 
     decl_special_cases(Expr,TID,TField) , !.
 
 translate_field_aux(field(Name,Expr,type(_Type,_Arity),_Pos),TField) :- 
@@ -257,27 +255,25 @@ alloy_to_b_operator_aux(Op,Op).
 
 %%% 
 % Accumulate the translated machine parts during the translation and build the machine AST afterwards.
-build_machine_ast(b_machine(ListOfMachineParts,_SignatureNames,_FieldNames),machine(generated(none,AbstractMachine))) :- 
+build_machine_ast(b_machine(ListOfMachineParts,_SignatureNames),machine(generated(none,AbstractMachine))) :- 
     % filter empty machine parts
     findall(MachinePart,(member(MachinePart,ListOfMachineParts) , MachinePart =.. [_,_,L] , L \= []),ListOfUsedMachineParts) , 
     AbstractMachine =.. [abstract_machine,none,machine(none),machine_header(none,alloytranslation,[]),ListOfUsedMachineParts].
 
-empty_machine_acc(b_machine([sets(none,[]),constants(none,[]),definitions(none,[]),properties(none,[]),assertions(none,[]),operations(none,[])],[],[])).
+empty_machine_acc(b_machine([sets(none,[]),constants(none,[]),definitions(none,[]),properties(none,[]),assertions(none,[]),operations(none,[])],[])).
 
-extend_machine_acc(signatures,b_machine(MachineParts,SignatureNames,FieldNames),New,b_machine(MachineParts,NewSignatureNames,FieldNames)) :- 
+extend_machine_acc(signatures,b_machine(MachineParts,SignatureNames),New,b_machine(MachineParts,NewSignatureNames)) :- 
     append(New,SignatureNames,NewSignatureNames) , !.
-extend_machine_acc(fields,b_machine(MachineParts,SignatureNames,FieldNames),New,b_machine(MachineParts,SignatureNames,NewFieldNames)) :- 
-    append(New,FieldNames,NewFieldNames) , !.
-extend_machine_acc(Functor,b_machine(MachineParts,SignatureNames,FieldNames),New,b_machine([NewMachinePart|RestMachineParts],SignatureNames,FieldNames)) :- 
+extend_machine_acc(Functor,b_machine(MachineParts,SignatureNames),New,b_machine([NewMachinePart|RestMachineParts],SignatureNames)) :- 
     MachinePart =.. [Functor,none,List] , 
     member(MachinePart,MachineParts) , 
     delete(MachineParts,MachinePart,RestMachineParts) , 
     NewMachinePart =.. [Functor,none,[New|List]].
 
-get_signature_names_from_machine_acc(b_machine(_MachineParts,SignatureNames,_FieldNames),SignatureNames).
+get_signature_names_from_machine_acc(b_machine(_MachineParts,SignatureNames),SignatureNames).
 %%%
 
-%%% Assert signatures and fields for type checks.
+%%% Assert signatures for singleton checks.
 % Asserts signature_ID(Fields,Options) for variable ID.
 % Options is a subset of [abstract,enum,meta,lone,one,private,some,subset,subsig,top_level].
 assert_signature_term(signature(ID,Fields,_,Options,_)) :- 
@@ -285,15 +281,8 @@ assert_signature_term(signature(ID,Fields,_,Options,_)) :-
     SignatureTerm =.. [Functor,Fields,Options] , 
     asserta(SignatureTerm).
 
-% Asserts field_ID(Type) for variable ID. The type is set by Alloy.
-assert_field_term(Name,Type) :- 
-    atom_concat_safe(field_,Name,Functor) , 
-    FieldTerm =.. [Functor,Type] , 
-    asserta(FieldTerm).
-
-retract_state(b_machine(_MachineParts,SignatureNames,FieldNames)) :- 
-    retract_state_aux(signature_,SignatureNames) , 
-    retract_state_aux(field_,FieldNames).
+retract_state(b_machine(_MachineParts,SignatureNames)) :- 
+    retract_state_aux(signature_,SignatureNames).
 
 retract_state_aux(_,[]).
 retract_state_aux(Prefix,[ID|T]) :- 
