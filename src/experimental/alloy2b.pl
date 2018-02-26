@@ -1,6 +1,6 @@
 :- module(alloy2b,[translate_model/2]).
 
-:- use_module(library(lists),[delete/3,maplist/3,is_list/1,sublist/5]).
+:- use_module(library(lists),[maplist/3,is_list/1,sublist/5,select/3]).
 
 % An automated translation from Alloy to classical B.
 % The Alloy abstract syntax tree is translated to an untyped B AST as supported by ProB.
@@ -18,7 +18,8 @@ translate_model(alloy_model(facts(Facts),assertions(Assertions),commands(Command
     build_machine_ast(MAcc5,BAst) , 
     retract_state(MAcc5).
 
-% Map the translation over a list and accumulate the results. Type is one of signature, assertion, command, function, field or fact.
+% Map the translation over a list and accumulate the results. 
+% Type is one of signature, assertion, command, function, field or fact.
 map_translate(_,MAcc,[],MAcc).
 map_translate(Type,MAcc,[Part|T],Res) :- 
     atom_concat_safe(translate_,Type,Functor) , 
@@ -32,22 +33,33 @@ translate_signature(MAcc,signature(Name,Fields,Facts,Options,Pos),NewMAcc) :-
     assert_signature_term(signature(Name,Fields,Facts,Options,Pos)) , 
     extend_machine_acc(signatures,MAcc,[Name],MAcc1) ,  
     define_sig_as_set_or_constant(MAcc1,Name,Options,_Pos,MAcc2) ,
-    map_translate(field,MAcc2,Fields,MAcc3) , 
+    translate_fields(MAcc2,Name,Fields,MAcc3) , 
     map_translate(fact,MAcc3,Facts,NewMAcc).
 
+% list of fields from a specific signature
+translate_fields(MAcc,SignatureName,Fields,NewMAcc) :- 
+    translate_e_p(SignatureName,TSignatureName) , 
+    translate_fields_aux(MAcc,TSignatureName,Fields,NewMAcc).
+
+translate_fields_aux(MAcc,_,[],MAcc).
+translate_fields_aux(MAcc,TSignatureName,[Field|T],NewMAcc) :- 
+    translate_field(TSignatureName,MAcc,Field,MAcc1) , 
+    translate_fields_aux(MAcc1,TSignatureName,T,NewMAcc).
+
 % field
-translate_field(MAcc,Field,NewMAcc) :- 
-    translate_field_aux(Field,TField) , 
-    extend_machine_acc(properties,MAcc,TField,NewMAcc).
+translate_field(TSignatureName,MAcc,Field,NewMAcc) :- 
+    translate_field_aux(TSignatureName,MAcc,Field,TField,MAcc1) , 
+    extend_machine_acc(properties,MAcc1,TField,NewMAcc).
 
-translate_field_aux(field(Name,Expr,type(_Type,_Arity),_Pos),TField) :- 
+translate_field_aux(TSignatureName,MAcc,field(Name,Expr,type(_Type,_Arity),_Pos),TField,NewMAcc) :- 
     % TODO: we may need a quantification over this_ (see Kotlin code)
-    translate_e_p(Name,TID) , 
-    decl_special_cases(Expr,TID,TField) , !.
+    translate_e_p(Name,TName) , 
+    extend_machine_acc(constants,MAcc,TName,NewMAcc) , 
+    field_decl_special_cases(TSignatureName,Expr,TName,TField) , !.
 
-translate_field_aux(field(Name,Expr,type(_Type,_Arity),_Pos),TField) :- 
+translate_function_field(field(Name,Expr,type(_Type,_Arity),_Pos),TField) :- 
     translate_e_p(Name,TID) , 
-    decl_special_cases(Expr,TID,TField) , !.
+    fun_or_pred_decl_special_cases(Expr,TID,TField) , !.
 
 % fact
 translate_fact(MAcc,Fact,NewMAcc) :- 
@@ -61,7 +73,7 @@ translate_function(MAcc,FunctionOrPredicate,NewMAcc) :-
     FunctionOrPredicate =.. [Functor,Name,Params,Decls,Body,_Pos] , 
     alloy_to_b_operator(Functor,BFunctor) , 
     maplist(translate_e_p,Params,TParams) , 
-    maplist(translate_field_aux,Decls,TDecls) , 
+    maplist(translate_function_field,Decls,TDecls) , 
     translate_e_p(Body,TBody) , 
     append(TDecls,[TBody],BehaviorList) , 
     join_predicates_aux(conjunct,BehaviorList,Behavior) , 
@@ -81,7 +93,8 @@ translate_command(MAcc,Command,NewMAcc) :-
     get_signature_names_from_machine_acc(MAcc,SignatureNames) , 
     translate_scopes(SignatureNames,GlobalScope,ExactScopes,BitWidth,TScopesPred) , 
     Precondition = conjunct(none,TScopesPred,TBody) , 
-    Operation = operation(none,identifier(none,empty),[],[],precondition(none,Precondition,skip(none))) , 
+    % TODO: generate unique operation name
+    Operation = operation(none,identifier(none,Functor),[],[],precondition(none,Precondition,skip(none))) , 
     extend_machine_acc(operations,MAcc,Operation,NewMAcc).
 
 % global scope, exact scopes and bitwidth
@@ -122,29 +135,33 @@ define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :-
     define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,Pos,MAcc1) , 
     % TODO: consider several parents -> we need the universe type
     Parents = [Parent|_] , 
-    extend_machine_acc(properties,MAcc1,
-        member(none,identifier(none,Name),identifier(none,Parent)),NewMAcc).
+    translate_e_p(Name,TName) , 
+    translate_e_p(Parent,TParent) , 
+    extend_machine_acc(properties,MAcc1,member(none,TName,TParent),NewMAcc).
 % signature extends
 define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
     member(subsig(Parent),Options) , ! , 
     define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,Pos,MAcc1) ,
-    extend_machine_acc(properties,MAcc1,
-        member(identifier(none,Name),identifier(none,Parent)),NewMAcc).
+    translate_e_p(Name,TName) , 
+    translate_e_p(Parent,TParent) , 
+    extend_machine_acc(properties,MAcc1,member(none,TName,TParent),NewMAcc).
 % default signature
 define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
     define_sig_as_set_or_constant_aux(sets,MAcc,Name,Options,Pos,NewMAcc).
 
 define_sig_as_set_or_constant_aux(sets,MAcc,Name,_Options,_Pos,NewMAcc) :- 
-    extend_machine_acc(sets,MAcc,deferred_set(none,identifier(none,Name)),NewMAcc).
+    % use deferred_set/2 instead of identifier/2 like for constants
+    extend_machine_acc(sets,MAcc,deferred_set(none,Name),NewMAcc).
 define_sig_as_set_or_constant_aux(constants,MAcc,Name,_Options,_Pos,NewMAcc) :- 
     translate_e_p(Name,TName) , 
     extend_machine_acc(constants,MAcc,TName,NewMAcc).
 
 % translate expression or predicate
 translate_e_p(A,TA) :- 
-    translate_unary_e_p(A,TA) , !.
-translate_e_p(A,TA) :- 
+    % check quantifiers first
     translate_quantifier_e(A,TA) , !.
+translate_e_p(A,TA) :- 
+    translate_unary_e_p(A,TA) , !.
 translate_e_p(A,TA) :- 
     translate_binary_e_p(A,TA) , !.
 translate_e_p(A,_) :- 
@@ -154,15 +171,15 @@ translate_e_p(A,_) :-
 translate_quantifier_e(Quantifier,TQuantifier) :- 
     Quantifier =.. [Functor,Params,Fields,Body,_Type,_Pos] , 
     maplist(translate_e_p,Params,TParams) , 
-    maplist(translate_field_aux,Fields,TFieldsList) , 
+    maplist(translate_function_field,Fields,TFieldsList) , 
     join_predicates_aux(conjunct,TFieldsList,TFields) , 
     translate_e_p(Body,TBody) , 
     translate_quantifier_e_aux(Functor,TParams,TFields,TBody,TQuantifier).
 
 translate_quantifier_e_aux(all,TParams,TFields,TBody,forall(none,TParams,implication(none,TFields,TBody))).
-translate_quantifier_e_aux(no,TParams,TFields,TBody,not(exists(none,TParams,conjunct(none,TFields,TBody)))).
+translate_quantifier_e_aux(no,TParams,TFields,TBody,negation(none,exists(none,TParams,conjunct(none,TFields,TBody)))).
 translate_quantifier_e_aux(some,TParams,TFields,TBody,exists(none,TParams,conjunct(none,TFields,TBody))).
-translate_quantifier_e_aux(one,TParams,TFields,TBody,equals(none,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
+translate_quantifier_e_aux(one,TParams,TFields,TBody,equal(none,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
 translate_quantifier_e_aux(lone,TParams,TFields,TBody,less_equal(none,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
 
 % unary expressions and predicates
@@ -172,13 +189,18 @@ translate_unary_e_p(ID,identifier(none,ID)) :- atom(ID) , !.
 translate_unary_e_p(integer(A,_Pos),integer(none,A)) :- !.
 translate_unary_e_p(boolean(A,_Pos),TA) :- ! , 
     alloy_to_b_operator(A,TA).
-translate_unary_e_p(BinaryP,TBinaryP) :- 
+translate_unary_e_p(UnaryP,TUnaryP) :- 
     % and/or defines a list of ast nodes
-    BinaryP =.. [Op,ArgList|_] , 
+    UnaryP =.. [Op,ArgList|_] , 
     memberchk(Op,[and,or]) , 
     is_list(ArgList) , ! , 
     maplist(translate_e_p,ArgList,TArgList) , 
-    join_predicates(Op,TArgList,TBinaryP).
+    join_predicates(Op,TArgList,TUnaryP).
+translate_unary_e_p(UnaryP,TUnaryP) :- 
+    UnaryP =.. [Op,Arg|_] , 
+    member(Op,[no,one,some,lone]) , ! ,
+    translate_e_p(Arg,TArg) ,  
+    translate_quantified_e(Op,TArg,TUnaryP).
 translate_unary_e_p(UnaryP,TUnaryP) :- 
     UnaryP =.. [Op,Arg,_Type,_Pos] , 
     translate_e_p(Arg,TArg) , 
@@ -225,19 +247,31 @@ translate_join_aux(Arg1,Arg2,TArg1,TArg2,parallel_product(none,TArg1,TArg2)) :-
 translate_join_aux(Arg1,Arg2,_TArg1,_TArg2,empty_set(none)) :- 
     format("Join not supported this way:~nLeft: ~w~nRight: ~w~n",[Arg1,Arg2]).
 
+% Unary quantified expressions: no, one, some, lone
+translate_quantified_e(no,TArg,equal(none,TArg,empty_set(none))).
+translate_quantified_e(one,TArg,equal(none,card(none,TArg),integer(none,1))).
+translate_quantified_e(some,TArg,greater(none,card(none,TArg),integer(none,0))).
+translate_quantified_e(lone,TArg,less_equal(none,card(none,TArg),integer(none,1))).
+
 % Field declarations have several special cases depending on the keywords set, one, some or lone.
-decl_special_cases(DeclTerm,TFieldID,TField) :- 
+field_decl_special_cases(TSignatureName,DeclTerm,TFieldID,TField) :- 
     DeclTerm =.. [_,SetID|_] , 
     translate_e_p(SetID,TSetID) , 
-    decl_special_cases_aux(DeclTerm,TSetID,TFieldID,TField).
+    field_decl_special_cases_aux(DeclTerm,TSignatureName,TSetID,TFieldID,TField).
 
-decl_special_cases_aux(setof(_,_,_),TSetID,TFieldID,member(none,TFieldID,TSetID)).
-decl_special_cases_aux(oneof(_,_,_),TSetID,TFieldID,
-    conjunct(none,member(none,TFieldID,TSetID),equal(none,card(none,TFieldID),integer(none,1)))).
-decl_special_cases_aux(someof(_,_,_),TSetID,TFieldID,
-    conjunct(none,member(none,TFieldID,TSetID),greater(none,card(none,TFieldID),integer(none,0)))).
-decl_special_cases_aux(loneof(_,_,_),TSetID,TFieldID,
-    conjunct(none,member(none,TFieldID,TSetID),less_equal(none,card(none,TFieldID),integer(none,1)))).
+field_decl_special_cases_aux(setof(_,_,_),TSignatureName,TSetID,TFieldID,member(none,TFieldID,relations(none,TSignatureName,TSetID))).
+field_decl_special_cases_aux(oneof(_,_,_),TSignatureName,TSetID,TFieldID,member(none,TFieldID,total_function(none,TSignatureName,TSetID))).
+field_decl_special_cases_aux(loneof(_,_,_),TSignatureName,TSetID,TFieldID,member(none,TFieldID,partial_function(none,TSignatureName,TSetID))).
+field_decl_special_cases_aux(Term,_,_,_,_) :- 
+    format("Field declaration not implemented: ~w",[Term]).
+
+% In function or predicate definitions one can use either set or one.
+fun_or_pred_decl_special_cases(setof(SetID,_,_),TFieldID,subset(none,TFieldID,TSetID)) :- 
+    translate_e_p(SetID,TSetID).
+fun_or_pred_decl_special_cases(oneof(SetID,_,_),TFieldID,subset(none,set_extension(none,[TFieldID]),TSetID)) :- 
+    translate_e_p(SetID,TSetID).
+fun_or_pred_decl_special_cases(Term,_,_) :- 
+    format("Field declaration for function or predicate not implemented: ~w",[Term]).
 
 % Most of the operators can be translated straightforwardly from Alloy to B.
 alloy_to_b_operator(Op,BOp) :- 
@@ -245,11 +279,13 @@ alloy_to_b_operator(Op,BOp) :-
 
 alloy_to_b_operator_aux(in,subset).
 alloy_to_b_operator_aux(plus,union).
+alloy_to_b_operator_aux(not,negation).
+alloy_to_b_operator_aux(or,disjunct).
+alloy_to_b_operator_aux(and,conjunct).
 alloy_to_b_operator_aux(minus,set_subtraction).
 alloy_to_b_operator_aux(true,boolean_true(none)).
 alloy_to_b_operator_aux(false,boolean_false(none)).
-alloy_to_b_operator_aux(and,conjunct).
-alloy_to_b_operator_aux(or,disjunct).
+alloy_to_b_operator_aux(closure1,reflexive_closure).
 alloy_to_b_operator_aux(function,expression_definition).
 alloy_to_b_operator_aux(predicate,predicate_definition).
 alloy_to_b_operator_aux(Op,Op).
@@ -258,8 +294,11 @@ alloy_to_b_operator_aux(Op,Op).
 % Accumulate the translated machine parts during the translation and build the machine AST afterwards.
 build_machine_ast(b_machine(ListOfMachineParts,_SignatureNames),machine(generated(none,AbstractMachine))) :- 
     % filter empty machine parts
-    findall(MachinePart,(member(MachinePart,ListOfMachineParts) , MachinePart =.. [_,_,L] , L \= []),ListOfUsedMachineParts) , 
-    AbstractMachine =.. [abstract_machine,none,machine(none),machine_header(none,alloytranslation,[]),ListOfUsedMachineParts].
+    findall(MachinePart,(member(MachinePart,ListOfMachineParts) , MachinePart =.. [_,_,L] , L \= []),TempListOfUsedMachineParts) , 
+    % properties need to be conjoined
+    select(properties(none,L),TempListOfUsedMachineParts,RestListOfUsedMachineParts) , 
+    join_predicates(conjunct,L,FlatL) , 
+    AbstractMachine =.. [abstract_machine,none,machine(none),machine_header(none,alloytranslation,[]),[properties(none,FlatL)|RestListOfUsedMachineParts]].
 
 empty_machine_acc(b_machine([sets(none,[]),constants(none,[]),definitions(none,[]),properties(none,[]),assertions(none,[]),operations(none,[])],[])).
 
@@ -267,8 +306,7 @@ extend_machine_acc(signatures,b_machine(MachineParts,SignatureNames),New,b_machi
     append(New,SignatureNames,NewSignatureNames) , !.
 extend_machine_acc(Functor,b_machine(MachineParts,SignatureNames),New,b_machine([NewMachinePart|RestMachineParts],SignatureNames)) :- 
     MachinePart =.. [Functor,none,List] , 
-    member(MachinePart,MachineParts) , 
-    delete(MachineParts,MachinePart,RestMachineParts) , 
+    select(MachinePart,MachineParts,RestMachineParts) , 
     NewMachinePart =.. [Functor,none,[New|List]].
 
 get_signature_names_from_machine_acc(b_machine(_MachineParts,SignatureNames),SignatureNames).
@@ -324,7 +362,7 @@ join_predicates(Op,TArgList,TBinaryP) :-
     (BOp = conjunct ; BOp = disjunct) , 
     join_predicates_aux(BOp,TArgList,TBinaryP).
 
-join_predicates_aux(_,[],b(truth,pred,[])).
+join_predicates_aux(_,[],truth(none)).
 join_predicates_aux(BOp,[H|T],Conjoined) :- 
     join_predicates_aux(BOp,T,H,Conjoined).
 
