@@ -12,7 +12,7 @@ command_counter(0).
 % Afterwards, the untyped AST can be typechecked and loaded by ProB.
 
 translate_model(alloy_model(facts(Facts),assertions(Assertions),commands(Commands),functions(Functions),signatures(Signatures)),BAst) :- 
-    % signatures are asserted at runtime for singleton or field checks
+    % singleton sets are asserted at runtime using singleton_set/1
     % accumulate all translations, afterwards we build the untyped machine ast
     empty_machine_acc(MAcc) , 
     map_translate(signature,MAcc,Signatures,MAcc1) , 
@@ -33,11 +33,11 @@ map_translate(Type,MAcc,[Part|T],Res) :-
     map_translate(Type,NewMAcc,T,Res).
 
 % signature
-translate_signature(MAcc,signature(Name,Fields,Facts,Options,_Pos),NewMAcc) :- 
+translate_signature(MAcc,signature(Name,Fields,Facts,Options,pos(Col,Row)),NewMAcc) :- 
     % assert signatures for singleton checks
     assert_singleton_set(Options,Name) , 
     extend_machine_acc(signatures,MAcc,[Name],MAcc1) ,  
-    define_sig_as_set_or_constant(MAcc1,Name,Options,_Pos,MAcc2) ,
+    define_sig_as_set_or_constant(MAcc1,Name,Options,pos(Col,Row),MAcc2) ,
     translate_fields(MAcc2,Name,Fields,MAcc3) , 
     map_translate(fact,MAcc3,Facts,NewMAcc).
 
@@ -56,16 +56,16 @@ translate_field(TSignatureName,MAcc,Field,NewMAcc) :-
     translate_field_aux(TSignatureName,MAcc,Field,TField,MAcc1) , 
     extend_machine_acc(properties,MAcc1,TField,NewMAcc).
 
-translate_field_aux(TSignatureName,MAcc,field(Name,Expr,type(_Type,_Arity),_Pos),TField,NewMAcc) :- 
+translate_field_aux(TSignatureName,MAcc,field(Name,Expr,type(_Type,_Arity),pos(Col,Row)),TField,NewMAcc) :- 
     % TODO: we may need a quantification over this_ (see Kotlin code)
     translate_e_p(Name,TName) , 
     extend_machine_acc(constants,MAcc,TName,NewMAcc) , 
-    field_decl_special_cases(TSignatureName,Expr,TName,TField) , !.
+    field_decl_special_cases(pos(0,0,Row,Col,0,0),TSignatureName,Expr,TName,TField) , !.
 
-translate_function_field(field(Name,Expr,type(_Type,_Arity),_Pos),TField) :- 
+translate_function_field(field(Name,Expr,type(_Type,_Arity),pos(Col,Row)),TField) :- 
     assert_singleton_set([one],Name) , 
     translate_e_p(Name,TName) , 
-    fun_or_pred_decl_special_cases(Expr,TName,TField) , !.
+    fun_or_pred_decl_special_cases(pos(0,0,Row,Col,0,0),Expr,TName,TField) , !.
 
 % fact
 translate_fact(MAcc,Fact,NewMAcc) :- 
@@ -76,14 +76,14 @@ translate_fact(MAcc,Fact,NewMAcc) :-
 
 % function or predicate
 translate_function(MAcc,FunctionOrPredicate,NewMAcc) :- 
-    FunctionOrPredicate =.. [Functor,Name,Params,Decls,Body,_Pos] , 
+    FunctionOrPredicate =.. [Functor,Name,Params,Decls,Body,pos(Col,Row)] , 
     alloy_to_b_operator(Functor,BFunctor) , 
     maplist(translate_e_p,Params,TParams) , 
     maplist(translate_function_field,Decls,TDecls) , 
     translate_e_p(Body,TBody) , 
     append(TDecls,[TBody],BehaviorList) , 
     join_predicates_aux(conjunct,BehaviorList,Behavior) , 
-    UAst =.. [BFunctor,none,Name,TParams,Behavior] , 
+    UAst =.. [BFunctor,pos(0,0,Row,Col,0,0),Name,TParams,Behavior] , 
     extend_machine_acc(definitions,MAcc,UAst,NewMAcc).
 
 % assertion
@@ -92,16 +92,17 @@ translate_assertion(MAcc,Assertion,NewMAcc) :-
 
 % check and run command
 translate_command(MAcc,Command,NewMAcc) :- 
-    Command =.. [Functor,Body,GlobalScope,ExactScopes,BitWidth,_Pos] , 
+    Command =.. [Functor,Body,GlobalScope,ExactScopes,BitWidth,pos(Col,Row)] , 
     (Functor = check ; Functor = run) , 
     translate_e_p(Body,TBody) , 
     % we need all signature names to define the global scope
     get_signature_names_from_machine_acc(MAcc,SignatureNames) , 
     translate_scopes(SignatureNames,GlobalScope,ExactScopes,BitWidth,TScopesPred) , 
-    Precondition = conjunct(none,TScopesPred,TBody) , 
+    TPos = pos(0,0,Row,Col,0,0) , 
+    Precondition = conjunct(TPos,TScopesPred,TBody) , 
     get_command_counter_atom(CommandCounter) , 
     atom_concat(Functor,CommandCounter,OperationName) , 
-    Operation = operation(none,identifier(none,OperationName),[],[],precondition(none,Precondition,skip(none))) , 
+    Operation = operation(TPos,identifier(TPos,OperationName),[],[],precondition(TPos,Precondition,skip(none))) , 
     extend_machine_acc(operations,MAcc,Operation,NewMAcc).
 
 % global scope, exact scopes and bitwidth
@@ -156,12 +157,11 @@ define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :-
 define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
     define_sig_as_set_or_constant_aux(sets,MAcc,Name,Options,Pos,NewMAcc).
 
-define_sig_as_set_or_constant_aux(sets,MAcc,Name,_Options,_Pos,NewMAcc) :- 
+define_sig_as_set_or_constant_aux(sets,MAcc,Name,_Options,pos(Col,Row),NewMAcc) :- 
     % use deferred_set/2 instead of identifier/2 like for constants
-    extend_machine_acc(sets,MAcc,deferred_set(none,Name),NewMAcc).
-define_sig_as_set_or_constant_aux(constants,MAcc,Name,_Options,_Pos,NewMAcc) :- 
-    translate_e_p(Name,TName) , 
-    extend_machine_acc(constants,MAcc,TName,NewMAcc).
+    extend_machine_acc(sets,MAcc,deferred_set(pos(0,0,Row,Col,0,0),Name),NewMAcc).
+define_sig_as_set_or_constant_aux(constants,MAcc,Name,_Options,pos(Col,Row),NewMAcc) :- 
+    extend_machine_acc(constants,MAcc,identifier(pos(0,0,Row,Col,0,0),Name),NewMAcc).
 
 % translate expression or predicate
 translate_e_p(A,TA) :- 
@@ -176,30 +176,30 @@ translate_e_p(A,_) :-
 
 % quantifiers
 translate_quantifier_e(Quantifier,TQuantifier) :- 
-    Quantifier =.. [Functor,Params,Fields,Body,_Type,_Pos] , 
+    Quantifier =.. [Functor,Params,Fields,Body,_Type,pos(Col,Row)] , 
     member(Functor,[all,no,some,one,lone]) , 
     maplist(translate_e_p,Params,TParams) , 
     maplist(assert_singleton_set([one]),Params) , 
     maplist(translate_function_field,Fields,TFieldsList) , 
     join_predicates_aux(conjunct,TFieldsList,TFields) , 
     translate_e_p(Body,TBody) , 
-    translate_quantifier_e_aux(Functor,TParams,TFields,TBody,TQuantifier).
+    translate_quantifier_e_aux(pos(0,0,Row,Col,0,0),Functor,TParams,TFields,TBody,TQuantifier).
 
-translate_quantifier_e_aux(all,TParams,TFields,TBody,forall(none,TParams,implication(none,TFields,TBody))).
-translate_quantifier_e_aux(no,TParams,TFields,TBody,negation(none,exists(none,TParams,conjunct(none,TFields,TBody)))).
-translate_quantifier_e_aux(some,TParams,TFields,TBody,exists(none,TParams,conjunct(none,TFields,TBody))).
-translate_quantifier_e_aux(one,TParams,TFields,TBody,equal(none,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
-translate_quantifier_e_aux(lone,TParams,TFields,TBody,less_equal(none,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
+translate_quantifier_e_aux(Pos,all,TParams,TFields,TBody,forall(Pos,TParams,implication(none,TFields,TBody))).
+translate_quantifier_e_aux(Pos,no,TParams,TFields,TBody,negation(Pos,exists(none,TParams,conjunct(none,TFields,TBody)))).
+translate_quantifier_e_aux(Pos,some,TParams,TFields,TBody,exists(Pos,TParams,conjunct(none,TFields,TBody))).
+translate_quantifier_e_aux(Pos,one,TParams,TFields,TBody,equal(Pos,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
+translate_quantifier_e_aux(Pos,lone,TParams,TFields,TBody,less_equal(Pos,card(none,comprehension_set(none,TParams,conjunct(none,TFields,TBody))),integer(none,1))).
 
 % unary expressions and predicates
 translate_unary_e_p(Int,integer(none,Int)) :- integer(Int) , !.
-translate_unary_e_p(identifier(ID,_Type,_Pos),set_extension(none,[identifier(none,ID)])) :- 
+translate_unary_e_p(identifier(ID,_Type,pos(Col,Row)),set_extension(pos(0,0,Row,Col,0,0),[identifier(none,ID)])) :- 
     on_exception(_,singleton_set(ID),fail) , !.
-translate_unary_e_p(identifier(ID,_Type,_Pos),identifier(none,ID)) :- !.
+translate_unary_e_p(identifier(ID,_Type,pos(Col,Row)),identifier(pos(0,0,Row,Col,0,0),ID)) :- !.
 translate_unary_e_p(ID,identifier(none,ID)) :- atom(ID) , !.
-translate_unary_e_p(integer(A,_Pos),integer(none,A)) :- !.
-translate_unary_e_p(boolean(A,_Pos),TA) :- ! , 
-    alloy_to_b_operator(A,TA).
+translate_unary_e_p(integer(A,pos(Col,Row)),integer(pos(0,0,Row,Col,0,0),A)) :- !.
+translate_unary_e_p(boolean(true,pos(Col,Row)),boolean_true(pos(0,0,Row,Col,0,0))) :- !.
+translate_unary_e_p(boolean(false,pos(Col,Row)),boolean_false(pos(0,0,Row,Col,0,0))) :- !.
 translate_unary_e_p(UnaryP,TUnaryP) :- 
     % and/or defines a list of ast nodes
     UnaryP =.. [Op,ArgList|_] , 
@@ -208,80 +208,80 @@ translate_unary_e_p(UnaryP,TUnaryP) :-
     maplist(translate_e_p,ArgList,TArgList) , 
     join_predicates(Op,TArgList,TUnaryP).
 translate_unary_e_p(UnaryP,TUnaryP) :- 
-    UnaryP =.. [Op,Arg|_] , 
+    UnaryP =.. [Op,Arg,_Type,pos(Col,Row)] , 
     member(Op,[no,one,some,lone]) , ! ,
     translate_e_p(Arg,TArg) ,  
-    translate_quantified_e(Op,TArg,TUnaryP).
+    translate_quantified_e(pos(0,0,Row,Col,0,0),Op,TArg,TUnaryP).
 translate_unary_e_p(UnaryP,TUnaryP) :- 
-    UnaryP =.. [Op,Arg,_Type,_Pos] , 
+    UnaryP =.. [Op,Arg,_Type,pos(Col,Row)] , 
     translate_e_p(Arg,TArg) , 
     alloy_to_b_operator(Op,BOp) , 
-    TUnaryP =.. [BOp,none,TArg].
+    TUnaryP =.. [BOp,pos(0,0,Row,Col,0,0),TArg].
 
 % binary expressions and predicates
-translate_binary_e_p(join(Arg1,Arg2,_Type,_Pos),TBinaryJoin) :- ! , 
+translate_binary_e_p(join(Arg1,Arg2,_Type,pos(Col,Row)),TBinaryJoin) :- ! , 
     % special case: join
-    translate_join(Arg1,Arg2,TBinaryJoin).
+    translate_join(pos(Col,Row),Arg1,Arg2,TBinaryJoin).
 translate_binary_e_p(Call,TCall) :- 
-    Call =.. [Functor,Name,Params,Type,Pos] , 
+    Call =.. [Functor,Name,Params,_Type,pos(Col,Row)] , 
     (Functor = pred_call ; Functor = fun_call ) , ! , 
     % special case: predicate and function call
     % TODO: fun_call may be from a utility module like ordering\first
     maplist(translate_e_p,Params,TParams) , 
-    TCall =.. [definition,Name,TParams,Type,Pos].
+    TCall =.. [definition,pos(0,0,Row,Col,0,0),Name,TParams].
 translate_binary_e_p(Binary,TBinary) :- 
-    Binary =.. [Op,Arg1,Arg2|_] , 
+    Binary =.. [Op,Arg1,Arg2,_Type,pos(Col,Row)] , 
     translate_e_p(Arg1,TArg1) , 
     translate_e_p(Arg2,TArg2) , 
     alloy_to_b_operator(Op,BOp) , 
-    TBinary =.. [BOp,none,TArg1,TArg2].
+    TBinary =.. [BOp,pos(0,0,Row,Col,0,0),TArg1,TArg2].
 
 % Translation of the dot join operator has several special cases depending on the arity of the arguments.
-translate_join(Arg1,Arg2,TBinaryJoin) :- 
+translate_join(Pos,Arg1,Arg2,TBinaryJoin) :- 
     translate_e_p(Arg1,TArg1) , 
     translate_e_p(Arg2,TArg2) , 
-    translate_join_aux(Arg1,Arg2,TArg1,TArg2,TBinaryJoin).
+    translate_join_aux(Pos,Arg1,Arg2,TArg1,TArg2,TBinaryJoin).
 
 % univ._
-translate_join_aux(identifier('univ_',type(['univ_'],1),_),_Arg2,_TArg1,TArg2,ran(none,TArg2)).
+translate_join_aux(Pos,identifier('univ_',type(['univ_'],1),_),_Arg2,_TArg1,TArg2,ran(Pos,TArg2)).
 % _.univ
-translate_join_aux(_Arg1,identifier('univ_',type(['univ_'],1),_),TArg1,_TArg2,dom(none,TArg1)).
+translate_join_aux(Pos,_Arg1,identifier('univ_',type(['univ_'],1),_),TArg1,_TArg2,dom(Pos,TArg1)).
 % unary._
-translate_join_aux(Arg1,_Arg2,TArg1,TArg2,image(none,TArg2,TArg1)) :- 
+translate_join_aux(Pos,Arg1,_Arg2,TArg1,TArg2,image(Pos,TArg2,TArg1)) :- 
     is_unary_relation(Arg1).
 % binary.unary
-translate_join_aux(Arg1,Arg2,TArg1,TArg2,image(none,reverse(none,TArg1),TArg2)) :- 
+translate_join_aux(Pos,Arg1,Arg2,TArg1,TArg2,image(Pos,reverse(Pos,TArg1),TArg2)) :- 
     is_binary_relation(Arg1) , is_unary_relation(Arg2).
 % binary.binary
-translate_join_aux(Arg1,Arg2,TArg1,TArg2,parallel_product(none,TArg1,TArg2)) :-
+translate_join_aux(Pos,Arg1,Arg2,TArg1,TArg2,parallel_product(Pos,TArg1,TArg2)) :-
     is_binary_relation(Arg1) , is_binary_relation(Arg2).
-translate_join_aux(Arg1,Arg2,_TArg1,_TArg2,empty_set(none)) :- 
+translate_join_aux(Pos,Arg1,Arg2,_TArg1,_TArg2,empty_set(Pos)) :- 
     format("Join not supported this way:~nLeft: ~w~nRight: ~w~n",[Arg1,Arg2]).
 
 % Unary quantified expressions: no, one, some, lone
-translate_quantified_e(no,TArg,equal(none,TArg,empty_set(none))).
-translate_quantified_e(one,TArg,equal(none,card(none,TArg),integer(none,1))).
-translate_quantified_e(some,TArg,greater(none,card(none,TArg),integer(none,0))).
-translate_quantified_e(lone,TArg,less_equal(none,card(none,TArg),integer(none,1))).
+translate_quantified_e(Pos,no,TArg,equal(Pos,TArg,empty_set(none))).
+translate_quantified_e(Pos,one,TArg,equal(Pos,card(none,TArg),integer(none,1))).
+translate_quantified_e(Pos,some,TArg,greater(Pos,card(none,TArg),integer(none,0))).
+translate_quantified_e(Pos,lone,TArg,less_equal(Pos,card(none,TArg),integer(none,1))).
 
 % Field declarations have several special cases depending on the keywords set, one, some or lone.
-field_decl_special_cases(TSignatureName,DeclTerm,TFieldID,TField) :- 
+field_decl_special_cases(Pos,TSignatureName,DeclTerm,TFieldID,TField) :- 
     DeclTerm =.. [_,SetID|_] , 
     translate_e_p(SetID,TSetID) , 
-    field_decl_special_cases_aux(DeclTerm,TSignatureName,TSetID,TFieldID,TField).
+    field_decl_special_cases_aux(Pos,DeclTerm,TSignatureName,TSetID,TFieldID,TField).
 
-field_decl_special_cases_aux(setof(_,_,_),TSignatureName,TSetID,TFieldID,member(none,TFieldID,relations(none,TSignatureName,TSetID))).
-field_decl_special_cases_aux(oneof(_,_,_),TSignatureName,TSetID,TFieldID,member(none,TFieldID,total_function(none,TSignatureName,TSetID))).
-field_decl_special_cases_aux(loneof(_,_,_),TSignatureName,TSetID,TFieldID,member(none,TFieldID,partial_function(none,TSignatureName,TSetID))).
-field_decl_special_cases_aux(Term,_,_,_,_) :- 
-    format("Field declaration not implemented: ~w",[Term]).
+field_decl_special_cases_aux(Pos,setof(_,_,_),TSignatureName,TSetID,TFieldID,member(Pos,TFieldID,relations(none,TSignatureName,TSetID))).
+field_decl_special_cases_aux(Pos,oneof(_,_,_),TSignatureName,TSetID,TFieldID,member(Pos,TFieldID,total_function(none,TSignatureName,TSetID))).
+field_decl_special_cases_aux(Pos,loneof(_,_,_),TSignatureName,TSetID,TFieldID,member(Pos,TFieldID,partial_function(none,TSignatureName,TSetID))).
+field_decl_special_cases_aux(Pos,Term,_,_,_,_) :- 
+    format("Field declaration not implemented: ~w~nPosition ~w",[Term,Pos]).
 
 % In function or predicate definitions one can use either set or one.
-fun_or_pred_decl_special_cases(setof(SetID,_,_),TFieldID,subset(none,TFieldID,TSetID)) :- 
+fun_or_pred_decl_special_cases(Pos,setof(SetID,_,_),TFieldID,subset(Pos,TFieldID,TSetID)) :- 
     translate_e_p(SetID,TSetID).
-fun_or_pred_decl_special_cases(oneof(SetID,_,_),TFieldID,subset(none,set_extension(none,[TFieldID]),TSetID)) :- 
+fun_or_pred_decl_special_cases(Pos,oneof(SetID,_,_),TFieldID,subset(Pos,set_extension(Pos,[TFieldID]),TSetID)) :- 
     translate_e_p(SetID,TSetID).
-fun_or_pred_decl_special_cases(Term,_,_) :- 
+fun_or_pred_decl_special_cases(_,Term,_,_) :- 
     format("Field declaration for function or predicate not implemented: ~w",[Term]).
 
 % Most of the operators can be translated straightforwardly from Alloy to B.
@@ -294,8 +294,6 @@ alloy_to_b_operator_aux(not,negation).
 alloy_to_b_operator_aux(or,disjunct).
 alloy_to_b_operator_aux(and,conjunct).
 alloy_to_b_operator_aux(minus,set_subtraction).
-alloy_to_b_operator_aux(true,boolean_true(none)).
-alloy_to_b_operator_aux(false,boolean_false(none)).
 alloy_to_b_operator_aux(closure1,reflexive_closure).
 alloy_to_b_operator_aux(function,expression_definition).
 alloy_to_b_operator_aux(predicate,predicate_definition).
