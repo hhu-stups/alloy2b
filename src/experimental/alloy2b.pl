@@ -216,6 +216,8 @@ translate_quantifier_e_aux(Pos,lone,TParams,TFields,TBody,less_equal(Pos,card(no
 translate_unary_e_p(Int,integer(none,Int)) :- integer(Int) , !.
 translate_unary_e_p(identifier(ID,_Type,pos(Col,Row)),set_extension(pos(0,0,Row,Col,0,0),[identifier(none,ID)])) :- 
     on_exception(_,singleton_set(ID),fail) , !.
+translate_unary_e_p(identifier('Int_',_Type,pos(Col,Row)),integer_set(pos(0,0,Row,Col,0,0))) :- !.
+translate_unary_e_p('Int_',integer_set(none)) :- !.
 translate_unary_e_p(identifier(ID,_Type,pos(Col,Row)),identifier(pos(0,0,Row,Col,0,0),ID)) :- !.
 translate_unary_e_p(ID,identifier(none,ID)) :- atom(ID) , !.
 translate_unary_e_p(integer(A,pos(Col,Row)),integer(pos(0,0,Row,Col,0,0),A)) :- !.
