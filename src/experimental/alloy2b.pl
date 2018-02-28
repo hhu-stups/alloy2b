@@ -10,6 +10,9 @@ command_counter(0).
 % An automated translation from Alloy to classical B.
 % The Alloy abstract syntax tree is translated to an untyped B AST as supported by ProB.
 % Afterwards, the untyped AST can be typechecked and loaded by ProB.
+% The used positions are from the Alloy parser and thus refer to the Alloy model.
+
+% TODO: util/ordering
 
 translate_model(alloy_model(facts(Facts),assertions(Assertions),commands(Commands),functions(Functions),signatures(Signatures)),BAst) :- 
     % singleton sets are asserted at runtime using singleton_set/1
@@ -138,21 +141,25 @@ translate_global_scope_aux([SignatureName|T],GlobalScope,Acc,TGlobalScopes) :-
     translate_global_scope_aux(T,GlobalScope,[TScope|Acc],TGlobalScopes).
 
 % signature in (subset)
-define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
+define_sig_as_set_or_constant(MAcc,Name,Options,pos(Col,Row),NewMAcc) :- 
     memberchk(subset(Parents),Options) , ! , 
-    define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,Pos,MAcc1) , 
+    define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,pos(Col,Row),MAcc1) , 
     % TODO: consider several parents -> we need the universe type
     Parents = [Parent|_] , 
     translate_e_p(Name,TName) , 
     translate_e_p(Parent,TParent) , 
-    extend_machine_acc(properties,MAcc1,member(none,TName,TParent),NewMAcc).
+    get_constant_definition_operator_from_sig_options(Options,BOp) , 
+    TNode =.. [BOp,pos(0,0,Row,Col,0,0),TName,TParent] , 
+    extend_machine_acc(properties,MAcc1,TNode,NewMAcc).
 % signature extends
-define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
+define_sig_as_set_or_constant(MAcc,Name,Options,pos(Col,Row),NewMAcc) :- 
     member(subsig(Parent),Options) , ! , 
-    define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,Pos,MAcc1) ,
+    define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,pos(Col,Row),MAcc1) ,
     translate_e_p(Name,TName) , 
     translate_e_p(Parent,TParent) , 
-    extend_machine_acc(properties,MAcc1,member(none,TName,TParent),NewMAcc).
+    get_constant_definition_operator_from_sig_options(Options,BOp) , 
+    TNode =.. [BOp,pos(0,0,Row,Col,0,0),TName,TParent] , 
+    extend_machine_acc(properties,MAcc1,TNode,NewMAcc).
 % default signature
 define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
     define_sig_as_set_or_constant_aux(sets,MAcc,Name,Options,Pos,NewMAcc).
@@ -163,6 +170,10 @@ define_sig_as_set_or_constant_aux(sets,MAcc,Name,_Options,pos(Col,Row),NewMAcc) 
 define_sig_as_set_or_constant_aux(constants,MAcc,Name,_Options,pos(Col,Row),NewMAcc) :- 
     extend_machine_acc(constants,MAcc,identifier(pos(0,0,Row,Col,0,0),Name),NewMAcc).
 
+get_constant_definition_operator_from_sig_options(Options,member) :- 
+    member(one,Options) , !.
+get_constant_definition_operator_from_sig_options(_,subset).
+
 % translate expression or predicate
 translate_e_p(A,TA) :- 
     % check quantifiers first
@@ -171,8 +182,18 @@ translate_e_p(A,TA) :-
     translate_unary_e_p(A,TA) , !.
 translate_e_p(A,TA) :- 
     translate_binary_e_p(A,TA) , !.
+translate_e_p(A,TA) :- 
+    translate_if_then_else(A,TA).
 translate_e_p(A,_) :- 
     format("Translation failed for ~w.~n",[A]).
+
+translate_if_then_else(if_then_else(ConditionPred,TruthExpr,FalsityExpr,_Type,pos(Col,Row)),TIfThenElse) :- 
+    translate_e_p(ConditionPred,TConditionPred) , 
+    translate_e_p(TruthExpr,TTruthExpr) , 
+    translate_e_p(FalsityExpr,TFalsityExpr) , 
+    TIfThenElse = conjunct(pos(0,0,Row,Col,0,0),
+        implication(pos(0,0,Row,Col,0,0),TConditionPred,TTruthExpr),
+        implication(pos(0,0,Row,Col,0,0),negation(pos(0,0,Row,Col,0,0),TConditionPred),TFalsityExpr)).
 
 % quantifiers
 translate_quantifier_e(Quantifier,TQuantifier) :- 
