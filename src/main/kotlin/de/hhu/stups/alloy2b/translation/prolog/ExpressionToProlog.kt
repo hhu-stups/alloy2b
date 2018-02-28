@@ -5,9 +5,16 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 
 class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : VisitReturn<String>() {
 
-    override fun visit(p0: ExprBinary) =
-            "${getOperator(p0.op.toString())}(${p0.left.accept(this)},${p0.right.accept(this)}," +
-                    "${alloyAstToProlog.getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
+    override fun visit(p0: ExprBinary) : String {
+        val left = p0.left
+        val right = p0.right
+        if (left.toString() == "this" && p0.op.toString() == ".") {
+            // integer identifiers (integer casts) are joined with 'this' as the left argument by the Alloy parser
+            return right.accept(this)
+        }
+        return   "${getOperator(p0.op.toString())}(${p0.left.accept(this)},${p0.right.accept(this)}," +
+                "${alloyAstToProlog.getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
+    }
 
     override fun visit(p0: ExprList) =
             "${getOperator(p0.op.toString())}(${p0.args.map { it.accept(this) }},pos(${p0.pos.x},${p0.pos.y}))"
@@ -46,7 +53,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
             when (p0.op) {
                 ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
                 ExprUnary.Op.CAST2INT,
-                ExprUnary.Op.CAST2SIGINT -> "integer_cast(${p0.sub.accept(this)},pos(${p0.pos.x},${p0.pos.y}))"
+                ExprUnary.Op.CAST2SIGINT -> p0.sub.accept(this)
                 else -> "${getOperator(p0.op.toString())}(${p0.sub.accept(this)}," +
                         "${alloyAstToProlog.getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
             }
