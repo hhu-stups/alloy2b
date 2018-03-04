@@ -5,14 +5,8 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 
 class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : VisitReturn<String>() {
 
-    override fun visit(p0: ExprBinary) : String {
-        val left = p0.left
-        val right = p0.right
-        if (left.toString() == "this" && p0.op.toString() == ".") {
-            // integer identifiers (integer casts) are joined with 'this' as the left argument by the Alloy parser
-            return right.accept(this)
-        }
-        return   "${getOperator(p0.op.toString())}(${p0.left.accept(this)},${p0.right.accept(this)}," +
+    override fun visit(p0: ExprBinary): String {
+        return "${getOperator(p0.op.toString())}(${p0.left.accept(this)},${p0.right.accept(this)}," +
                 "${alloyAstToProlog.getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
     }
 
@@ -21,8 +15,13 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
 
     override fun visit(p0: ExprCall): String {
         val functor = if (p0.`fun`.isPred) "pred_call" else "fun_call"
-        return "$functor(${alloyAstToProlog.sanitizeIdentifier(p0.`fun`.label)},${p0.args?.map { it.accept(this) }}," +
-                "${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
+        val name = alloyAstToProlog.sanitizeIdentifier(p0.`fun`.label)
+        // flatten types for ordering function calls to the signature name
+        val type = if (name.startsWith("'ordering_'") || name.endsWith("'first_'") || name.endsWith("'last_'"))
+            "type([${alloyAstToProlog.sanitizeIdentifier(p0.type().toString().split("->").first())}]," +
+                    "${p0.type().arity()})" else alloyAstToProlog.getType(p0.type())
+        return "$functor($name,${p0.args?.map { it.accept(this) }}," +
+                "$type,pos(${p0.pos?.x},${p0.pos?.y}))"
     }
 
     override fun visit(p0: ExprConstant): String {
@@ -49,7 +48,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
                 "${p0.sub?.accept(this)},${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
     }
 
-    override fun visit(p0: ExprUnary) =
+    override fun visit(p0: ExprUnary): String =
             when (p0.op) {
                 ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
                 ExprUnary.Op.CAST2INT,
