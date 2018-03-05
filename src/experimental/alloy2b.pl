@@ -1,6 +1,10 @@
-:- module(alloy2b,[translate_model/2]).
+:- module(alloy2b,[load_model/1,translate_model/2,run_tests/0]).
 
 :- use_module(library(lists)).
+
+:- use_module(probsrc(bmachine)).
+:- use_module(probsrc(translate)).
+:- use_module(library(plunit)).
 
 :- dynamic singleton_set/1, total_function/1, ordered_signature/1, command_counter/1.
 :- volatile singleton_set/1, total_function/1, ordered_signature/1, command_counter/1.
@@ -12,7 +16,17 @@ command_counter(0).
 % Afterwards, the untyped AST can be typechecked and loaded by ProB.
 % The used positions are from the Alloy parser and thus refer to the Alloy model.
 
-translate_model(alloy_model(facts(Facts),assertions(Assertions),commands(Commands),functions(Functions),signatures(Signatures)),BAst) :- 
+load_model(AlloyTerm) :- 
+    translate_model(AlloyTerm,UntypedBAst) , ! , 
+    UntypedBAst = machine(generated(none,AbstractMachine)) , 
+    b_load_machine_from_term('alloytranslation',complete_machine('alloytranslation',[AbstractMachine],['alloytranslation'])).
+
+get_loaded_machine_as_atom(MachineAtom) :- 
+    full_b_machine(FullBMachine) , 
+    translate_machine(FullBMachine,MachineCodes,_) , 
+    atom_codes(MachineAtom,MachineCodes).
+
+translate_model(alloy_model(facts(Facts),assertions(Assertions),commands(Commands),functions(Functions),signatures(Signatures)),UntypedBAst) :- 
     % singleton sets are asserted at runtime using singleton_set/1
     % accumulate all translations, afterwards we build the untyped machine ast
     empty_machine_acc(MAcc) , 
@@ -21,7 +35,7 @@ translate_model(alloy_model(facts(Facts),assertions(Assertions),commands(Command
     map_translate(command,MAcc2,Commands,MAcc3) , 
     map_translate(function,MAcc3,Functions,MAcc4) , 
     map_translate(fact,MAcc4,Facts,MAcc5) , ! , 
-    build_machine_ast(MAcc5,BAst) , 
+    build_machine_ast(MAcc5,UntypedBAst) , 
     retract_state.
 
 % Map the translation over a list and accumulate the results. 
@@ -48,6 +62,7 @@ translate_signature(MAcc,signature(Name,Fields,Facts,Options,pos(Col,Row)),NewMA
     assert_singleton_set(Options,Name) , 
     extend_machine_acc(signatures,MAcc,[Name],MAcc1) , 
     translate_signature_aux(Name,Options,pos(Col,Row),MAcc1,MAcc2) ,  
+    write(Name) , nl , nl , trace , nl , 
     translate_signature_fields(MAcc2,Name,Fields,MAcc3) , 
     translate_e_p(Name,TName) , 
     map_translate(signature_fact(TName),MAcc3,Facts,NewMAcc).
@@ -58,17 +73,14 @@ translate_signature_aux(Name,Options,Pos,MAcc,NewMAcc) :-
     asserta(ordered_signature(Name)) , 
     define_ordered_signature_functions(Pos,MAcc,Name,MAcc1) , 
     extend_machine_acc(signatures,MAcc1,[Name],MAcc2) , 
-    extend_machine_acc(properties,MAcc2,[member(none,identifier(none,Name),pow_subset(none,integer_set(none)))],MAcc3) , 
+    extend_machine_acc(properties,MAcc2,member(none,identifier(none,Name),pow_subset(none,integer_set(none))),MAcc3) , 
     define_sig_as_set_or_constant_aux(constants,MAcc3,Name,Options,Pos,NewMAcc).
 translate_signature_aux(Name,Options,Pos,MAcc,NewMAcc) :- 
     define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc).
 
 define_ordered_signature_functions(pos(Col,Row),MAcc,Name,NewMAcc) :- 
-    TPos = pos(0,0,Row,Col,0,0) , 
-    TIDX = identifier(TPos,x) , 
-    TIDS = identifier(TPos,s) ,
-    translate_e_p(Name,TName) ,  
-    MemberX = member(TPos,TIDX,TName) , 
+    TPos = pos(0,0,Row,Col,0,0) , TIDX = identifier(TPos,x) ,  TIDS = identifier(TPos,s) ,
+    translate_e_p(Name,TName) ,  MemberX = member(TPos,TIDX,TName) , 
     % next_Sig(s)  == {x|x=s+1 & x:Sig}
     atom_concat(next_,Name,NextName) , 
     NextBody = conjunct(TPos,equal(TPos,TIDX,add(TPos,TIDS,integer(TPos,1))),MemberX) , 
@@ -150,9 +162,14 @@ translate_function(MAcc,FunctionOrPredicate,NewMAcc) :-
     maplist(translate_e_p,Params,TParams) , 
     maplist(translate_function_field,Decls,TDecls,SingletonSetNames) , 
     translate_e_p(Body,TBody) , 
-    append(TDecls,[TBody],BehaviorList) , 
-    join_predicates_aux(conjunct,BehaviorList,Behavior) , 
-    UAst =.. [BFunctor,pos(0,0,Row,Col,0,0),Name,TParams,Behavior] , 
+    (Functor = function 
+    ->  append(TDecls,[member(none,identifier(none,'temp'),TBody)],BehaviorList) , 
+        join_predicates_aux(conjunct,BehaviorList,Behavior) , 
+        % define functions as comprehension sets
+        UAst =.. [BFunctor,pos(0,0,Row,Col,0,0),Name,TParams,comprehension_set(pos(0,0,Row,Col,0,0),[identifier(none,'temp')],Behavior)]
+    ;   append(TDecls,[TBody],BehaviorList) , 
+        join_predicates_aux(conjunct,BehaviorList,Behavior) , 
+        UAst =.. [BFunctor,pos(0,0,Row,Col,0,0),Name,TParams,Behavior]) , 
     extend_machine_acc(definitions,MAcc,UAst,NewMAcc) , 
     maplist(retract_singleton_set,SingletonSetNames).
 
@@ -233,8 +250,7 @@ define_sig_as_set_or_constant(MAcc,Name,Options,pos(Col,Row),NewMAcc) :-
     Parents = [Parent|_] , 
     translate_e_p(Name,TName) , 
     translate_e_p(Parent,TParent) , 
-    get_constant_definition_operator_from_sig_options(Options,BOp) , 
-    TNode =.. [BOp,pos(0,0,Row,Col,0,0),TName,TParent] , 
+    TNode =.. [subset,pos(0,0,Row,Col,0,0),TName,TParent] , 
     extend_machine_acc(properties,MAcc1,TNode,NewMAcc).
 % signature extends
 define_sig_as_set_or_constant(MAcc,Name,Options,pos(Col,Row),NewMAcc) :- 
@@ -242,8 +258,7 @@ define_sig_as_set_or_constant(MAcc,Name,Options,pos(Col,Row),NewMAcc) :-
     define_sig_as_set_or_constant_aux(constants,MAcc,Name,Options,pos(Col,Row),MAcc1) ,
     translate_e_p(Name,TName) , 
     translate_e_p(Parent,TParent) , 
-    get_constant_definition_operator_from_sig_options(Options,BOp) , 
-    TNode =.. [BOp,pos(0,0,Row,Col,0,0),TName,TParent] , 
+    TNode =.. [subset,pos(0,0,Row,Col,0,0),TName,TParent] , 
     extend_machine_acc(properties,MAcc1,TNode,NewMAcc).
 % default signature
 define_sig_as_set_or_constant(MAcc,Name,Options,Pos,NewMAcc) :- 
@@ -254,10 +269,6 @@ define_sig_as_set_or_constant_aux(sets,MAcc,Name,_Options,pos(Col,Row),NewMAcc) 
     extend_machine_acc(sets,MAcc,deferred_set(pos(0,0,Row,Col,0,0),Name),NewMAcc).
 define_sig_as_set_or_constant_aux(constants,MAcc,Name,_Options,pos(Col,Row),NewMAcc) :- 
     extend_machine_acc(constants,MAcc,identifier(pos(0,0,Row,Col,0,0),Name),NewMAcc).
-
-get_constant_definition_operator_from_sig_options(Options,member) :- 
-    member(one,Options) , !.
-get_constant_definition_operator_from_sig_options(_,subset).
 
 % translate expression or predicate
 translate_e_p(A,TA) :- 
@@ -347,6 +358,11 @@ ordering_function_to_b(type([SignatureName|_],_),OrderingFunctionName,FunctionNa
 % binary expressions and predicates
 translate_binary_e_p(join(Arg1,Arg2,_Type,pos(Col,Row)),TBinaryJoin) :- ! , 
     translate_join(pos(0,0,Row,Col,0,0),Arg1,Arg2,TBinaryJoin).
+translate_binary_e_p(let(VarName,Expr,Sub,_Type,pos(Col,Row)),let_expression(BPos,[TVarName],equal(BPos,TVarName,TExpr),TSub)) :- ! , 
+    translate_e_p(VarName,TVarName) , 
+    translate_e_p(Expr,TExpr) , 
+    translate_e_p(Sub,TSub) , 
+    BPos = pos(0,0,Row,Col,0,0).
 translate_binary_e_p(Call,TCall) :- 
     Call =.. [Functor,Name,Params,_Type,pos(Col,Row)] , 
     (Functor = pred_call ; Functor = fun_call ) , ! , 
@@ -368,15 +384,24 @@ translate_function_call(Name,_Params,type([Type|_],_Arity),pos(Col,Row),TCall) :
     Type = SignatureName , 
     translate_e_p(SignatureName,TSignatureName) , 
     TCall =.. [BFunctor,pos(0,0,Row,Col,0,0),TSignatureName].
+translate_function_call(Name,Params,_Type,pos(Col,Row),TCall) :- 
+    % utility functions from integer
+    integer_function_to_b(Name,BOp) , ! , 
+    maplist(translate_e_p,Params,TParams) , 
+    TCall =.. [BOp,pos(0,0,Row,Col,0,0)|TParams].
 translate_function_call(Name,Params,Type,pos(Col,Row),TCall) :- 
-    % utility functions from integers or ordering
-    (ordering_function_to_b(Type,Name,BOp) ; integer_function_to_b(Name,BOp)) , ! , 
+    % utility functions from ordering
+    ordering_function_to_b(Type,Name,BOp) , ! , 
     maplist(translate_e_p,Params,TParams) , 
     TCall =.. [definition,pos(0,0,Row,Col,0,0),BOp,TParams].
 translate_function_call(Name,Params,_Type,pos(Col,Row),TCall) :- 
     % predicate and function call
     maplist(translate_e_p,Params,TParams) , 
-    TCall =.. [definition,pos(0,0,Row,Col,0,0),Name,TParams].
+    maplist(strip_singleton_set,TParams,TTParams) , 
+    TCall =.. [definition,pos(0,0,Row,Col,0,0),Name,TTParams].
+
+strip_singleton_set(set_extension(_,[identifier(Pos,Name)]),identifier(Pos,Name)) :- !.
+strip_singleton_set(A,A).
 
 % Translation of the dot join operator has several special cases depending on the arity of the arguments.
 translate_join(Pos,Arg1,Arg2,TBinaryJoin) :- 
@@ -415,10 +440,10 @@ translate_join_aux(Pos,Arg1,Arg2,TArg1,TArg2,function(Pos,reverse(Pos,TArg1),[TT
 translate_join_aux(Pos,Arg1,Arg2,TArg1,TArg2,image(Pos,reverse(Pos,TArg1),TArg2)) :- 
     is_binary_relation(Arg1) , is_unary_relation(Arg2).
 % binary.binary
-translate_join_aux(Pos,Arg1,Arg2,TArg1,TArg2,parallel_product(Pos,TArg1,TArg2)) :-
+translate_join_aux(Pos,Arg1,Arg2,TArg1,TArg2,composition(Pos,TArg1,TArg2)) :-
     is_binary_relation(Arg1) , is_binary_relation(Arg2).
 translate_join_aux(Pos,Arg1,Arg2,_TArg1,_TArg2,empty_set(Pos)) :- 
-    format("Join not supported this way:~nLeft: ~w~nRight: ~w~n",[Arg1,Arg2]).
+    format("~nJoin not supported this way:~nLeft: ~w~nRight: ~w~n",[Arg1,Arg2]).
 
 % Unary quantified expressions: no, one, some, lone
 translate_quantified_e(Pos,no,TArg,equal(Pos,TArg,empty_set(none))).
@@ -436,16 +461,20 @@ field_decl_special_cases_aux(Pos,setof(_,_,_),TSignatureName,TSetID,TFieldID,mem
 field_decl_special_cases_aux(Pos,oneof(_,_,_),TSignatureName,TSetID,TFieldID,member(Pos,TFieldID,total_function(none,TSignatureName,TSetID))) :- 
     asserta(total_function(TFieldID)).
 field_decl_special_cases_aux(Pos,loneof(_,_,_),TSignatureName,TSetID,TFieldID,member(Pos,TFieldID,partial_function(none,TSignatureName,TSetID))).
+field_decl_special_cases_aux(Pos,Function,_TSignatureName,_TSetID,TFieldID,member(Pos,TFieldID,TFunction)) :- 
+    translate_e_p(Function,TFunction).
 field_decl_special_cases_aux(Pos,Term,_,_,_,_) :- 
-    format("Field declaration not implemented: ~w~nPosition ~w",[Term,Pos]).
+    format("~nField declaration not implemented: ~w~nPosition ~w~n",[Term,Pos]).
 
 % In function or predicate definitions one can use either set or one.
 fun_or_pred_decl_special_cases(Pos,setof(Expr,_,_),TFieldID,subset(Pos,TFieldID,TExpr)) :- 
     translate_e_p(Expr,TExpr).
 fun_or_pred_decl_special_cases(Pos,oneof(Expr,_,_),TFieldID,subset(Pos,TFieldID,TExpr)) :- 
     translate_e_p(Expr,TExpr).
+fun_or_pred_decl_special_cases(Pos,identifier(Name,Type,PosID),TFieldID,subset(Pos,TFieldID,TSignatureName)) :- 
+    translate_e_p(identifier(Name,Type,PosID),TSignatureName).
 fun_or_pred_decl_special_cases(_,Term,_,_) :- 
-    format("Field declaration for function or predicate not implemented: ~w",[Term]).
+    format("~nField declaration for function or predicate not implemented: ~w~n",[Term]).
 
 % Most of the operators can be translated straightforwardly from Alloy to B.
 alloy_to_b_operator(Op,BOp) :- 
@@ -456,6 +485,7 @@ alloy_to_b_operator_aux(plus,union).
 alloy_to_b_operator_aux(not,negation).
 alloy_to_b_operator_aux(or,disjunct).
 alloy_to_b_operator_aux(and,conjunct).
+alloy_to_b_operator_aux(inverse,reverse).
 alloy_to_b_operator_aux(minus,set_subtraction).
 alloy_to_b_operator_aux(closure1,reflexive_closure).
 alloy_to_b_operator_aux(cartesian,cartesian_product).
@@ -472,7 +502,7 @@ build_machine_ast(b_machine(ListOfMachineParts,_SignatureNames),machine(generate
     % properties need to be conjoined
     select(properties(none,L),TempListOfUsedMachineParts,RestListOfUsedMachineParts) , 
     join_predicates(conjunct,L,FlatL) , 
-    AbstractMachine =.. [abstract_machine,none,machine(none),machine_header(none,alloytranslation,[]),[properties(none,FlatL)|RestListOfUsedMachineParts]].
+    AbstractMachine =.. [abstract_machine,none,machine(none),machine_header(none,alloytranslation,[]),[properties(none,FlatL)|RestListOfUsedMachineParts]] , !.
 
 empty_machine_acc(b_machine([sets(none,[]),constants(none,[]),definitions(none,[]),properties(none,[]),assertions(none,[]),operations(none,[])],[])).
 
