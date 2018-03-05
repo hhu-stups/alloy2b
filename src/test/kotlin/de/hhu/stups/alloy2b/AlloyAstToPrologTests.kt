@@ -12,6 +12,12 @@ class AlloyAstToPrologTests {
     }
 
     @Test
+    fun translateFileSystem2() {
+        val expected = getResourceAsString("FileSystem2.pl")
+        Assert.assertEquals(expected, AlloyAstToProlog("/FileSystem2.als").getPrologTerm())
+    }
+
+    @Test
     fun translateCards() {
         val expected = getResourceAsString("cards.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/cards.als").getPrologTerm())
