@@ -38,7 +38,9 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
                     ",${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprLet) =
-            "let(${p0.`var`},${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
+            // a let with mutliple variables are split into several let expressions by Alloy each having only one var
+            "let(${alloyAstToProlog.sanitizeIdentifier(p0.`var`.label)}," +
+                    "${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
                     ",${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprQt): String {

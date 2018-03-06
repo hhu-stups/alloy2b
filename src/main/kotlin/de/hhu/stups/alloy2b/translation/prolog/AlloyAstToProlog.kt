@@ -81,7 +81,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
     fun getPrologTerm() = prologTerm
 
     private fun toPrologTerm(astNode: Pair<String, Expr>) =
-            // fact
+    // fact
             "fact(${astNode.b?.accept(expressionTranslator)},(${astNode.b?.pos?.x},${astNode.b?.pos?.y}))"
 
     private fun toPrologTerm(astNode: Command): String {
@@ -98,25 +98,36 @@ class AlloyAstToProlog(alloyModelPath: String) {
         // function or predicate
         val functor = if (astNode.isPred) "predicate" else "function"
         return "$functor(${sanitizeIdentifier(astNode.label)},${astNode.params().map { toPrologTerm(it) }}," +
-                astNode.decls.map { toPrologTerm(it) }.toString() +
+                astNode.decls.map { toPrologTerm(it) } +
                 ",${toPrologTerm(astNode.body)},pos(${astNode.pos.x},${astNode.pos.y}))"
     }
 
     private fun toPrologTerm(astNode: Expr) =
-            // expression
+    // expression
             astNode.accept(expressionTranslator)
 
-    private fun toPrologTerm(astNode: Sig) =
-            // signature
-            "signature(${sanitizeIdentifier(astNode.label)}," +
-                    "[${astNode.fieldDecls?.joinToString(",") { toPrologTerm(it) }}]," +
-                    "[${astNode.facts?.joinToString(",") { toPrologTerm(it) }}]," +
-                    "${collectSignatureOptionsToPrologList(astNode)},pos(${astNode.pos.x},${astNode.pos.y}))"
+    private fun toPrologTerm(astNode: Sig): String {
+        // signature
+        return "signature(${sanitizeIdentifier(astNode.label)}," +
+                "[${astNode.fieldDecls.joinToString(",") { toPrologTerm(it) }}]," +
+                "[${astNode.facts.joinToString(",") { toPrologTerm(it) }}]," +
+                "${collectSignatureOptionsToPrologList(astNode)},pos(${astNode.pos.x},${astNode.pos.y}))"
+    }
 
-    fun toPrologTerm(astNode: Decl) =
-            // declaration
-            "field(${sanitizeIdentifier(astNode.get().label)},${astNode.expr.accept(expressionTranslator)}," +
-                    "${getType(astNode.expr.type())},pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
+    fun toPrologTerm(astNode: Decl): String {
+        // declaration
+        if (astNode.names.size > 1) {
+            // a field declaration may has several names, for instance:
+            // "sig State { near, far: set Object }" has one Decl with one Expr but two names near and far
+            // we then have to define Expr for each name
+            return astNode.names.joinToString(",") {
+                "field(${sanitizeIdentifier(it.label)},${astNode.expr.accept(expressionTranslator)}," +
+                        "${getType(astNode.expr.type())},pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
+            }
+        }
+        return "field(${sanitizeIdentifier(astNode.get().label)},${astNode.expr.accept(expressionTranslator)}," +
+                "${getType(astNode.expr.type())},pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
+    }
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
         val lstOptions = mutableListOf<String>()
@@ -175,8 +186,10 @@ class AlloyAstToProlog(alloyModelPath: String) {
     }
 
     fun getType(type: Type): String {
-        val tType = type.map { sanitizeIdentifier(it.toString()) }
-                .map { it.replace("{", "").replace("}", "") }
+        val tType = type.map {
+            it.toString().split("->").map { sanitizeIdentifier(it.replace("{", "").replace("}", "")) }
+        }
+
         return "type(${if (tType.isEmpty()) "[untyped]" else tType.toString()},${type.arity()})"
     }
 }
