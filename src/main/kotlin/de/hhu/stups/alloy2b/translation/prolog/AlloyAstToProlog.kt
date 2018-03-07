@@ -73,7 +73,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     private fun collectPropertiesFromInclude(it: CompModule.Open) {
         if ("util/ordering" == it.filename) {
-            val prefixedSignatures = it.args.map { if (it.startsWith("this")) it else "this/" + it }
+            val prefixedSignatures = it.args.map { if (it.startsWith("this")) it else "this/$it" }
             orderedSignatures.addAll(prefixedSignatures)
         }
     }
