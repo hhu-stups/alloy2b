@@ -3,10 +3,25 @@ package de.hhu.stups.alloy2b.translation.prolog
 import de.hhu.stups.alloy2b.ast.Operator
 import edu.mit.csail.sdg.alloy4compiler.ast.*
 
-class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : VisitReturn<String>() {
+class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
+                         private val orderedSignatures: MutableList<String>) : VisitReturn<String>() {
 
     override fun visit(p0: ExprBinary): String {
-        return "${getOperator(p0.op.toString())}(${p0.left.accept(this)},${p0.right.accept(this)}," +
+        val left = p0.left
+        val tLeft = left.accept(this)
+        val right = p0.right
+        val tRight = right.accept(this)
+        // we define ordered signatures as sets of integer, if an ordered signature interacts with an unordered one
+        // both have to be defined as a set of integer
+        val leftType = left.type().toString()
+        val rightType = right.type().toString()
+        if (orderedSignatures.contains(leftType) && !orderedSignatures.contains(rightType)) {
+            orderedSignatures.add(rightType)
+        } else if (orderedSignatures.contains(rightType) && !orderedSignatures.contains(leftType)) {
+            orderedSignatures.add(leftType)
+        }
+        // TODO: check for univ type
+        return "${getOperator(p0.op.toString())}($tLeft,$tRight," +
                 "${alloyAstToProlog.getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
     }
 
@@ -27,7 +42,8 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
     override fun visit(p0: ExprConstant): String {
         if (p0.type().is_int) {
             return "integer($p0,pos(${p0.pos.x},${p0.pos.y}))"
-        } else if (p0.type().is_bool) {
+        }
+        if (p0.type().is_bool) {
             return "boolean($p0,pos(${p0.pos.x},${p0.pos.y}))"
         }
         return "$p0"
@@ -38,7 +54,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog) : Visit
                     ",${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprLet) =
-            // a let with mutliple variables are split into several let expressions by Alloy each having only one var
+            // a let with multiple variables are split into several let expressions by Alloy each having only one var
             "let(${alloyAstToProlog.sanitizeIdentifier(p0.`var`.label)}," +
                     "${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
                     ",${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"

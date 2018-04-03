@@ -1,27 +1,33 @@
-package de.hhu.stups.alloy2b.translation
+package de.hhu.stups.alloy2b.translation.prolog
 
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.typechecker.Scalar
 import de.hhu.stups.alloy2b.typechecker.Set
 import de.hhu.stups.alloy2b.typechecker.Type
+import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
 
 fun modelAnalysis(orderingAndScopeMap: Map<String, Long>,
                   translationPreferences: Map<TranslationPreference, MutableMap<String, String>>,
-                  spec: AlloySpecification) {
+                  spec: CompModule) {
     // check if an unordered signature interacts with an ordered signature
     // if so, we have to define the unordered signature as a set of integer, too
-    spec.declarations.forEach { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+    spec.opens.forEach { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
 }
 
 private fun modelAnalysis(orderingAndScopeMap: Map<String, Long>,
                           translationPreferences: Map<TranslationPreference, MutableMap<String, String>>,
                           statement: Statement) {
     when (statement) {
-        is FactDeclaration -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
-        is FunDeclaration -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
-        is PredDeclaration -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
-        is AssertionStatement -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
-        is RunStatement -> statement.expressions.map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is FactDeclaration -> statement.expressions
+                .map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is FunDeclaration -> statement.expressions
+                .map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is PredDeclaration -> statement.expressions
+                .map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is AssertionStatement -> statement.expressions
+                .map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+        is RunStatement -> statement.expressions
+                .map { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
     }
 }
 
@@ -29,7 +35,8 @@ private fun modelAnalysis(orderingAndScopeMap: Map<String, Long>,
                           translationPreferences: Map<TranslationPreference, MutableMap<String, String>>,
                           expression: Expression) {
     when (expression) {
-        is BinaryOperatorExpression -> modelAnalysisBinaryExpression(orderingAndScopeMap, translationPreferences, expression)
+        is BinaryOperatorExpression ->
+            modelAnalysisBinaryExpression(orderingAndScopeMap, translationPreferences, expression)
     }
 }
 
