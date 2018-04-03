@@ -57,7 +57,7 @@ class TranslationTest {
         assertEquals(expected, BTranslation(parseResource("Peano.als").toAst(false)).getTranslation())
     }
 
-    @test
+    @test @Ignore
     fun translateSelfGrandpas() {
         val expected = getResourceAsString("SelfGrandpas.mch")
         assertEquals(expected, BTranslation(parseResource("SelfGrandpas.als").toAst(false)).getTranslation())
@@ -71,7 +71,7 @@ class TranslationTest {
         //assertEquals(expected, BTranslation(parseResource("hanoi.als").toAst(false)).getTranslation())
     }
 
-    @test
+    @test @Ignore
     fun translateGraphIso() {
         val expected = getResourceAsString("graphiso.mch")
         assertEquals(expected, BTranslation(parseResource("graphiso.als").toAst(false)).getTranslation())

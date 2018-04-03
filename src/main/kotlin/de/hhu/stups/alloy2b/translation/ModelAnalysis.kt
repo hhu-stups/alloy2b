@@ -1,4 +1,4 @@
-package de.hhu.stups.alloy2b.translation.prolog
+package de.hhu.stups.alloy2b.translation
 
 import de.hhu.stups.alloy2b.ast.*
 import de.hhu.stups.alloy2b.typechecker.Scalar
@@ -8,10 +8,10 @@ import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
 
 fun modelAnalysis(orderingAndScopeMap: Map<String, Long>,
                   translationPreferences: Map<TranslationPreference, MutableMap<String, String>>,
-                  spec: CompModule) {
+                  spec: AlloySpecification) {
     // check if an unordered signature interacts with an ordered signature
     // if so, we have to define the unordered signature as a set of integer, too
-    spec.opens.forEach { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
+    spec.declarations.forEach { modelAnalysis(orderingAndScopeMap, translationPreferences, it) }
 }
 
 private fun modelAnalysis(orderingAndScopeMap: Map<String, Long>,
