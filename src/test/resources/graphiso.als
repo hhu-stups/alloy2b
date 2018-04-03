@@ -13,7 +13,7 @@ fact graphdef {
 pred permutation {
   // p is already defined as a total function on Node
   // p is injective:
-  p.~p in iden
+  // p.~p in iden
   // p is surjective
   univ.p = Node
 }
