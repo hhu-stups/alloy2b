@@ -11,6 +11,10 @@ fun main(args: Array<String>) {
         translatePrologToConsole(args[0])
         return
     }
+    if (args.size == 3 && args[1] == "-toProlog") {
+        translatePrologToFile(args[0],args[2])
+        return
+    }
     if (args.size == 1) {
         translateBToConsole(args[0])
         return
@@ -26,6 +30,12 @@ fun main(args: Array<String>) {
 
 fun translatePrologToConsole(inputFilePath: String) {
     println(AlloyAstToProlog(inputFilePath).getPrologTerm())
+}
+
+fun translatePrologToFile(inputFilePath: String, outputFilePath: String) {
+    File(outputFilePath).printWriter().use { out ->
+            out.println(AlloyAstToProlog(inputFilePath).getPrologTerm())
+    }
 }
 
 fun translateBToConsole(inputFilePath: String) {
