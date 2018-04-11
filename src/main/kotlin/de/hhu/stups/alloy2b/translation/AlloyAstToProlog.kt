@@ -1,4 +1,4 @@
-package de.hhu.stups.alloy2b.translation.prolog
+package de.hhu.stups.alloy2b.translation
 
 import edu.mit.csail.sdg.alloy4.A4Reporter
 import edu.mit.csail.sdg.alloy4.Pair

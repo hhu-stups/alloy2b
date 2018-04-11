@@ -1,10 +1,16 @@
 package de.hhu.stups.alloy2b
 
-import de.hhu.stups.alloy2b.translation.prolog.AlloyAstToProlog
+import de.hhu.stups.alloy2b.translation.AlloyAstToProlog
 import org.junit.Assert
 import org.junit.Test
 
 class AlloyAstToPrologTests {
+
+    fun getResourceAsString(resourceName: String): String {
+        val expected = object {}.javaClass.getResourceAsStream("/$resourceName")
+        return expected.bufferedReader().use { it.readText() }
+    }
+
     @Test
     fun translateFileSystem() {
         val expected = getResourceAsString("FileSystem.pl")

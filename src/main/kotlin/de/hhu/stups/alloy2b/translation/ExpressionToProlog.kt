@@ -1,6 +1,5 @@
-package de.hhu.stups.alloy2b.translation.prolog
+package de.hhu.stups.alloy2b.translation
 
-import de.hhu.stups.alloy2b.ast.Operator
 import edu.mit.csail.sdg.alloy4compiler.ast.*
 
 class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
@@ -60,6 +59,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
                     ",${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprQt): String {
+
         val params = p0.decls?.map { it.names.joinToString(",") { alloyAstToProlog.sanitizeIdentifier(it.label) } }
         return "${getOperator(p0.op.toString())}($params," +
                 "${p0.decls?.map { alloyAstToProlog.toPrologTerm(it) }}," +

@@ -1,4 +1,4 @@
-package de.hhu.stups.alloy2b.ast
+package de.hhu.stups.alloy2b.translation
 
 enum class Operator {
     LONE, SET, ALL, JOIN, EQUAL, PLUS, INTERSECTION, MINUS, NO, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
