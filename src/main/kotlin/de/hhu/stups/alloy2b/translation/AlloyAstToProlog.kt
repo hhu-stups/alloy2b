@@ -21,7 +21,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
      *      fact(Expr,Pos)
      *
      * field/3:
-     *      field(Name,Expr,Pos)
+     *      field(Name,Expr,Options,Pos)
+     *      Options are only 'disj' by now
      *
      * check/5, run/5 (functor is either check or run):
      *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),bitwidth(BitWidth),Pos)
@@ -160,7 +161,6 @@ class AlloyAstToProlog(alloyModelPath: String) {
     }
 
     private fun isExtendingSignature(sig: Sig): Boolean {
-        // TODO: there is most likely a better way to identify extending signatures
         val isSubSig = sig.isSubsig
         return sig is Sig.PrimSig && isSubSig != null && (isSubSig.x != isSubSig.x2 || isSubSig.y != isSubSig.y2)
     }

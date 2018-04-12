@@ -45,7 +45,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
         if (p0.type().is_bool) {
             return "boolean($p0,pos(${p0.pos.x},${p0.pos.y}))"
         }
-        return "$p0"
+        return "$p0(pos(${p0.pos.x},${p0.pos.y}))"
     }
 
     override fun visit(p0: ExprITE) =
