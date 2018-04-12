@@ -110,17 +110,18 @@ class AlloyAstToProlog(alloyModelPath: String) {
     }
 
     fun toPrologTerm(astNode: Decl): String {
+        val options = if (astNode.disjoint != null || astNode.disjoint2 != null) "[disj]" else "[]"
         if (astNode.names.size > 1) {
             // a field declaration may has several names, for instance:
             // "sig State { near, far: set Object }" has one Decl with one Expr but two names near and far
             // we then have to define Expr for each name
             return astNode.names.joinToString(",") {
                 "field(${sanitizeIdentifier(it.label)},${astNode.expr.accept(expressionTranslator)}," +
-                        "${getType(astNode.expr.type())},pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
+                        "${getType(astNode.expr.type())},$options,pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
             }
         }
         return "field(${sanitizeIdentifier(astNode.get().label)},${astNode.expr.accept(expressionTranslator)}," +
-                "${getType(astNode.expr.type())},pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
+                "${getType(astNode.expr.type())},$options,pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
     }
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
