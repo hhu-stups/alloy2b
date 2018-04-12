@@ -167,8 +167,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     /**
      * Replace ticks by underscores and use single quotes for identifiers since strings with capital letter first are
-     * variables in Prolog. Set an underscore as the suffix of an identifier to avoid collisions with B keywords.
-     * The arity is also added to the Prolog term.
+     * variables in Prolog. The arity is also added to the Prolog term.
      */
     fun sanitizeIdentifier(identifier: String): String {
         if (identifier == "this") {
@@ -177,7 +176,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
         }
         return identifier.replace("'", "_").replace("{", "").replace("}", "")
                 .split("/").filter { it != "this" }
-                .joinToString("") { "'${it}_'" }
+                .joinToString("") { "'$it'" }
     }
 
     fun getType(type: Type): String {
