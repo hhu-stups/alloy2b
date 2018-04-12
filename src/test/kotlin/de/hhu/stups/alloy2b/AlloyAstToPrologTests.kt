@@ -76,4 +76,10 @@ class AlloyAstToPrologTests {
         val expected = getResourceAsString("DisjFieldTest.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/DisjFieldTest.als").getPrologTerm())
     }
+
+    @Test
+    fun translateFamilyV1() {
+        val expected = getResourceAsString("family-v1.pl")
+        Assert.assertEquals(expected, AlloyAstToProlog("/family-v1.als").getPrologTerm())
+    }
 }
