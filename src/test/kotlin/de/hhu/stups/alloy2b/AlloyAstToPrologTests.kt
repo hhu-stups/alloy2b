@@ -70,4 +70,10 @@ class AlloyAstToPrologTests {
         val expected = getResourceAsString("graphiso.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/graphiso.als").getPrologTerm())
     }
+
+    @Test
+    fun translateDisjFieldTest() {
+        val expected = getResourceAsString("DisjFieldTest.pl")
+        Assert.assertEquals(expected, AlloyAstToProlog("/DisjFieldTest.als").getPrologTerm())
+    }
 }
