@@ -10,6 +10,9 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
         val tLeft = left.accept(this)
         val right = p0.right
         val tRight = right.accept(this)
+        if (left.toString() == "seq/Int") {
+            return "seq($tRight)"
+        }
         // we define ordered signatures as sets of integer, if an ordered signature interacts with an unordered one
         // both have to be defined as a set of integer
         val leftType = left.type().toString()
@@ -53,7 +56,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
                     ",${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprLet) =
-            // a let with multiple variables are split into several let expressions by Alloy each having only one var
+    // a let with multiple variables are split into several let expressions by Alloy each having only one var
             "let(${alloyAstToProlog.sanitizeIdentifier(p0.`var`.label)}," +
                     "${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
                     ",${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
