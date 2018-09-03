@@ -12,8 +12,11 @@ fun main(args: Array<String>) {
         translatePrologToFile(args[0],args[2])
         return
     }
-    println("Use the alloy file path as a single command line argument to print the translation to stdout.")
-    println("Alternatively, use the alloy file path and an output file name to print the translation to a file.")
+    println("Usage:")
+    println("To print the translation to stdout:")
+    println("    $ java -jar <path to alloy2b.jar> input.als -toProlog")
+    println("Alternatively, to print the translation to a file:")
+    println("    $ java -jar <path to alloy2b.jar> input.als -toProlog output.pl")
 }
 
 fun translatePrologToConsole(inputFilePath: String) {
