@@ -62,8 +62,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
                     ",${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprQt): String {
-
-        val params = p0.decls?.map { it.names.joinToString(",") { alloyAstToProlog.sanitizeIdentifier(it.label) } }
+        val params = p0.decls?.map { it -> it.names.joinToString(",") { alloyAstToProlog.sanitizeIdentifier(it.label) } }
         return "${getOperator(p0.op.toString())}($params," +
                 "${p0.decls?.map { alloyAstToProlog.toPrologTerm(it) }}," +
                 "${p0.sub?.accept(this)},${alloyAstToProlog.getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
