@@ -1,7 +1,7 @@
 package de.hhu.stups.alloy2b.translation
 
 enum class Operator {
-    LONE, SET, ALL, JOIN, EQUAL, PLUS, INTERSECTION, MINUS, NO, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
+    LONE, SET, ALL, JOIN, EQUAL, NOT_EQUAL, PLUS, INTERSECTION, MINUS, NO, NOT_IN, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
     IMPLICATION, IFF, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, CARD, DOM_RESTR, RAN_RESTR, OVERRIDE, ABSTRACT,
     CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, BIJECTIVE_FUNCTION, TOTAL_INJECTION, PARTIAL_INJECTION,
     PARTIAL_SURJECTION, TOTAL_SURJECTION, PARTIAL_BIJECTION, INVERSE, NOT, SEQ,
@@ -18,6 +18,7 @@ enum class Operator {
                     "<:" -> DOM_RESTR
                     ":>" -> RAN_RESTR
                     "=" -> EQUAL
+                    "!=" -> NOT_EQUAL
                     ">" -> GREATER
                     ">=" -> GREATER_EQUAL
                     "<" -> LESS
@@ -29,6 +30,7 @@ enum class Operator {
                     "-" -> MINUS
                     "no" -> NO
                     "in" -> IN
+                    "!in" -> NOT_IN
                     "*" -> CLOSURE
                     "^" -> CLOSURE1
                     "~" -> INVERSE
