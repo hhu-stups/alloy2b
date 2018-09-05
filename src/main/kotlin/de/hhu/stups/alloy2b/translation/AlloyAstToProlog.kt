@@ -180,11 +180,41 @@ class AlloyAstToProlog(alloyModelPath: String) {
     }
 
     fun getType(type: Type): String {
-        val tType = type.map {
-            it.toString().split("->").map { sanitizeIdentifier(it.replace("{", "").replace("}", "")) }
+        var sequenceTypes = 0
+        val tType = type.map { innerType ->
+            val cleanType = splitAndCleanType(innerType)
+            val mergedTypes = mergeSequenceTypes(cleanType)
+            sequenceTypes += cleanType.count() - mergedTypes.count()
+            mergedTypes
         }
+        val newArity = type.arity() - sequenceTypes;
+        return "type(${if (tType.isEmpty()) "[untyped]" else tType.toString()},$newArity)"
+    }
 
-        return "type(${if (tType.isEmpty()) "[untyped]" else tType.toString()},${type.arity()})"
+    private fun splitAndCleanType(innerType: Type.ProductType?) =
+            innerType.toString().split("->").map { it ->
+                sanitizeIdentifier(it.replace("{", "").replace("}", ""))
+            }
+
+    /**
+     * The Alloy parser splits sequence types which we merge in here, like we do not want the type to be
+     * seq->Statespace but seq(Statespace) in B.
+     */
+    private fun mergeSequenceTypes(listOfTypes: List<String>): List<String> {
+        val mutableListOfTypes = mutableListOf<String>()
+        mutableListOfTypes.addAll(listOfTypes)
+        while (mutableListOfTypes.contains("'seq''Int'")) {
+            val index = mutableListOfTypes.indexOf("'seq''Int'")
+            mutableListOfTypes.removeAt(index)
+            if (mutableListOfTypes.isEmpty()) {
+                mutableListOfTypes.add("seq(untyped)")
+                break
+            }
+            val type = mutableListOfTypes[index]
+            val mergedType = "seq($type)"
+            mutableListOfTypes[index] = mergedType
+        }
+        return mutableListOfTypes.toList()
     }
 }
 
