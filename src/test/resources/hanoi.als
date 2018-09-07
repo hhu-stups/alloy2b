@@ -58,7 +58,7 @@ sig State {
 }
 
 
-fun State.discsOnStake[stake: Stake]: set Disc {
+    fun State.discsOnStake[stake: Stake]: set Disc {
   // compute the set of discs on the given stake in this state.
   // ~(this.on) map the stake to the set of discs on that stake.
   stake.~(this.on)
