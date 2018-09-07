@@ -25,7 +25,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
      *      Options are only 'disj' by now
      *
      * check/5, run/5 (functor is either check or run):
-     *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),bitwidth(BitWidth),Pos)
+     *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),
+     *      upper_bound_scopes(UpperBoundScopes),bitwidth(BitWidth),Pos)
      *
      * function/5, predicate/5 (functor is either function or predicate):
      *      functor(Name,Params,Decls,Body,Pos)
@@ -87,11 +88,17 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private fun toPrologTerm(astNode: Command): String {
         val functor = if (astNode.check) "check" else "run"
         val exactScopes = astNode.scope.filter { it.isExact }
-                .map { "(${sanitizeIdentifier(it.sig.label)},${it.startingScope})" }
+                .map { createSigScopeTuple(it) }
+        val upperBoundScopes = astNode.scope.filter { !it.isExact }
+                .map { createSigScopeTuple(it) }
         return "$functor(${astNode.formula.accept(expressionTranslator)},global_scope(${astNode.overall})," +
                 "exact_scopes($exactScopes)," +
+                "upper_bound_scopes($upperBoundScopes)," +
                 "bitwidth(${astNode.bitwidth}),pos(${astNode.pos.x},${astNode.pos.y}))"
     }
+
+    private fun createSigScopeTuple(scope: CommandScope) =
+            "(${sanitizeIdentifier(scope.sig.label)},${scope.startingScope})"
 
     private fun toPrologTerm(astNode: Func): String {
         val functor = if (astNode.isPred) "predicate" else "function"
@@ -187,7 +194,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
             sequenceTypes += cleanType.count() - mergedTypes.count()
             mergedTypes
         }
-        val newArity = type.arity() - sequenceTypes;
+        val newArity = type.arity() - sequenceTypes
         return "type(${if (tType.isEmpty()) "[untyped]" else tType.toString()},$newArity)"
     }
 
