@@ -57,13 +57,17 @@ enum class Operator {
                     
                     "some->lone" -> PARTIAL_SURJECTION
                     "some->one" -> TOTAL_SURJECTION
+
                     "some->some" -> TOTAL_SURJECTIVE_RELATION
                     "some->" -> SURJECTIVE_RELATION
                     
+
                     "and" -> AND
+                    "AND" -> AND
                     "&&" -> AND
                     "or" -> OR
                     "||" -> OR
+                    "OR" -> OR
                     "!" -> NOT
                     "not" -> NOT
                     "seq" -> SEQ
