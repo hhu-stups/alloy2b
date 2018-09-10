@@ -5,7 +5,8 @@ enum class Operator {
     IMPLICATION, IFF, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, CARD, DOM_RESTR, RAN_RESTR, OVERRIDE, ABSTRACT,
     CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, TOTAL_BIJECTION, TOTAL_INJECTION, PARTIAL_INJECTION,
     PARTIAL_SURJECTION, TOTAL_SURJECTION, PARTIAL_BIJECTION,
-    TOTAL_RELATION, SURJECTIVE_RELATION, TOTAL_SURJECTION_RELATION,
+    TOTAL_RELATION, SURJECTION_RELATION, TOTAL_SURJECTION_RELATION,
+    INJECTION_SURJECTION_RELATION, INJECTION_RELATION,
     INVERSE, NOT, SEQ,
     INT_PLUS, INT_MINUS, INT_DIV, INT_MODULO, INT_PRODUCT, INT_SUM, INT_MAX, INT_MIN;
 
@@ -51,15 +52,17 @@ enum class Operator {
                     
                     "lone->lone" -> PARTIAL_INJECTION
                     "lone->one" -> TOTAL_INJECTION
+                    "lone->" -> INJECTION_RELATION // not supported
+                    "lone->some" -> INJECTION_SURJECTION_RELATION // not supported
                     
                     "one->lone" -> PARTIAL_BIJECTION
                     "one->one" -> TOTAL_BIJECTION
+                    // missing one->some and one->
                     
                     "some->lone" -> PARTIAL_SURJECTION
                     "some->one" -> TOTAL_SURJECTION
-
                     "some->some" -> TOTAL_SURJECTION_RELATION
-                    "some->" -> SURJECTIVE_RELATION
+                    "some->" -> SURJECTION_RELATION
                     
 
                     "and" -> AND
