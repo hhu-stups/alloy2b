@@ -3,8 +3,10 @@ package de.hhu.stups.alloy2b.translation
 enum class Operator {
     LONE, SET, ALL, JOIN, EQUAL, NOT_EQUAL, PLUS, INTERSECTION, MINUS, NO, NOT_IN, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
     IMPLICATION, IFF, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, CARD, DOM_RESTR, RAN_RESTR, OVERRIDE, ABSTRACT,
-    CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, BIJECTIVE_FUNCTION, TOTAL_INJECTION, PARTIAL_INJECTION,
-    PARTIAL_SURJECTION, TOTAL_SURJECTION, PARTIAL_BIJECTION, INVERSE, NOT, SEQ,
+    CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, TOTAL_BIJECTION, TOTAL_INJECTION, PARTIAL_INJECTION,
+    PARTIAL_SURJECTION, TOTAL_SURJECTION, PARTIAL_BIJECTION,
+    TOTAL_RELATION, SURJECTIVE_RELATION, TOTAL_SURJECTIVE_RELATION,
+    INVERSE, NOT, SEQ,
     INT_PLUS, INT_MINUS, INT_DIV, INT_MODULO, INT_PRODUCT, INT_SUM, INT_MAX, INT_MIN;
 
     companion object {
@@ -42,14 +44,22 @@ enum class Operator {
                     "iff" -> IFF
                     "<=>" -> IFF
                     "->" -> CARTESIAN
+                    
                     "->one" -> TOTAL_FUNCTION
                     "->lone" -> PARTIAL_FUNCTION
+                    "->some" -> TOTAL_RELATION
+                    
                     "lone->lone" -> PARTIAL_INJECTION
                     "lone->one" -> TOTAL_INJECTION
+                    
+                    "one->lone" -> PARTIAL_BIJECTION
+                    "one->one" -> TOTAL_BIJECTION
+                    
                     "some->lone" -> PARTIAL_SURJECTION
                     "some->one" -> TOTAL_SURJECTION
-                    "one->lone" -> PARTIAL_BIJECTION
-                    "one->one" -> BIJECTIVE_FUNCTION
+                    "some->some" -> TOTAL_SURJECTIVE_RELATION
+                    "some->" -> SURJECTIVE_RELATION
+                    
                     "and" -> AND
                     "&&" -> AND
                     "or" -> OR
