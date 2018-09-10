@@ -57,8 +57,8 @@ enum class Operator {
                     
                     "one->lone" -> PARTIAL_BIJECTION
                     "one->one" -> TOTAL_BIJECTION
-                    "one->some" -> TOTAL_BIJECTION_RELATION // inverse is a bijection
-                    "one->" -> BIJECTION_RELATION // inverse is a bijection
+                    "one->some" -> TOTAL_BIJECTION_RELATION // not supported, inverse is a bijection
+                    "one->" -> BIJECTION_RELATION // not supported, inverse is a bijection
                     
                     "some->lone" -> PARTIAL_SURJECTION
                     "some->one" -> TOTAL_SURJECTION
