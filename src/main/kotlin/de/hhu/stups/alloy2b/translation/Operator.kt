@@ -6,7 +6,7 @@ enum class Operator {
     CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, TOTAL_BIJECTION, TOTAL_INJECTION, PARTIAL_INJECTION,
     PARTIAL_SURJECTION, TOTAL_SURJECTION, PARTIAL_BIJECTION,
     TOTAL_RELATION, SURJECTION_RELATION, TOTAL_SURJECTION_RELATION,
-    INJECTION_SURJECTION_RELATION, INJECTION_RELATION,
+    INJECTION_SURJECTION_RELATION, INJECTION_RELATION, TOTAL_BIJECTION_RELATION, BIJECTION_RELATION,
     INVERSE, NOT, SEQ,
     INT_PLUS, INT_MINUS, INT_DIV, INT_MODULO, INT_PRODUCT, INT_SUM, INT_MAX, INT_MIN;
 
@@ -57,7 +57,8 @@ enum class Operator {
                     
                     "one->lone" -> PARTIAL_BIJECTION
                     "one->one" -> TOTAL_BIJECTION
-                    // missing one->some and one->
+                    "one->some" -> TOTAL_BIJECTION_RELATION // inverse is a bijection
+                    "one->" -> BIJECTION_RELATION // inverse is a bijection
                     
                     "some->lone" -> PARTIAL_SURJECTION
                     "some->one" -> TOTAL_SURJECTION
