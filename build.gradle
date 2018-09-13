@@ -21,14 +21,6 @@ repositories {
     mavenCentral()
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src/main/kotlin', 'build/generated-src']
-        }
-    }
-}
-
 dependencies {
     compile files('alloy4.2.jar')
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
