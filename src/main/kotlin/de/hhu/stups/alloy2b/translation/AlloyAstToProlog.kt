@@ -50,16 +50,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private val expressionTranslator = ExpressionToProlog(this, orderedSignatures)
 
     init {
-        var path = ""
-        try {
-            // either from resources
-            path = object {}.javaClass.getResource(alloyModelPath).file
-        } catch (exception: IllegalStateException) {
-            if (path == "") {
-                // or an absolute path
-                path = alloyModelPath
-            }
-        }
+        val path = realPath(alloyModelPath)
         val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, path)
 
         astRoot.opens.forEach { collectPropertiesFromInclude(it) }
@@ -71,6 +62,16 @@ class AlloyAstToProlog(alloyModelPath: String) {
         val listOfSignatures = astRoot.rootModule.allSigs.joinToString(",") { toPrologTerm(it) }
         prologTerm = "alloy_model(facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
                 "functions([$listOfFunctions]),signatures([$listOfSignatures]))."
+    }
+
+    private fun realPath(alloyModelPath: String) : String {
+        return try {
+            // either from resources
+            object {}.javaClass.getResource(alloyModelPath).file
+        } catch (exception: IllegalStateException) {
+            // or an absolute path
+            alloyModelPath
+        }
     }
 
     private fun collectPropertiesFromInclude(it: CompModule.Open) {
