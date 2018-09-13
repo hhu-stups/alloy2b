@@ -54,7 +54,7 @@ jar {
 task downloadAlloy {
     doFirst {
         download {
-            src 'http://alloy.mit.edu/alloy/downloads/alloy4.2.jar'
+            src 'http://alloytools.org/download/alloy4.2_2015-02-22.jar'
             dest 'alloy4.2.jar'
             onlyIfNewer true
             overwrite false
