@@ -10,7 +10,7 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
         val tLeft = left.accept(this)
         val right = p0.right
         val tRight = right.accept(this)
-        if (left.toString() == "seq/Int") {
+        if (left.toString().startsWith("seq/")) {
             return "seq($tRight)"
         }
         // we define ordered signatures as sets of integer, if an ordered signature interacts with an unordered one
@@ -95,5 +95,4 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
         }
         return "'$operator'"
     }
-
 }
