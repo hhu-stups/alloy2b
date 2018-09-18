@@ -86,10 +86,14 @@ class ExpressionToProlog(private val alloyAstToProlog: AlloyAstToProlog,
     override fun visit(p0: Sig.Field) = "identifier(${alloyAstToProlog.sanitizeIdentifier(p0.label)}," +
             "${alloyAstToProlog.getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
 
-    private fun getOperator(op: String) =
-            try {
-                Operator.fromString(op).toString().toLowerCase()
-            } catch (exception: UnsupportedOperationException) {
-                op.toLowerCase().replace(" ", "")
-            }
+    private fun getOperator(op: String): String {
+        val operator = try {
+            Operator.fromString(op).toString().toLowerCase()
+        } catch (exception: UnsupportedOperationException) {
+            System.err.println(exception)
+            op.toLowerCase().replace(" ", "")
+        }
+        return "'$operator'"
+    }
+
 }
