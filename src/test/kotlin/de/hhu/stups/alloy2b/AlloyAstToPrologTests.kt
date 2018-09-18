@@ -88,4 +88,10 @@ class AlloyAstToPrologTests {
         val expected = getResourceAsString("relations.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/relations.als").getPrologTerm())
     }
+
+    @Test
+    fun translateViews() {
+        val expected = getResourceAsString("views.pl")
+        Assert.assertEquals(expected, AlloyAstToProlog("/views.als").getPrologTerm())
+    }
 }
