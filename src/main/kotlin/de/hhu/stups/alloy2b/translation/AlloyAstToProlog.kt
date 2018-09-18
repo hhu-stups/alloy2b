@@ -88,6 +88,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
         if ("util/ordering" == it.filename) {
             val prefixedSignatures = it.args.map { it.replace("this/", "") }
             orderedSignatures.addAll(prefixedSignatures)
+            orderedSignatures.add(it.alias)
         }
     }
 
@@ -221,7 +222,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private fun mergeSequenceTypes(listOfTypes: List<String>): List<String> {
         val mutableListOfTypes = mutableListOf<String>()
         mutableListOfTypes.addAll(listOfTypes)
-        while (mutableListOfTypes.contains("'seq''Int'")) {
+        while (mutableListOfTypes.contains("'seq''Int'")) { // TODO: not only integer sequences
             val index = mutableListOfTypes.indexOf("'seq''Int'")
             mutableListOfTypes.removeAt(index)
             if (mutableListOfTypes.isEmpty()) {
