@@ -8,7 +8,7 @@ class AlloyAstToPrologTests {
 
     fun getResourceAsString(resourceName: String): String {
         val expected = object {}.javaClass.getResourceAsStream("/$resourceName")
-        return expected.bufferedReader().use { it.readText() }
+        return expected.bufferedReader().use { it.readText() }.trim()
     }
 
     @Test
