@@ -13,7 +13,10 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     /**
      *
-     * The root of the prolog term is alloy_model/5:
+     * The root of the prolog term is alloy/2:
+     *      alloy(RootModule, ListOfModels).
+     *
+     * Each module model is translated to an alloy_model/5 prolog term.
      *      alloy_model(facts(ListOfAlloyFact),assertions(ListOfAssertion),commands(ListOfCommand),
      *                  functions(ListOfFunction),signatures(ListOfSignature))
      *
@@ -55,18 +58,20 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
         astRoot.opens.forEach { collectPropertiesFromInclude(it) }
 
-        prologTerm = translateModule(astRoot.rootModule)
+        val modules = astRoot.allReachableModules.joinToString(",", transform = ::translateModule)
+        val rootModule = sanitizeIdentifier(astRoot.rootModule.modelName)
+        prologTerm = "alloy($rootModule,[$modules])."
     }
 
     private fun translateModule(module: CompModule): String {
-        val name = module.modelName.replace("'", "_");
+        val name = sanitizeIdentifier(module.modelName)
         val listOfFacts = module.allFacts.joinToString(",") { toPrologTerm(it) }
         val listOfAssertions = module.allAssertions.joinToString(",") { toPrologTerm(it) }
         val listOfCommands = module.allCommands.joinToString(",") { toPrologTerm(it) }
         val listOfFunctions = module.allFunc.joinToString(",") { toPrologTerm(it) }
         val listOfSignatures = module.allSigs.joinToString(",") { toPrologTerm(it) }
-        return "alloy_model('$name',facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
-                "functions([$listOfFunctions]),signatures([$listOfSignatures]))."
+        return "alloy_model($name,facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
+                "functions([$listOfFunctions]),signatures([$listOfSignatures]))"
     }
 
     private fun realPath(alloyModelPath: String): String {
