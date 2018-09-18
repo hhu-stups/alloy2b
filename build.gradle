@@ -54,6 +54,10 @@ task downloadAlloy {
     }
 }
 
+task alloy2BVersion {
+  println version
+}
+
 compileKotlin {
     dependsOn {
         downloadAlloy
