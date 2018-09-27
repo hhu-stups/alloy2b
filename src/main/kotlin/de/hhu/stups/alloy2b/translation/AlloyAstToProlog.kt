@@ -18,7 +18,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
      *
      * Each module model is translated to an alloy_model/5 prolog term.
      *      alloy_model(ModuleName,facts(ListOfAlloyFact),assertions(ListOfAssertion),commands(ListOfCommand),
-     *                  functions(ListOfFunction),signatures(ListOfSignature))
+     *                  functions(ListOfFunction),signatures(ListOfSignature),ordered_signatures(ListOfAtoms))
      *
      * fact/2:
      *      fact(Expr,Pos)
@@ -71,7 +71,8 @@ class AlloyAstToProlog(alloyModelPath: String) {
         val listOfFunctions = module.allFunc.joinToString(",") { toPrologTerm(it) }
         val listOfSignatures = module.allSigs.joinToString(",") { toPrologTerm(it) }
         return "alloy_model($name,facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
-                "functions([$listOfFunctions]),signatures([$listOfSignatures]),ordered_signatures($orderedSignatures))"
+                "functions([$listOfFunctions]),signatures([$listOfSignatures])," +
+                "ordered_signatures(${orderedSignatures.map { "'$it'" }}))"
     }
 
     private fun realPath(alloyModelPath: String): String {
