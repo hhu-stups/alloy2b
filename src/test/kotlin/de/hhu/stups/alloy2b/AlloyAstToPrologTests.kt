@@ -13,13 +13,13 @@ class AlloyAstToPrologTests {
 
     @Test
     fun translateFileSystem() {
-        val expected = getResourceAsString("FileSystem.pl")
+        val expected = getResourceAsString("filesystem.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/FileSystem.als").getPrologTerm())
     }
 
     @Test
     fun translateFileSystem2() {
-        val expected = getResourceAsString("FileSystem2.pl")
+        val expected = getResourceAsString("filesystem2.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/FileSystem2.als").getPrologTerm())
     }
 
@@ -31,7 +31,7 @@ class AlloyAstToPrologTests {
 
     @Test
     fun translateSelfGrandpas() {
-        val expected = getResourceAsString("SelfGrandpas.pl")
+        val expected = getResourceAsString("selfgrandpas.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/SelfGrandpas.als").getPrologTerm())
     }
 
@@ -49,7 +49,7 @@ class AlloyAstToPrologTests {
 
     @Test
     fun translateRiverCrossing() {
-        val expected = getResourceAsString("RiverCrossingPuzzle.pl")
+        val expected = getResourceAsString("rivercrossingpuzzle.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/RiverCrossingPuzzle.als").getPrologTerm())
     }
 
@@ -61,7 +61,7 @@ class AlloyAstToPrologTests {
 
     @Test
     fun translateEnumTest() {
-        val expected = getResourceAsString("EnumTest.pl")
+        val expected = getResourceAsString("enumtest.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/EnumTest.als").getPrologTerm())
     }
 
@@ -73,7 +73,7 @@ class AlloyAstToPrologTests {
 
     @Test
     fun translateDisjFieldTest() {
-        val expected = getResourceAsString("DisjFieldTest.pl")
+        val expected = getResourceAsString("disjfieldtest.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/DisjFieldTest.als").getPrologTerm())
     }
 
