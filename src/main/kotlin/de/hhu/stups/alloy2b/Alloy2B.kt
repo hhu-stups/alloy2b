@@ -9,7 +9,7 @@ fun main(args: Array<String>) {
         return
     }
     if (args.size == 3 && args[1] == "-toProlog") {
-        translatePrologToFile(args[0],args[2])
+        translatePrologToFile(args[0], args[2])
         return
     }
     println("Usage:")
@@ -24,7 +24,7 @@ fun translatePrologToConsole(inputFilePath: String) {
 }
 
 fun translatePrologToFile(inputFilePath: String, outputFilePath: String) {
-    File(outputFilePath).printWriter().use { out ->
-        out.println(AlloyAstToProlog(inputFilePath).getPrologTerm())
-    }
+    val file = File(outputFilePath)
+    file.createNewFile()
+    file.printWriter().use { out -> out.println(AlloyAstToProlog(inputFilePath).getPrologTerm()) }
 }
