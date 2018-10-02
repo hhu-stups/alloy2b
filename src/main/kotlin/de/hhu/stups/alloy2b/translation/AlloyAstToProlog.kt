@@ -29,7 +29,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
      *
      * check/5, run/5 (functor is either check or run):
      *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),
-     *      upper_bound_scopes(UpperBoundScopes),bitwidth(BitWidth),Pos)
+     *      upper_bound_scopes(UpperBoundScopes),bitwidth(BitWidth),maxseq(MaxSeqSize),Pos)
      *
      * function/5, predicate/5 (functor is either function or predicate):
      *      functor(Name,Params,Decls,Body,Pos)
@@ -100,14 +100,14 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     private fun toPrologTerm(astNode: Command): String {
         val functor = if (astNode.check) "check" else "run"
-        val exactScopes = astNode.scope.filter { it.isExact }
-                .map { createSigScopeTuple(it) }
-        val upperBoundScopes = astNode.scope.filter { !it.isExact }
-                .map { createSigScopeTuple(it) }
+        val exactScopes = astNode.scope.asSequence().filter { it.isExact }
+                .map { createSigScopeTuple(it) }.toList()
+        val upperBoundScopes = astNode.scope.asSequence().filter { !it.isExact }
+                .map { createSigScopeTuple(it) }.toList()
         return "$functor(${astNode.formula.accept(expressionTranslator)},global_scope(${astNode.overall})," +
                 "exact_scopes($exactScopes)," +
                 "upper_bound_scopes($upperBoundScopes)," +
-                "bitwidth(${astNode.bitwidth}),pos(${astNode.pos.x},${astNode.pos.y}))"
+                "bitwidth(${astNode.bitwidth}),maxseq(${astNode.maxseq}),pos(${astNode.pos.x},${astNode.pos.y}))"
     }
 
     private fun createSigScopeTuple(scope: CommandScope) =
@@ -195,7 +195,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
             return identifier
         }
         return identifier.replace("'", "_").replace("{", "").replace("}", "")
-                .split("/").filter { it != "this" }
+                .split("/").asSequence().filter { it != "this" }
                 .joinToString("") { "'$it'" }
     }
 
