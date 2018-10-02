@@ -94,4 +94,10 @@ class AlloyAstToPrologTests {
         val expected = getResourceAsString("views.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/views.als").getPrologTerm())
     }
+
+    @Test
+    fun translateSequenceTests() {
+        val expected = getResourceAsString("sequence_test.pl")
+        Assert.assertEquals(expected, AlloyAstToProlog("/sequence_test.als").getPrologTerm())
+    }
 }
