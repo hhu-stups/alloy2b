@@ -39,7 +39,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
      *      Options is a subset of [abstract,enum,meta,lone,one,private,some,subset,subsig,top_level]
      *
      * pos/2:
-     *      tuple of x and y position
+     *      tuple of x and y position in the Alloy file
      *
      * Binary and unary operators are self-explanatory, for instance, a join is represented as the term join/4
      * with left and right expression as well as type and position information like
