@@ -1,6 +1,6 @@
 package de.hhu.stups.alloy2b
 
-import de.hhu.stups.alloy2b.translation.AlloyAstToProlog
+import de.hhu.stups.alloy2b.translation.Alloy2BParser
 import java.io.File
 
 fun main(args: Array<String>) {
@@ -20,11 +20,11 @@ fun main(args: Array<String>) {
 }
 
 fun translatePrologToConsole(inputFilePath: String) {
-    println(AlloyAstToProlog(inputFilePath).getPrologTerm())
+    println(Alloy2BParser(inputFilePath).getPrologTerm())
 }
 
 fun translatePrologToFile(inputFilePath: String, outputFilePath: String) {
     val file = File(outputFilePath)
     file.createNewFile()
-    file.printWriter().use { out -> out.println(AlloyAstToProlog(inputFilePath).getPrologTerm()) }
+    file.printWriter().use { out -> out.println(Alloy2BParser(inputFilePath).getPrologTerm()) }
 }

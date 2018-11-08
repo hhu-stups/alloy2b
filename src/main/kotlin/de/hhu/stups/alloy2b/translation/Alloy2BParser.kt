@@ -9,7 +9,7 @@ import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 /**
  * Convert the abstract syntax tree of an Alloy model to a Prolog term.
  */
-class AlloyAstToProlog(alloyModelPath: String) {
+class Alloy2BParser(alloyModelPath: String) {
 
     /**
      *
@@ -50,7 +50,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private var prologTerm = ""
 
     private val orderedSignatures = mutableListOf<String>()
-    private val expressionTranslator = ExpressionToProlog(this, orderedSignatures)
+    private val expressionTranslator = ExpressionToProlog(orderedSignatures)
 
     init {
         val path = realPath(alloyModelPath)
@@ -116,7 +116,7 @@ class AlloyAstToProlog(alloyModelPath: String) {
     private fun toPrologTerm(astNode: Func): String {
         val functor = if (astNode.isPred) "predicate" else "function"
         return "$functor(${sanitizeIdentifier(astNode.label)},${astNode.params().map { toPrologTerm(it) }}," +
-                astNode.decls.map { toPrologTerm(it) } +
+                astNode.decls.map { expressionTranslator.toPrologTerm(it) } +
                 ",${toPrologTerm(astNode.body)},pos(${astNode.pos.x},${astNode.pos.y}))"
     }
 
@@ -125,24 +125,9 @@ class AlloyAstToProlog(alloyModelPath: String) {
 
     private fun toPrologTerm(astNode: Sig): String {
         return "signature(${sanitizeIdentifier(astNode.label)}," +
-                "[${astNode.fieldDecls.joinToString(",") { toPrologTerm(it) }}]," +
+                "[${astNode.fieldDecls.joinToString(",") { expressionTranslator.toPrologTerm(it) }}]," +
                 "[${astNode.facts.joinToString(",") { toPrologTerm(it) }}]," +
                 "${collectSignatureOptionsToPrologList(astNode)},pos(${astNode.pos.x},${astNode.pos.y}))"
-    }
-
-    fun toPrologTerm(astNode: Decl): String {
-        val options = if (astNode.disjoint != null || astNode.disjoint2 != null) "[disj]" else "[]"
-        if (astNode.names.size > 1) {
-            // a field declaration may has several names, for instance:
-            // "sig State { near, far: set Object }" has one Decl with one Expr but two names near and far
-            // we then have to define Expr for each name
-            return astNode.names.joinToString(",") {
-                "field(${sanitizeIdentifier(it.label)},${astNode.expr.accept(expressionTranslator)}," +
-                        "${getType(astNode.expr.type())},$options,pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
-            }
-        }
-        return "field(${sanitizeIdentifier(astNode.get().label)},${astNode.expr.accept(expressionTranslator)}," +
-                "${getType(astNode.expr.type())},$options,pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
     }
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
@@ -184,28 +169,4 @@ class AlloyAstToProlog(alloyModelPath: String) {
         val isSubSig = sig.isSubsig
         return sig is Sig.PrimSig && isSubSig != null && (isSubSig.x != isSubSig.x2 || isSubSig.y != isSubSig.y2)
     }
-
-    /**
-     * Replace ticks by underscores and use single quotes for identifiers since strings with capital letter first are
-     * variables in Prolog. The arity is also added to the Prolog term.
-     */
-    fun sanitizeIdentifier(identifier: String): String {
-        if (identifier == "this") {
-            // field declarations of signature may be joined with 'this' leading to a universal quantification in B
-            return identifier
-        }
-        return identifier.replace("'", "_").replace("{", "").replace("}", "")
-                .split("/").asSequence().filter { it != "this" }
-                .joinToString("") { "'$it'" }
-    }
-
-    fun getType(type: Type): String {
-        val tType = type.map { splitAndCleanType(it) }
-        return "type(${if (tType.isEmpty()) "[untyped]" else tType.toString()},${type.arity()})"
-    }
-
-    private fun splitAndCleanType(innerType: Type.ProductType?) =
-            innerType.toString().split("->").map { it ->
-                sanitizeIdentifier(it.replace("{", "").replace("}", ""))
-            }
 }

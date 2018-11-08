@@ -100,4 +100,10 @@ class AlloyAstToPrologTests {
         val expected = getResourceAsString("sequence_test.pl")
         Assert.assertEquals(expected, AlloyAstToProlog("/sequence_test.als").getPrologTerm())
     }
+
+    @Test
+    fun translateMutex() {
+        val expected = getResourceAsString("mutex.pl")
+        Assert.assertEquals(expected, AlloyAstToProlog("/mutex.als").getPrologTerm())
+    }
 }
