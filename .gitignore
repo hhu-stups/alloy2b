@@ -5,4 +5,4 @@ out
 *.tokens
 *.prob
 alloy4.2.jar
-*-iml
+*.iml
