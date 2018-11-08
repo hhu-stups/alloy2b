@@ -12,10 +12,13 @@ buildscript {
 plugins {
     id "de.undercouch.download" version "3.2.0"
 }
-apply plugin: 'kotlin'
 
-group 'de.hhu.stups'
-version '1.0-SNAPSHOT'
+apply plugin: 'kotlin'
+apply plugin: 'maven'
+
+group = 'de.hhu.stups'
+archivesBaseName = 'alloy2b'
+version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -27,8 +30,22 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+task downloadAlloy {
+    doFirst {
+        download {
+            src 'http://alloytools.org/download/alloy4.2_2015-02-22.jar'
+            dest 'alloy4.2.jar'
+            onlyIfNewer true
+            overwrite false
+        }
+    }
+}
+
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
+    dependsOn {
+        downloadAlloy
+    }
 }
 
 compileTestKotlin {
@@ -43,23 +60,89 @@ jar {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
-task downloadAlloy {
-    doFirst {
-        download {
-            src 'http://alloytools.org/download/alloy4.2_2015-02-22.jar'
-            dest 'alloy4.2.jar'
-            onlyIfNewer true
-            overwrite false
-        }
-    }
-}
 
 task alloy2BVersion {
-  println version
+    println version
 }
 
-compileKotlin {
-    dependsOn {
-        downloadAlloy
+javadoc {
+    failOnError = false
+}
+
+if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
+        && project.hasProperty("signing.keyId")) {
+
+    println "Configuring deployment for ${project.name}"
+
+    apply plugin: 'signing'
+
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar, sourcesJar
+    }
+
+    signing {
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment ->
+                    signing.signPom(deployment)
+                }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                pom.project {
+                    name = 'alloy2b'
+                    packaging = 'jar'
+                    description = 'The Parser for our translation from Alloy to B returning a Prolog Term.'
+                    url = 'https://github.com/hhu-stups/alloy2b'
+
+                    licenses {
+                        license {
+                            name 'Eclipse Public License, Version 1.0'
+                            url = 'http://www.eclipse.org/org/documents/epl-v10.html'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:git://github.com/hhu-stups/alloy2b.git'
+                        developerConnection = 'scm:git:git@github.com:hhu-stups/alloy2b.git'
+                        url = 'https://github.com/hhu-stups/alloy2b'
+                    }
+
+
+                    developers {
+                        developer {
+                            id = 'JoshuaAtSTUPS'
+                            name = 'Joshua Schmidt'
+                            email = 'schmidt@cs.hhu.de'
+                        }
+                        developer {
+                            id = 'wysiib'
+                            name = 'Sebastian Krings'
+                            email = 'krings@cs.hhu.de'
+                        }
+                    }
+                }
+            }
+        }
     }
 }
