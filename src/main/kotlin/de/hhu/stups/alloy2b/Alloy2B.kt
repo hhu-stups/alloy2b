@@ -20,11 +20,11 @@ fun main(args: Array<String>) {
 }
 
 fun translatePrologToConsole(inputFilePath: String) {
-    println(Alloy2BParser(inputFilePath).getPrologTerm())
+    println(Alloy2BParser().alloyToPrologTerm(inputFilePath))
 }
 
 fun translatePrologToFile(inputFilePath: String, outputFilePath: String) {
     val file = File(outputFilePath)
     file.createNewFile()
-    file.printWriter().use { out -> out.println(Alloy2BParser(inputFilePath).getPrologTerm()) }
+    file.printWriter().use { out -> out.println(Alloy2BParser().alloyToPrologTerm(inputFilePath)) }
 }

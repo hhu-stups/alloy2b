@@ -1,6 +1,7 @@
 package de.hhu.stups.alloy2b.translation
 
 import edu.mit.csail.sdg.alloy4.A4Reporter
+import edu.mit.csail.sdg.alloy4.Err
 import edu.mit.csail.sdg.alloy4.Pair
 import edu.mit.csail.sdg.alloy4compiler.ast.*
 import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
@@ -9,7 +10,7 @@ import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 /**
  * Convert the abstract syntax tree of an Alloy model to a Prolog term.
  */
-class Alloy2BParser(alloyModelPath: String) {
+class Alloy2BParser {
 
     /**
      *
@@ -47,21 +48,8 @@ class Alloy2BParser(alloyModelPath: String) {
      *
      */
 
-    private var prologTerm = ""
-
     private val orderedSignatures = mutableListOf<String>()
     private val expressionTranslator = ExpressionToProlog(orderedSignatures)
-
-    init {
-        val path = realPath(alloyModelPath)
-        val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, path)
-
-        astRoot.opens.forEach { collectPropertiesFromInclude(it) }
-
-        val modules = astRoot.allReachableModules.joinToString(",", transform = ::translateModule)
-        val rootModule = sanitizeIdentifier(astRoot.rootModule.modelName)
-        prologTerm = "alloy($rootModule,[$modules])."
-    }
 
     private fun translateModule(module: CompModule): String {
         val name = sanitizeIdentifier(module.modelName)
@@ -93,7 +81,21 @@ class Alloy2BParser(alloyModelPath: String) {
         }
     }
 
-    fun getPrologTerm() = prologTerm
+    @Throws(Err::class)
+    fun alloyToPrologTerm(alloyModelPath: String): String {
+        orderedSignatures.clear()
+        val path = realPath(alloyModelPath)
+        try {
+            val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, path)
+            astRoot.opens.forEach { collectPropertiesFromInclude(it) }
+
+            val modules = astRoot.allReachableModules.joinToString(",", transform = ::translateModule)
+            val rootModule = sanitizeIdentifier(astRoot.rootModule.modelName)
+            return "alloy($rootModule,[$modules])."
+        } catch (exception: Err) {
+            throw exception
+        }
+    }
 
     private fun toPrologTerm(astNode: Pair<String, Expr>) =
             "fact(${astNode.b?.accept(expressionTranslator)},(${astNode.b?.pos?.x},${astNode.b?.pos?.y}))"
