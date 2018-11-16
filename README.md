@@ -29,8 +29,11 @@ Gradle: ```compile 'de.hhu.stups:alloy2b:1.0-SNAPSHOT'```
 
 Load an Alloy model from file and translate it to a Prolog term:
 
-```Alloy2BParser parser = new Alloy2BParser(alloyFilePath);```
+```Alloy2BParser parser = new Alloy2BParser();```
 
-```String prologTerm = parser.getPrologTerm();```
+```String prologTerm = parser.alloyToPrologTerm(alloyFilePath);```
 
-The ProB2 Prolog interface provides the predicate ```load_alloy_spec_from_term/1```.
+The method alloyToPrologTerm() throws an [Err](http://alloy.lcs.mit.edu/alloy/documentation/alloy-api/edu/mit/csail/sdg/alloy4/Err.html) exception if the Alloy model contains parse errors.
+The Err class provides a [Pos](http://alloy.lcs.mit.edu/alloy/documentation/alloy-api/edu/mit/csail/sdg/alloy4/Pos.html) object with further information on the error's location.
+
+The ProB2 Prolog interface provides the predicate ```load_alloy_spec_from_term/1``` to translate the Prolog term to B and load the model into ProB.
