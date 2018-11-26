@@ -18,7 +18,7 @@ apply plugin: 'maven'
 
 group = 'de.hhu.stups'
 archivesBaseName = 'alloy2b'
-version = '1.0-BETA'
+version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
