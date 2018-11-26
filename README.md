@@ -58,9 +58,9 @@ The root of the prolog term is alloy/2:
       field(Name,Expr,Options,Pos)
       Options are only 'disj' by now
 
- **check/5**, **run/5** (functor is either check or run):
+ **check/8**, **run/8** (functor is either check or run):
  
-      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),upper_bound_scopes(UpperBoundScopes),bitwidth(BitWidth),maxseq(MaxSeqSize),Pos)
+      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),upper_bound_scopes(UpperBoundScopes),bitwidth(BitWidth),maxseq(MaxSeqSize),index(CommandIndex),Pos)
 
  **function/5**, **predicate/5** (functor is either function or predicate):
       functor(Name,Params,Decls,Body,Pos)
