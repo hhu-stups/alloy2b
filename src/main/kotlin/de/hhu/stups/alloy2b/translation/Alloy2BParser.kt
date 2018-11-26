@@ -7,46 +7,12 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
 import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 
+data class ParserResult(val prologTerm: String, val commandNames: HashSet<String>)
+
 /**
  * Convert the abstract syntax tree of an Alloy model to a Prolog term.
  */
 class Alloy2BParser {
-
-    /**
-     *
-     * The root of the prolog term is alloy/2:
-     *      alloy(RootModule, ListOfModels).
-     *
-     * Each module model is translated to an alloy_model/5 prolog term.
-     *      alloy_model(ModuleName,facts(ListOfAlloyFact),assertions(ListOfAssertion),commands(ListOfCommand),
-     *                  functions(ListOfFunction),signatures(ListOfSignature),ordered_signatures(ListOfAtoms))
-     *
-     * fact/2:
-     *      fact(Expr,Pos)
-     *
-     * field/3:
-     *      field(Name,Expr,Options,Pos)
-     *      Options are only 'disj' by now
-     *
-     * check/5, run/5 (functor is either check or run):
-     *      functor(FormulaExpr,global_scope(GlobalScope),exact_scopes(ListOfSigAndScope),
-     *      upper_bound_scopes(UpperBoundScopes),bitwidth(BitWidth),maxseq(MaxSeqSize),Pos)
-     *
-     * function/5, predicate/5 (functor is either function or predicate):
-     *      functor(Name,Params,Decls,Body,Pos)
-     *
-     * signature/5:
-     *      signature(Name,ListOfFieldDecl,ListOfFact,Options,Pos)
-     *      Options is a subset of [abstract,enum,meta,lone,one,private,some,subset,subsig,top_level]
-     *
-     * pos/2:
-     *      tuple of x and y position in the Alloy file
-     *
-     * Binary and unary operators are self-explanatory, for instance, a join is represented as the term join/4
-     * with left and right expression as well as type and position information like
-     * join(Lhs,Rhs,type/1,pos/2).
-     *
-     */
 
     private val orderedSignatures = mutableListOf<String>()
     private val expressionTranslator = ExpressionToProlog(orderedSignatures)
@@ -82,7 +48,7 @@ class Alloy2BParser {
     }
 
     @Throws(Err::class)
-    fun alloyToPrologTerm(alloyModelPath: String): String {
+    fun parseFromFile(alloyModelPath: String): ParserResult {
         orderedSignatures.clear()
         val path = realPath(alloyModelPath)
         try {
@@ -91,7 +57,10 @@ class Alloy2BParser {
 
             val modules = astRoot.allReachableModules.joinToString(",", transform = ::translateModule)
             val rootModule = sanitizeIdentifier(astRoot.rootModule.modelName)
-            return "alloy($rootModule,[$modules])."
+            val commandNames = hashSetOf<String>()
+            astRoot.rootModule.allCommands
+                    .forEachIndexed { i, cmd -> commandNames.add(if (cmd.check) "check$i" else "run$i") }
+            return ParserResult("alloy($rootModule,[$modules]).", commandNames)
         } catch (exception: Err) {
             throw exception
         }
