@@ -1,6 +1,7 @@
 package de.hhu.stups.alloy2b.translation
 
 import edu.mit.csail.sdg.alloy4.A4Reporter
+import edu.mit.csail.sdg.alloy4.ConstList
 import edu.mit.csail.sdg.alloy4.Err
 import edu.mit.csail.sdg.alloy4.Pair
 import edu.mit.csail.sdg.alloy4compiler.ast.*
@@ -17,11 +18,14 @@ class Alloy2BParser {
     private val orderedSignatures = mutableListOf<String>()
     private val expressionTranslator = ExpressionToProlog(orderedSignatures)
 
+    private lateinit var commands: ConstList<Command>
+
     private fun translateModule(module: CompModule): String {
+        commands = module.allCommands
         val name = sanitizeIdentifier(module.modelName)
         val listOfFacts = module.allFacts.joinToString(",") { toPrologTerm(it) }
         val listOfAssertions = module.allAssertions.joinToString(",") { toPrologTerm(it) }
-        val listOfCommands = module.allCommands.joinToString(",") { toPrologTerm(it) }
+        val listOfCommands = commands.joinToString(",") { toPrologTerm(it) }
         val listOfFunctions = module.allFunc.joinToString(",") { toPrologTerm(it) }
         val listOfSignatures = module.allSigs.joinToString(",") { toPrologTerm(it) }
         return "alloy_model($name,facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
@@ -78,7 +82,8 @@ class Alloy2BParser {
         return "$functor(${astNode.formula.accept(expressionTranslator)},global_scope(${astNode.overall})," +
                 "exact_scopes($exactScopes)," +
                 "upper_bound_scopes($upperBoundScopes)," +
-                "bitwidth(${astNode.bitwidth}),maxseq(${astNode.maxseq}),pos(${astNode.pos.x},${astNode.pos.y}))"
+                "bitwidth(${astNode.bitwidth}),maxseq(${astNode.maxseq}),index(${commands.indexOf(astNode)})," +
+                "pos(${astNode.pos.x},${astNode.pos.y}))"
     }
 
     private fun createSigScopeTuple(scope: CommandScope) =
