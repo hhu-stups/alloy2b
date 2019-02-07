@@ -8,7 +8,7 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
 import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 
-data class ParserResult(val prologTerm: String, val commandNames: HashSet<String>)
+data class ParserResult(val prologTerm: String, val commandNames: ConstList<String>)
 
 /**
  * Convert the abstract syntax tree of an Alloy model to a Prolog term.
@@ -61,9 +61,8 @@ class Alloy2BParser {
 
             val modules = astRoot.allReachableModules.joinToString(",", transform = ::translateModule)
             val rootModule = sanitizeIdentifier(astRoot.rootModule.modelName)
-            val commandNames = hashSetOf<String>()
-            astRoot.rootModule.allCommands
-                    .forEachIndexed { i, cmd -> commandNames.add(if (cmd.check) "check$i" else "run$i") }
+            val commandNames: ConstList<String> = ConstList.make(astRoot.rootModule.allCommands
+                    .mapIndexed { i, cmd -> if (cmd.check) "check$i" else "run$i" })
             return ParserResult("alloy($rootModule,[$modules]).", commandNames)
         } catch (exception: Err) {
             throw exception
