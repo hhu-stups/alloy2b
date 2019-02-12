@@ -129,9 +129,7 @@ class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : V
     private fun getType(type: Type): String {
         val tType = type.map { splitAndCleanType(it) }
         val tTypeString = tType.toString()
-        if (!usesSequences) {
-            usesSequences = seqTypeRegex.containsMatchIn(tTypeString)
-        }
+        usesSequences = usesSequences || seqTypeRegex.containsMatchIn(tTypeString)
         return "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
     }
 }
