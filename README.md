@@ -65,6 +65,7 @@ The root of the prolog term is alloy/2:
               index(CommandIndex),Pos)
 
  **function/5**, **predicate/5** (functor is either function or predicate):
+ 
       functor(Name,Params,Decls,Body,Pos)
 
  **signature/5**:
