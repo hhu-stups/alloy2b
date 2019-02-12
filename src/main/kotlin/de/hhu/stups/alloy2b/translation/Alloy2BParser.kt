@@ -10,6 +10,9 @@ import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 
 data class ParserResult(val prologTerm: String, val commandNames: ConstList<String>)
 
+data class Alloy2BParserErr(val msg: String, val filename: String,
+                            val x: Int, val y: Int, val x2: Int, val y2: Int) : Exception(msg)
+
 /**
  * Convert the abstract syntax tree of an Alloy model to a Prolog term.
  */
@@ -51,7 +54,7 @@ class Alloy2BParser {
         }
     }
 
-    @Throws(Err::class)
+    @Throws(Alloy2BParserErr::class)
     fun parseFromFile(alloyModelPath: String): ParserResult {
         orderedSignatures.clear()
         val path = realPath(alloyModelPath)
@@ -65,7 +68,8 @@ class Alloy2BParser {
                     .mapIndexed { i, cmd -> if (cmd.check) "check$i" else "run$i" })
             return ParserResult("alloy($rootModule,[$modules]).", commandNames)
         } catch (exception: Err) {
-            throw exception
+            val pos = exception.pos
+            throw Alloy2BParserErr(exception.msg, exception.pos.filename, pos.x, pos.y, pos.x2, pos.y2)
         }
     }
 
