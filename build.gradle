@@ -94,6 +94,10 @@ javadoc {
     failOnError = false
 }
 
+// used by regenerate.sh
+task alloy2BVersion {
+    println version
+}
 
 if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
         && project.hasProperty("signing.keyId")) {
