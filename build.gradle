@@ -90,13 +90,6 @@ shadowJar {
     relocate('kodkod','alloy2b.kodkod')
 }
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
-    prefix = 'alloy2b'
-}
-
 javadoc {
     failOnError = false
 }
