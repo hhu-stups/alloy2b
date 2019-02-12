@@ -94,15 +94,8 @@ javadoc {
     failOnError = false
 }
 
-// used by regenerate.sh
-task alloy2BVersion {
-    println version
-}
-
 if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
         && project.hasProperty("signing.keyId")) {
-
-    println "Configuring deployment for ${project.name}"
 
     apply plugin: 'signing'
 
@@ -131,6 +124,7 @@ if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
     }
 
     uploadArchives {
+        println "Configuring deployment for ${project.name}"
         repositories {
             mavenDeployer {
                 beforeDeployment { MavenDeployment deployment ->
