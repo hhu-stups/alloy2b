@@ -112,4 +112,10 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("http.pl")
         Assert.assertEquals(expected, Alloy2BParser().parseFromFile("/http.als").prologTerm)
     }
+
+    @Test
+    fun translateKnightsAndKnaves() {
+        val expected = getResourceAsString("knights_and_knaves.pl")
+        Assert.assertEquals(expected, Alloy2BParser().parseFromFile("/knights_and_knaves.als").prologTerm)
+    }
 }
