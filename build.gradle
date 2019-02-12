@@ -27,6 +27,11 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin/'
+    test.java.srcDirs += 'src/test/kotlin/'
+}
+
 dependencies {
     compile files('alloy4.2.jar')
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -57,31 +62,45 @@ compileTestKotlin {
 
 jar {
     manifest {
-        attributes 'Main-Class': mainClassName
-    }
-
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-}
-
-shadowJar {
-    mergeServiceFiles()
-    classifier = "all"
-    zip64 true
-    manifest {
         attributes(
                 'Main-Class': mainClassName,
                 'version': version,
         )
     }
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    exclude('META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA')
 }
 
-task alloy2BVersion {
-    println version
+shadowJar {
+    configurations = [project.configurations.compile]
+    zip64 true
+    mergeServiceFiles()
+    relocate('org.jetbrains.annotations','alloy2b.org.jetbrains.annotations')
+    relocate('org.jetbrains.kotlin','alloy2b.org.jetbrains.kotlin')
+    relocate('junit','alloy2b.junit')
+    relocate('org.hamcrest','alloy2b.org.hamcrest')
+    relocate('org.sat4j','alloy2b.org.sat4j')
+    relocate('org.intellij','alloy2b.org.intellij')
+    relocate('kotlin','alloy2b.kotlin')
+    relocate('edu','alloy2b.edu')
+    relocate('kodkod','alloy2b.kodkod')
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = 'alloy2b'
 }
 
 javadoc {
     failOnError = false
 }
+
 
 if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
         && project.hasProperty("signing.keyId")) {
@@ -98,10 +117,16 @@ if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
     task sourcesJar(type: Jar) {
         classifier = 'sources'
         from sourceSets.main.allSource
+        manifest {
+            attributes(
+                    'Main-Class': mainClassName,
+                    'version': version,
+            )
+        }
     }
 
     artifacts {
-        archives javadocJar, sourcesJar
+        archives sourcesJar, javadocJar, shadowJar
     }
 
     signing {
@@ -125,7 +150,7 @@ if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
 
                 pom.project {
                     name = 'alloy2b'
-                    packaging = 'shadowJar'
+                    packaging = 'jar'
                     description = 'The Parser for our translation from Alloy to B returning a Prolog Term.'
                     url = 'https://github.com/hhu-stups/alloy2b'
 
