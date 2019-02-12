@@ -4,6 +4,10 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 
 class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : VisitReturn<String>() {
 
+    private val seqTypeRegex = Regex(".seq.")
+
+    var usesSequences = false
+
     /**
      * Translate a field declaration to a Prolog term.
      */
@@ -31,8 +35,6 @@ class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : V
         // both have to be defined as a set of integer
         val leftType = left.type().toString()
         val rightType = right.type().toString()
-        println(p0)
-        println("Left type: $leftType\nRight type: $rightType\n\n")
         if (orderedSignatures.contains(leftType) && !orderedSignatures.contains(rightType)) {
             orderedSignatures.add(rightType)
         } else if (orderedSignatures.contains(rightType) && !orderedSignatures.contains(leftType)) {
@@ -78,7 +80,7 @@ class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : V
                     ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprQt): String {
-        val params = p0.decls?.map { it -> it.names.joinToString(",") { sanitizeIdentifier(it.label) } }
+        val params = p0.decls?.map { decl -> decl.names.joinToString(",") { sanitizeIdentifier(it.label) } }
         return "${getOperator(p0.op.toString())}($params," +
                 "${p0.decls?.map { toPrologTerm(it) }}," +
                 "${p0.sub?.accept(this)},${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
@@ -110,5 +112,26 @@ class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : V
             op.toLowerCase().replace(" ", "")
         }
         return "'$operator'"
+    }
+
+    /**
+     * Transform the type of an Alloy ast node (like t1->t2->..) to a Prolog list.
+     */
+    private fun splitAndCleanType(innerType: Type.ProductType?) =
+            innerType.toString().split("->").map {
+                sanitizeIdentifier(it.replace("{", "").replace("}", ""))
+            }
+
+    /**
+     * Transform the type of an Alloy ast node to a Prolog term type(ListOfType,Arity).
+     * Additionally, log if sequences are used.
+     */
+    private fun getType(type: Type): String {
+        val tType = type.map { splitAndCleanType(it) }
+        val tTypeString = tType.toString()
+        if (!usesSequences) {
+            usesSequences = seqTypeRegex.containsMatchIn(tTypeString)
+        }
+        return "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
     }
 }

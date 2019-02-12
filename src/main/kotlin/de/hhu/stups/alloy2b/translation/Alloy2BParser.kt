@@ -33,7 +33,8 @@ class Alloy2BParser {
         val listOfSignatures = module.allSigs.joinToString(",") { toPrologTerm(it) }
         return "alloy_model($name,facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
                 "functions([$listOfFunctions]),signatures([$listOfSignatures])," +
-                "ordered_signatures(${orderedSignatures.map { "'$it'" }}))"
+                "ordered_signatures(${orderedSignatures.map { "'$it'" }})," +
+                "[sequences:${expressionTranslator.usesSequences}])"
     }
 
     private fun realPath(alloyModelPath: String): String {
@@ -57,6 +58,7 @@ class Alloy2BParser {
     @Throws(Alloy2BParserErr::class)
     fun parseFromFile(alloyModelPath: String): ParserResult {
         orderedSignatures.clear()
+        expressionTranslator.usesSequences = false
         val path = realPath(alloyModelPath)
         try {
             val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, path)
