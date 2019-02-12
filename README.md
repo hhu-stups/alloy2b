@@ -47,7 +47,8 @@ The root of the prolog term is alloy/2:
  Each module model is translated to an **alloy_model/5** prolog term.
  
       alloy_model(ModuleName,facts(ListOfAlloyFact),assertions(ListOfAssertion),commands(ListOfCommand),
-                  functions(ListOfFunction),signatures(ListOfSignature),ordered_signatures(ListOfAtoms))
+                  functions(ListOfFunction),signatures(ListOfSignature),ordered_signatures(ListOfAtoms),
+                  Options)
 
  **fact/2**:
  
