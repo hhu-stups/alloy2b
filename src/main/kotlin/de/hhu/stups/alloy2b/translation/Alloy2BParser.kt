@@ -19,6 +19,7 @@ data class Alloy2BParserErr(val msg: String, val filename: String,
 class Alloy2BParser {
 
     private val orderedSignatures = mutableListOf<String>()
+    private val enums = mutableListOf<Sig>()
     private val expressionTranslator = ExpressionToProlog(orderedSignatures)
 
     private lateinit var commands: ConstList<Command>
@@ -105,22 +106,33 @@ class Alloy2BParser {
             astNode.accept(expressionTranslator)
 
     private fun toPrologTerm(astNode: Sig): String {
+        // enums are syntactical sugar: elements are 'one sigs' which extend the base sig
+        val parentSig = enums.filter { astNode.isSameOrDescendentOf(it) && !astNode.isSame(it) }
+        val options =
+                if (!parentSig.isEmpty()) "[one,subsig(${sanitizeIdentifier((astNode as Sig.PrimSig).parent.label)})]"
+                else collectSignatureOptionsToPrologList(astNode)
+        if (astNode.isEnum != null) {
+            enums.add(astNode)
+        }
         return "signature(${sanitizeIdentifier(astNode.label)}," +
                 "[${astNode.fieldDecls.joinToString(",") { expressionTranslator.toPrologTerm(it) }}]," +
                 "[${astNode.facts.joinToString(",") { toPrologTerm(it) }}]," +
-                "${collectSignatureOptionsToPrologList(astNode)},pos(${astNode.pos.x},${astNode.pos.y}))"
+                "$options,pos(${astNode.pos.x},${astNode.pos.y}))"
     }
 
     private fun collectSignatureOptionsToPrologList(astNode: Sig): String {
         val lstOptions = mutableListOf<String>()
-        if (orderedSignatures.contains(astNode.label.replace("this/", ""))) {
+        val sigName = astNode.label.replace("this/", "")
+        if (astNode.isEnum != null) {
+            // enums are treated as orderings in Alloy
+            lstOptions.add("enum")
+            orderedSignatures.remove(sigName)
+        }
+        if (orderedSignatures.contains(sigName)) {
             lstOptions.add("ordered")
         }
         if (astNode.isAbstract != null) {
             lstOptions.add("abstract")
-        }
-        if (astNode.isEnum != null) {
-            lstOptions.add("enum")
         }
         if (astNode.isLone != null) {
             lstOptions.add("lone")
