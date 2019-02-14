@@ -18,7 +18,6 @@ Further information on the translation can be found in our [paper](https://www3.
 The tool is still in progress and we do not support the complete Alloy language yet. Please send us any Alloy model that cannot be loaded by ProB and does not use any feature listed below.
 
 Known missing features:
-- sequences: afterLastIdx, add, delete, setAt, insert, subseq
 - graphs
 - traces
 - binary interactions between different signatures without a parent type except of UNIV
@@ -33,10 +32,7 @@ Load an Alloy model from file and translate it to a Prolog term:
 
 ```String prologTerm = parser.parseFromFile(alloyFilePath).getPrologTerm();```
 
-The method parseFromFile() throws an [Err](http://alloy.lcs.mit.edu/alloy/documentation/alloy-api/edu/mit/csail/sdg/alloy4/Err.html) exception if the Alloy model contains parse errors.
-The Err class provides a [Pos](http://alloy.lcs.mit.edu/alloy/documentation/alloy-api/edu/mit/csail/sdg/alloy4/Pos.html) object with further information on the error's location.
-
-The ProB2 Prolog interface provides the predicate ```load_alloy_spec_from_term/1``` to translate the Prolog term to B and load the model into ProB.
+The ProB2 Prolog interface provides the predicate ```load_alloy_spec_from_term/2``` to translate the Prolog term to B and load the model into ProB.
 
 #### The Prolog Term
 
