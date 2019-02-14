@@ -117,8 +117,8 @@ class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : V
     /**
      * Transform the type of an Alloy ast node (like t1->t2->..) to a Prolog list.
      */
-    private fun splitAndCleanType(innerType: Type.ProductType?) =
-            innerType.toString().split("->").map {
+    private fun splitAndCleanType(innerType: String) =
+            innerType.split("->").map {
                 sanitizeIdentifier(it.replace("{", "").replace("}", ""))
             }
 
@@ -127,7 +127,7 @@ class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : V
      * Additionally, log if sequences are used.
      */
     private fun getType(type: Type): String {
-        val tType = type.map { splitAndCleanType(it) }
+        val tType = splitAndCleanType(type.toString())
         val tTypeString = tType.toString()
         usesSequences = usesSequences || seqTypeRegex.containsMatchIn(tTypeString)
         return "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
