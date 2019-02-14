@@ -18,9 +18,10 @@ data class Alloy2BParserErr(val msg: String, val filename: String,
  */
 class Alloy2BParser {
 
+    private val signatures = mutableListOf<Sig>()
     private val orderedSignatures = mutableListOf<String>()
     private val enums = mutableListOf<Sig>()
-    private val expressionTranslator = ExpressionToProlog(orderedSignatures)
+    private val expressionTranslator = ExpressionToProlog(signatures, orderedSignatures)
 
     private lateinit var commands: ConstList<Command>
 
@@ -64,6 +65,7 @@ class Alloy2BParser {
         try {
             val astRoot = CompUtil.parseEverything_fromFile(A4Reporter(), null, path)
             astRoot.opens.forEach { collectPropertiesFromInclude(it) }
+            signatures.addAll(astRoot.rootModule.allSigs) // primitive types are not considered here
 
             val modules = astRoot.allReachableModules.joinToString(",", transform = ::translateModule)
             val rootModule = sanitizeIdentifier(astRoot.rootModule.modelName)
@@ -108,11 +110,15 @@ class Alloy2BParser {
     private fun toPrologTerm(astNode: Sig): String {
         // enums are syntactical sugar: elements are 'one sigs' which extend the base sig
         val parentSig = enums.filter { astNode.isSameOrDescendentOf(it) && !astNode.isSame(it) }
+        val isSubsig = !parentSig.isEmpty()
         val options =
-                if (!parentSig.isEmpty()) "[one,subsig(${sanitizeIdentifier((astNode as Sig.PrimSig).parent.label)})]"
+                if (isSubsig) "[one,subsig(${sanitizeIdentifier((astNode as Sig.PrimSig).parent.label)})]"
                 else collectSignatureOptionsToPrologList(astNode)
         if (astNode.isEnum != null) {
             enums.add(astNode)
+        }
+        if (!isSubsig) {
+            signatures.add(astNode)
         }
         return "signature(${sanitizeIdentifier(astNode.label)}," +
                 "[${astNode.fieldDecls.joinToString(",") { expressionTranslator.toPrologTerm(it) }}]," +

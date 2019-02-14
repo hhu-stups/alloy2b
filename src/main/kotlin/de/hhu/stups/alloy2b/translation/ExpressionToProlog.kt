@@ -1,8 +1,11 @@
 package de.hhu.stups.alloy2b.translation
 
 import edu.mit.csail.sdg.alloy4compiler.ast.*
+import kodkod.util.ints.Ints
+import kotlin.math.max
 
-class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : VisitReturn<String>() {
+class ExpressionToProlog(private val signatures: MutableList<Sig>,
+                         private val orderedSignatures: MutableList<String>) : VisitReturn<String>() {
 
     private val seqTypeRegex = Regex(".seq.")
 
@@ -115,21 +118,67 @@ class ExpressionToProlog(private val orderedSignatures: MutableList<String>) : V
     }
 
     /**
-     * Transform the type of an Alloy ast node (like t1->t2->..) to a Prolog list.
+     * Transform the type of an Alloy ast node (like t1->t2->..->tn, with arity n) to a Prolog list.
      */
-    private fun splitAndCleanType(innerType: String) =
-            innerType.split("->").map {
-                sanitizeIdentifier(it.replace("{", "").replace("}", ""))
+    private fun splitAndCleanType(type: Type): List<String> {
+        if (type.size() == 0) {
+            arrayListOf<String>()
+        }
+        return generalizeTypes(type)
+    }
+
+    private fun generalizeType(type: Type): String {
+        val typeString = type.toString()
+        if (typeString == "{Int}" || typeString == "{univ}") {
+            return cleanUpType(type)
+        }
+        val parents = signatures.filter { type.isSubtypeOf(it.type()) }
+        if (parents.isEmpty()) {
+            return ""
+        }
+        return cleanUpType(getMostGeneralType(parents))
+    }
+
+    private fun generalizeTypes(type: Type): MutableList<String> {
+        if (type.arity() == 0) {
+            return arrayListOf(cleanUpType(type))
+        }
+        val typeList = arrayListOf<String>()
+        var arity = 0
+        for (i in 1..type.arity()) {
+            val innerType = type.extract(i)
+            arity = max(arity, innerType.arity())
+            innerType.forEach {
+                (0 until innerType.arity()).forEach { i -> typeList.add(generalizeType(it.get(i).type())) }
             }
+        }
+        return typeList.subList(0, arity)
+    }
+
+    private fun cleanUpType(type: Type) =
+            sanitizeIdentifier(type.toString().replace("{", "").replace("}", ""))
+
+    private fun getMostGeneralType(types: List<Sig>): Type {
+        assert(types.isNotEmpty())
+        var mgt = types.first()
+        for (i in 2 until types.size) {
+            val currType = types[i]
+            if (mgt.isSameOrDescendentOf(currType)) {
+                mgt = currType
+            }
+        }
+        return mgt.type()
+    }
 
     /**
      * Transform the type of an Alloy ast node to a Prolog term type(ListOfType,Arity).
      * Additionally, log if sequences are used.
      */
     private fun getType(type: Type): String {
-        val tType = splitAndCleanType(type.toString())
+        val tType = splitAndCleanType(type)
         val tTypeString = tType.toString()
         usesSequences = usesSequences || seqTypeRegex.containsMatchIn(tTypeString)
         return "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
     }
 }
+
