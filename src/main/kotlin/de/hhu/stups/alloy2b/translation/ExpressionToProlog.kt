@@ -126,18 +126,14 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         return generalizeTypes(type)
     }
 
-    @Throws(NotImplementedError::class)
     private fun generalizeType(type: Type): String {
         val typeString = type.toString()
-        if (typeString == "{Int}" || typeString == "{univ}") {
-            return cleanUpType(type)
-        }
         val parents = signatures.filter { type.isSubtypeOf(it.type()) }
         if (type.toString().contains("/Ord")) {
             return "'Ordering'"
         }
-        if (parents.isEmpty()) {
-            throw NotImplementedError("This type is not implemented.")
+        if (parents.isEmpty() || typeString == "{Int}" || typeString == "{univ}") {
+            return cleanUpType(type)
         }
         return cleanUpType(getMostGeneralType(parents))
     }
