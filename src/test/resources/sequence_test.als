@@ -1,8 +1,9 @@
 open util/integer
+abstract sig Parent {}
 
-abstract sig A {}
+sig A extends Parent {}
 
-abstract sig B {}
+sig B extends Parent {}
 
 abstract sig C {
  vertices: seq (A),
