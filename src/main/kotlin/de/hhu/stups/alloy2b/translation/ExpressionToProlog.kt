@@ -1,7 +1,6 @@
 package de.hhu.stups.alloy2b.translation
 
 import edu.mit.csail.sdg.alloy4compiler.ast.*
-import kodkod.util.ints.Ints
 import kotlin.math.max
 
 class ExpressionToProlog(private val signatures: MutableList<Sig>,
@@ -127,14 +126,18 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         return generalizeTypes(type)
     }
 
+    @Throws(NotImplementedError::class)
     private fun generalizeType(type: Type): String {
         val typeString = type.toString()
         if (typeString == "{Int}" || typeString == "{univ}") {
             return cleanUpType(type)
         }
         val parents = signatures.filter { type.isSubtypeOf(it.type()) }
+        if (type.toString().contains("/Ord")) {
+            return "'Ordering'"
+        }
         if (parents.isEmpty()) {
-            return ""
+            throw NotImplementedError("This type is not implemented.")
         }
         return cleanUpType(getMostGeneralType(parents))
     }
