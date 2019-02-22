@@ -11,7 +11,7 @@ import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
 data class ParserResult(val prologTerm: String, val commandNames: ConstList<String>)
 
 data class Alloy2BParserErr(val msg: String, val filename: String,
-                            val x: Int, val y: Int, val x2: Int, val y2: Int) : Exception(msg)
+                            val colStart: Int, val rowStart: Int, val colEnd: Int, val rowEnd: Int) : Exception(msg)
 
 /**
  * Convert the abstract syntax tree of an Alloy model to a Prolog term.
