@@ -8,8 +8,8 @@ one sig dewey extends nephews {}
 
 pred p {
  // larger, smaller accept both arguments empty sets
- nephewsOrd/larger[louis-louis,louis-louis] = nephewsOrd/larger[nephews-nephews,nephews-nephews]
- nephewsOrd/larger[louis-louis,louis-louis] = nephewsOrd/smaller[nephews-nephews,nephews-nephews]
+ nephewsOrd/larger[none,none] = nephewsOrd/larger[none,nephews-nephews]
+ nephewsOrd/larger[louis-louis,louis-louis] = nephewsOrd/smaller[nephews-nephews,none]
  nephewsOrd/first = nephewsOrd/min[nephews]
  nephewsOrd/last = nephewsOrd/max[nephews]
  nephewsOrd/next[hughie] = louis
@@ -29,8 +29,8 @@ pred p {
  !nephewsOrd/gt[louis,hughie-hughie]
  !nephewsOrd/gt[dewey,hughie-hughie]
  // lhs emptyset is always true
- nephewsOrd/lt[dewey-dewey,hughie]
- nephewsOrd/lt[dewey-dewey,louis]
+ nephewsOrd/lt[none,none]
+ nephewsOrd/lt[none,louis]
  nephewsOrd/lt[louis-louis,louis]
  nephewsOrd/lte[dewey-dewey,hughie]
  nephewsOrd/lte[dewey-dewey,louis]
@@ -46,9 +46,9 @@ pred p {
  nephewsOrd/gte[louis-louis,louis-louis]
  // rhs emptyset is always false unless lhs is empty
  nephewsOrd/lt[dewey-dewey,hughie-hughie]
- nephewsOrd/lt[hughie-hughie,hughie-hughie]
+ nephewsOrd/lt[none,hughie-hughie]
  nephewsOrd/gt[dewey-dewey,hughie-hughie]
- nephewsOrd/gt[hughie-hughie,hughie-hughie]
+ nephewsOrd/gt[hughie-hughie,none]
  nephewsOrd/gte[dewey-dewey,hughie-hughie]
  nephewsOrd/gte[hughie-hughie,hughie-hughie]
  nephewsOrd/lte[dewey-dewey,hughie-hughie]
@@ -58,11 +58,11 @@ pred p {
  !nephewsOrd/lt[dewey,hughie-hughie]
  !nephewsOrd/lt[louis,dewey-dewey]
  !nephewsOrd/lt[louis,louis-louis]
- !nephewsOrd/lte[hughie,dewey-dewey]
+ !nephewsOrd/lte[hughie,none]
  !nephewsOrd/lte[louis,dewey-dewey]
  !nephewsOrd/lte[louis,louis-louis]
  !nephewsOrd/gt[hughie,dewey-dewey]
- !nephewsOrd/gt[louis,dewey-dewey]
+ !nephewsOrd/gt[louis,none]
  !nephewsOrd/gt[louis,louis-louis]
  !nephewsOrd/gte[hughie,dewey-dewey]
  !nephewsOrd/gte[louis,dewey-dewey]

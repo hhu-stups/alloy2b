@@ -8,18 +8,18 @@ one sig Board{
 
 
 sig Row {
-  id: disj Int
+  idr: disj Int
 }{
    this in Board.rows
 }
 
 fact id{
-    all r:Row| (minus[r.id,1] in Row.id or r.id=1) and r.id>0
-    all c:Column| (minus[c.id,1] in Column.id or c.id=1) and c.id>0
+    all r:Row| (minus[r.idr,1] in Row.idr or r.idr=1) and r.idr>0
+    all c:Column| (minus[c.idc,1] in Column.idc or c.idc=1) and c.idc>0
 }
 
 sig Column {
-  id: disj Int
+  idc: disj Int
 }{
   this in Board.cols
 }
@@ -32,8 +32,8 @@ pred aligned[q1,q2:Queen]{
    or
    q1.x=q2.x
    or some a,b:Int{
-       plus[q1.x.id,a]= q2.x.id
-       plus[q1.y.id,b]= q2.y.id
+       plus[q1.x.idc,a]= q2.x.idc
+       plus[q1.y.idr,b]= q2.y.idr
        a=b or a=minus[0,b]
     }
 }

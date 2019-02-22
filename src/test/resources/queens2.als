@@ -23,4 +23,4 @@ fact { all q:queen, q':(queen-q) {
 
 pred show {}
 
-run show for exactly 4 queen, 5 int
+run show for exactly 20 queen, 6 int

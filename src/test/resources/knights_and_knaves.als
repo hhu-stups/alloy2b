@@ -40,7 +40,7 @@
 		Desmond.says[ (Claire.isKnight or Desmond.isKnight) and not ( Claire.isKnight and Desmond.isKnight ) ]
 	}
 
-	-- Problem 3: There are three native islanders, named Elena, Fernando, and Gary,
+	-- Problem 3: There are three native islanders, named Elena, Fernando, and Gary,	
 	-- standing together. You ask Elena, “How many knights are among you?”, and Elena
 	-- answered but you couldn’t quite hear what she said. You then ask Fernando, “What
 	-- did Elena say?”, and Fernando replies, “Elena said there is one knight among us.”
