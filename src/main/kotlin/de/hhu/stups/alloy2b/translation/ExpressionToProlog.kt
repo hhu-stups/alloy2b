@@ -1,12 +1,13 @@
 package de.hhu.stups.alloy2b.translation
 
 import edu.mit.csail.sdg.alloy4compiler.ast.*
-import kotlin.math.max
 
 class ExpressionToProlog(private val signatures: MutableList<Sig>,
                          private val orderedSignatures: MutableList<String>) : VisitReturn<String>() {
 
-    private val seqTypeRegex = Regex(".seq.")
+    private val seqTypeRegex = Regex(".seq'.")
+    private val typeTermCache = hashMapOf<String, String>()
+    private val typeSigCache = hashMapOf<String, String>()
 
     var usesSequences = false
 
@@ -127,15 +128,24 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
     }
 
     private fun generalizeType(type: Type): String {
+        val cached = typeSigCache[type.toString()]
+        if (cached != null) {
+            return cached
+        }
         val typeString = type.toString()
         val parents = signatures.filter { type.isSubtypeOf(it.type()) }
         if (type.toString().contains("/Ord")) {
+            typeSigCache[type.toString()] = "'Ordering'"
             return "'Ordering'"
         }
         if (parents.isEmpty() || typeString == "{Int}" || typeString == "{univ}") {
-            return cleanUpType(type)
+            val res = cleanUpType(type)
+            typeSigCache[type.toString()] = res
+            return res
         }
-        return cleanUpType(getMostGeneralType(parents))
+        val res = cleanUpType(getMostGeneralType(parents))
+        typeSigCache[type.toString()] = res
+        return res
     }
 
     private fun generalizeTypes(type: Type): MutableList<String> {
@@ -143,22 +153,18 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
             return arrayListOf(cleanUpType(type))
         }
         val typeList = arrayListOf<String>()
-        var arity = 0
-        for (i in 1..type.arity()) {
-            val innerType = type.extract(i)
-            arity = max(arity, innerType.arity())
-            innerType.forEach {
-                (0 until innerType.arity()).forEach { i -> typeList.add(generalizeType(it.get(i).type())) }
-            }
+        val firstType = type.first()
+        for (i in 0 until type.arity()) {
+            val sig = firstType.get(i)
+            typeList.add(generalizeType(sig.type()))
         }
-        return typeList.subList(0, arity)
+        return typeList
     }
 
     private fun cleanUpType(type: Type) =
             sanitizeIdentifier(type.toString().replace("{", "").replace("}", ""))
 
     private fun getMostGeneralType(types: List<Sig>): Type {
-        assert(types.isNotEmpty())
         var mgt = types.first()
         for (i in 2 until types.size) {
             val currType = types[i]
@@ -174,10 +180,17 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
      * Additionally, log if sequences are used.
      */
     private fun getType(type: Type): String {
+        val typeString = type.toString()
+        val cached = typeTermCache[typeString]
+        if (cached != null) {
+            return cached
+        }
         val tType = splitAndCleanType(type)
         val tTypeString = tType.toString()
         usesSequences = usesSequences || seqTypeRegex.containsMatchIn(tTypeString)
-        return "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
+        val res = "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
+        typeTermCache[typeString] = res
+        return res
     }
 }
 

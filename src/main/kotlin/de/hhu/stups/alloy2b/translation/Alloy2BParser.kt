@@ -79,7 +79,7 @@ class Alloy2BParser {
     }
 
     private fun toPrologTerm(astNode: Pair<String, Expr>) =
-            "fact(${astNode.b?.accept(expressionTranslator)},(${astNode.b?.pos?.x},${astNode.b?.pos?.y}))"
+            "fact(${astNode.b.accept(expressionTranslator)},(${astNode.b?.pos?.x},${astNode.b?.pos?.y}))"
 
     private fun toPrologTerm(astNode: Command): String {
         val functor = if (astNode.check) "check" else "run"
