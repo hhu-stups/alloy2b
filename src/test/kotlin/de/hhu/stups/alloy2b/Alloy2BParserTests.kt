@@ -148,4 +148,10 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("ordering_test.pl")
         Assert.assertEquals(expected, Alloy2BParser().parseFromFile("/ordering_test.als").prologTerm)
     }
+
+    @Test
+    fun translateGenerated200() {
+        val expected = getResourceAsString("generated200.pl")
+        Assert.assertEquals(expected, Alloy2BParser().parseFromFile("/generated200.als").prologTerm)
+    }
 }
