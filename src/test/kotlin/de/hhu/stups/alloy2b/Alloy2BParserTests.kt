@@ -142,4 +142,10 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("alloc_large.pl")
         Assert.assertEquals(expected, Alloy2BParser().parseFromFile("/alloc_large.als").prologTerm)
     }
+
+    @Test
+    fun translateOrderingTest() {
+        val expected = getResourceAsString("ordering_test.pl")
+        Assert.assertEquals(expected, Alloy2BParser().parseFromFile("/ordering_test.als").prologTerm)
+    }
 }
