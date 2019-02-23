@@ -5,7 +5,6 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 class ExpressionToProlog(private val signatures: MutableList<Sig>,
                          private val orderedSignatures: MutableList<String>) : VisitReturn<String>() {
 
-    private val seqTypeRegex = Regex(".seq'.")
     private val typeTermCache = hashMapOf<String, String>()
     private val typeSigCache = hashMapOf<String, String>()
 
@@ -68,6 +67,9 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         }
         if (p0.type().is_bool) {
             return "boolean($p0,pos(${p0.pos.x},${p0.pos.y}))"
+        }
+        if (p0.toString().matches(Regex("\".*\""))) {
+            return "string($p0,pos(${p0.pos.x},${p0.pos.y}))"
         }
         return "$p0(pos(${p0.pos.x},${p0.pos.y}))"
     }
@@ -187,6 +189,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         }
         val tType = splitAndCleanType(type)
         val tTypeString = tType.toString()
+        val seqTypeRegex = Regex(".seq'.")
         usesSequences = usesSequences || seqTypeRegex.containsMatchIn(tTypeString)
         val res = "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
         typeTermCache[typeString] = res
