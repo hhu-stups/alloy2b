@@ -5,6 +5,8 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 class ExpressionToProlog(private val signatures: MutableList<Sig>,
                          private val orderedSignatures: MutableList<String>) : VisitReturn<String>() {
 
+    private val exprUnaryCache = hashMapOf<String,String>()
+    private val exprBinaryCache = hashMapOf<String,String>()
     private val typeTermCache = hashMapOf<String, String>()
     private val typeSigCache = hashMapOf<String, String>()
 
@@ -29,6 +31,11 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
     }
 
     override fun visit(p0: ExprBinary): String {
+        val p0String = p0.toString()
+        val cached = exprBinaryCache[p0String]
+        if (cached != null) {
+            return cached
+        }
         val left = p0.left
         val tLeft = left.accept(this)
         val right = p0.right
@@ -43,8 +50,10 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
             orderedSignatures.add(leftType)
         }
         // TODO: check for univ type
-        return "${getOperator(p0.op.toString())}($tLeft,$tRight," +
+        val res = "${getOperator(p0.op.toString())}($tLeft,$tRight," +
                 "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
+        exprBinaryCache[p0String] = res
+        return res
     }
 
     override fun visit(p0: ExprList) =
@@ -91,14 +100,22 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
                 "${p0.sub?.accept(this)},${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
     }
 
-    override fun visit(p0: ExprUnary): String =
-            when (p0.op) {
-                ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
-                ExprUnary.Op.CAST2INT,
-                ExprUnary.Op.CAST2SIGINT -> p0.sub.accept(this)
-                else -> "${getOperator(p0.op.toString())}(${p0.sub.accept(this)}," +
-                        "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
-            }
+    override fun visit(p0: ExprUnary): String {
+        val p0String = p0.toString()
+        val cached = exprUnaryCache[p0String]
+        if (cached != null) {
+            return cached
+        }
+        val res = when (p0.op) {
+            ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
+            ExprUnary.Op.CAST2INT,
+            ExprUnary.Op.CAST2SIGINT -> p0.sub.accept(this)
+            else -> "${getOperator(p0.op.toString())}(${p0.sub.accept(this)}," +
+                    "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
+        }
+        exprUnaryCache[p0String] = res
+        return res
+    }
 
     override fun visit(p0: ExprVar) = "identifier(${sanitizeIdentifier(p0.label)}," +
             "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
