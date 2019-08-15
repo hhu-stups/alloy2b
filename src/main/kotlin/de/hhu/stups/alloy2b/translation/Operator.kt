@@ -15,14 +15,14 @@ enum class Operator {
     companion object {
         fun toKeyword(op: Operator) : String =
                 when (op) {
-                    INT_PLUS -> "integer'plus"
-                    INT_MINUS -> "integer'minus"
-                    INT_DIV -> "integer'div"
-                    INT_MODULO -> "integer'rem"
-                    INT_PRODUCT -> "integer'mul"
-                    INT_SUM -> "integer'sum"
-                    INT_MAX -> "integer'max"
-                    INT_MIN -> "integer'min"
+                    INT_PLUS -> "integer''plus"
+                    INT_MINUS -> "integer''minus"
+                    INT_DIV -> "integer''div"
+                    INT_MODULO -> "integer''rem"
+                    INT_PRODUCT -> "integer''mul"
+                    INT_SUM -> "integer''sum"
+                    INT_MAX -> "integer''max"
+                    INT_MIN -> "integer''min"
                     else -> op.toString().toLowerCase()
                 }
 
