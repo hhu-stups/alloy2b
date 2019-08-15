@@ -163,12 +163,12 @@ if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
                         developer {
                             id = 'JoshuaAtSTUPS'
                             name = 'Joshua Schmidt'
-                            email = 'joshua.schmidt@hhu.de'
+                            email = 'schmidt@cs.hhu.de'
                         }
                         developer {
                             id = 'wysiib'
                             name = 'Sebastian Krings'
-                            email = 'sebastian.krings@hhu.de'
+                            email = 'krings@cs.hhu.de'
                         }
                     }
                 }
