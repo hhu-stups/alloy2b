@@ -1,7 +1,7 @@
 package de.hhu.stups.alloy2b.translation
 
 enum class Operator {
-    LONE_OF, ONE_OF, SET_OF, EXACTLY_OF, SOME_OF, IS_SEQ, COMPREHENSION,
+    LONEOF, ONEOF, SETOF, EXACTLYOF, SOMEOF, IS_SEQ, COMPREHENSION,
     LONE, SET, ALL, JOIN, EQUAL, NOT_EQUAL, PLUS, INTERSECTION, MINUS, NO, NOT_IN, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
     IMPLICATION, IFF, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, CARD, DOM_RESTR, RAN_RESTR, OVERRIDE, ABSTRACT,
     CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, TOTAL_BIJECTION, TOTAL_INJECTION, PARTIAL_INJECTION,
@@ -33,11 +33,11 @@ enum class Operator {
                     "TOTALORDER" -> TOTALORDER
                     "comprehension" -> COMPREHENSION
                     "isSeq->lone" -> IS_SEQ
-                    "some of" -> SOME_OF
-                    "exactly of" -> EXACTLY_OF
-                    "lone of" -> LONE_OF
-                    "one of" -> ONE_OF
-                    "set of" -> SET_OF
+                    "some of" -> SOMEOF
+                    "exactly of" -> EXACTLYOF
+                    "lone of" -> LONEOF
+                    "one of" -> ONEOF
+                    "set of" -> SETOF
                     "lone" -> LONE
                     "set" -> SET
                     "all" -> ALL
