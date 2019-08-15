@@ -9,7 +9,7 @@ enum class Operator {
     TOTAL_RELATION, SURJECTION_RELATION, TOTAL_SURJECTION_RELATION,
     INJECTION_SURJECTION_RELATION, INJECTION_RELATION, TOTAL_BIJECTION_RELATION, BIJECTION_RELATION,
     INVERSE, NOT, SEQ,
-    INT_PLUS, INT_MINUS, INT_DIV, INT_MODULO, INT_PRODUCT, INT_SUM, INT_MAX, INT_MIN,
+    INT_PLUS, INT_MINUS, INT_DIV, INT_MODULO, INT_PRODUCT, INT_SUM, INT_MAX, INT_MIN,CAST2INT,CAST2SIGINT,
     TOTALORDER;
 
     companion object {
@@ -28,6 +28,8 @@ enum class Operator {
 
         fun fromString(op: String): Operator =
                 when (op) {
+                    "Int->int" -> CAST2INT
+                    "int->Int" -> CAST2SIGINT
                     "TOTALORDER" -> TOTALORDER
                     "comprehension" -> COMPREHENSION
                     "isSeq->lone" -> IS_SEQ
