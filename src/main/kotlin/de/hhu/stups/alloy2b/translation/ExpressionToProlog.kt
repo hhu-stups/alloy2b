@@ -108,8 +108,8 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         }
         val res = when (p0.op) {
             ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
-            ExprUnary.Op.CAST2INT -> "cast2int(${p0.sub.accept(this)})"
-            ExprUnary.Op.CAST2SIGINT -> "cast2sigint(${p0.sub.accept(this)})"
+            ExprUnary.Op.CAST2INT -> "cast2int(${p0.sub.accept(this)},${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
+            ExprUnary.Op.CAST2SIGINT -> "cast2sigint(${p0.sub.accept(this)},${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
             else -> "${getOperator(p0.op.toString())}(${p0.sub.accept(this)}," +
                     "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
         }
