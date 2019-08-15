@@ -163,7 +163,7 @@ class Alloy2BParserTests {
 
     @Test
     fun translateSlotData() {
-        val expected = getResourceAsString("slot_data.pl")
+        val expected = getResourceAsString("slot_data_v2.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/slot_data_v2.als").prologTerm)
     }
 
