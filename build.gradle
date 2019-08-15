@@ -35,7 +35,7 @@ sourceSets {
 dependencies {
     compile files('alloy4.2.jar')
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    testCompile 'junit:junit:4.12'
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.4.2')
 }
 
 task downloadAlloy {
@@ -163,12 +163,12 @@ if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
                         developer {
                             id = 'JoshuaAtSTUPS'
                             name = 'Joshua Schmidt'
-                            email = 'schmidt@cs.hhu.de'
+                            email = 'joshua.schmidt@hhu.de'
                         }
                         developer {
                             id = 'wysiib'
                             name = 'Sebastian Krings'
-                            email = 'krings@cs.hhu.de'
+                            email = 'sebastian.krings@hhu.de'
                         }
                     }
                 }

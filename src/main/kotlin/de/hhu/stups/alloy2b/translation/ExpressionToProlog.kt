@@ -108,8 +108,8 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         }
         val res = when (p0.op) {
             ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
-            ExprUnary.Op.CAST2INT,
-            ExprUnary.Op.CAST2SIGINT -> p0.sub.accept(this)
+            ExprUnary.Op.CAST2INT -> "cast2int(${p0.sub.accept(this)}"
+            ExprUnary.Op.CAST2SIGINT -> "cast2sigint(${p0.sub.accept(this)}"
             else -> "${getOperator(p0.op.toString())}(${p0.sub.accept(this)}," +
                     "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
         }
@@ -128,7 +128,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
 
     private fun getOperator(op: String): String {
         val operator = try {
-            Operator.fromString(op).toString().toLowerCase()
+            Operator.toKeyword(Operator.fromString(op))
         } catch (exception: UnsupportedOperationException) {
             System.err.println(exception)
             op.toLowerCase().replace(" ", "")

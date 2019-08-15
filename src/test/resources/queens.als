@@ -11,6 +11,7 @@ pred nothreat(q1,q2 : Queens) {
 	and q1.col != q2.col
 	and int[q1.row] - int[q2.row] != int[q2.col] - int[q1.col]
     and int[q1.row] - int[q2.row] != int[q1.col] - int[q2.col]
+    and int[q1.row] = int[q1.row]
 }
 
 pred valid { all q1,q2 : Queens |

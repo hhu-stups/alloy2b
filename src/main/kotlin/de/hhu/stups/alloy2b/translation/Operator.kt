@@ -1,6 +1,7 @@
 package de.hhu.stups.alloy2b.translation
 
 enum class Operator {
+    LONE_OF, ONE_OF, SET_OF, EXACTLY_OF, SOME_OF, IS_SEQ, COMPREHENSION,
     LONE, SET, ALL, JOIN, EQUAL, NOT_EQUAL, PLUS, INTERSECTION, MINUS, NO, NOT_IN, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
     IMPLICATION, IFF, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, CARD, DOM_RESTR, RAN_RESTR, OVERRIDE, ABSTRACT,
     CARTESIAN, TOTAL_FUNCTION, PARTIAL_FUNCTION, TOTAL_BIJECTION, TOTAL_INJECTION, PARTIAL_INJECTION,
@@ -8,11 +9,33 @@ enum class Operator {
     TOTAL_RELATION, SURJECTION_RELATION, TOTAL_SURJECTION_RELATION,
     INJECTION_SURJECTION_RELATION, INJECTION_RELATION, TOTAL_BIJECTION_RELATION, BIJECTION_RELATION,
     INVERSE, NOT, SEQ,
-    INT_PLUS, INT_MINUS, INT_DIV, INT_MODULO, INT_PRODUCT, INT_SUM, INT_MAX, INT_MIN;
+    INT_PLUS, INT_MINUS, INT_DIV, INT_MODULO, INT_PRODUCT, INT_SUM, INT_MAX, INT_MIN,
+    TOTALORDER;
 
     companion object {
+        fun toKeyword(op: Operator) : String =
+                when (op) {
+                    INT_PLUS -> "integer'plus"
+                    INT_MINUS -> "integer'minus"
+                    INT_DIV -> "integer'div"
+                    INT_MODULO -> "integer'rem"
+                    INT_PRODUCT -> "integer'mul"
+                    INT_SUM -> "integer'sum"
+                    INT_MAX -> "integer'max"
+                    INT_MIN -> "integer'min"
+                    else -> op.toString().toLowerCase()
+                }
+
         fun fromString(op: String): Operator =
                 when (op) {
+                    "TOTALORDER" -> TOTALORDER
+                    "comprehension" -> COMPREHENSION
+                    "isSeq->lone" -> IS_SEQ
+                    "some of" -> SOME_OF
+                    "exactly of" -> EXACTLY_OF
+                    "lone of" -> LONE_OF
+                    "one of" -> ONE_OF
+                    "set of" -> SET_OF
                     "lone" -> LONE
                     "set" -> SET
                     "all" -> ALL
@@ -76,9 +99,13 @@ enum class Operator {
                     "not" -> NOT
                     "seq" -> SEQ
                     "plus" -> INT_PLUS
+                    "@+" -> INT_PLUS
                     "minus" -> INT_MINUS
+                    "@-" -> INT_MINUS
                     "div" -> INT_DIV
+                    "/" -> INT_DIV
                     "rem" -> INT_MODULO
+                    "%" -> INT_MODULO
                     "mul" -> INT_PRODUCT
                     "sum" -> INT_SUM
                     "max" -> INT_MAX

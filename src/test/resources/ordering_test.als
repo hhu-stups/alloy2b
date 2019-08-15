@@ -69,4 +69,4 @@ pred p {
  !nephewsOrd/gte[louis,louis-louis]
 }
 
-run p
+run p for 3 nephews
