@@ -181,7 +181,7 @@ class Alloy2BParserTests {
 
     @Test
     fun translateNamespaces() {
-        val expected = getResourceAsString("namespaces.pl")
+        val expected = getResourceAsString("namespace_module_a.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/namespace_module_a.als").prologTerm)
     }
 
