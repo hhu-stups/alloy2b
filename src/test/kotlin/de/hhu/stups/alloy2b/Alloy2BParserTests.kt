@@ -190,4 +190,10 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("util_integer.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/util_integer.als").prologTerm)
     }
+
+    @Test
+    fun translateQuantifiers() {
+        val expected = getResourceAsString("quantifiers.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/quantifiers.als").prologTerm)
+    }
 }
