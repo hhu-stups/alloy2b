@@ -5,11 +5,6 @@ import edu.mit.csail.sdg.alloy4compiler.ast.*
 class ExpressionToProlog(private val signatures: MutableList<Sig>,
                          private val orderedSignatures: MutableList<String>) : VisitReturn<String>() {
 
-    private val exprUnaryCache = hashMapOf<String,String>()
-    private val exprBinaryCache = hashMapOf<String,String>()
-    private val typeTermCache = hashMapOf<String, String>()
-    private val typeSigCache = hashMapOf<String, String>()
-
     var usesSequences = false
 
     /**
@@ -31,11 +26,6 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
     }
 
     override fun visit(p0: ExprBinary): String {
-        val p0String = p0.toString()
-        val cached = exprBinaryCache[p0String]
-        if (cached != null) {
-            return cached
-        }
         val left = p0.left
         val tLeft = left.accept(this)
         val right = p0.right
@@ -50,10 +40,8 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
             orderedSignatures.add(leftType)
         }
         // TODO: check for univ type
-        val res = "${getOperator(p0.op.toString())}($tLeft,$tRight," +
+        return "${getOperator(p0.op.toString())}($tLeft,$tRight," +
                 "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
-        exprBinaryCache[p0String] = res
-        return res
     }
 
     override fun visit(p0: ExprList) =
@@ -100,20 +88,12 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
                 "${p0.sub?.accept(this)},${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
     }
 
-    override fun visit(p0: ExprUnary): String {
-        val p0String = p0.toString()
-        val cached = exprUnaryCache[p0String]
-        if (cached != null) {
-            return cached
-        }
-        val res = when (p0.op) {
-            ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
-            else -> "${getOperator(p0.op.toString())}(${p0.sub.accept(this)}," +
-                    "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
-        }
-        exprUnaryCache[p0String] = res
-        return res
-    }
+    override fun visit(p0: ExprUnary): String =
+            when (p0.op) {
+                ExprUnary.Op.NOOP -> p0.sub.accept(this) as String
+                else -> "${getOperator(p0.op.toString())}(${p0.sub.accept(this)}," +
+                        "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
+            }
 
     override fun visit(p0: ExprVar) = "identifier(${sanitizeIdentifier(p0.label)}," +
             "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
@@ -145,24 +125,15 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
     }
 
     private fun generalizeType(type: Type): String {
-        val cached = typeSigCache[type.toString()]
-        if (cached != null) {
-            return cached
-        }
         val typeString = type.toString()
         val parents = signatures.filter { type.isSubtypeOf(it.type()) }
         if (type.toString().contains("/Ord")) {
-            typeSigCache[type.toString()] = "'Ordering'"
             return "'Ordering'"
         }
         if (parents.isEmpty() || typeString == "{Int}" || typeString == "{univ}") {
-            val res = cleanUpType(type)
-            typeSigCache[type.toString()] = res
-            return res
+            return cleanUpType(type)
         }
-        val res = cleanUpType(getMostGeneralType(parents))
-        typeSigCache[type.toString()] = res
-        return res
+        return cleanUpType(getMostGeneralType(parents))
     }
 
     private fun generalizeTypes(type: Type): MutableList<String> {
@@ -197,18 +168,11 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
      * Additionally, log if sequences are used.
      */
     private fun getType(type: Type): String {
-        val typeString = type.toString()
-        val cached = typeTermCache[typeString]
-        if (cached != null) {
-            return cached
-        }
         val tType = splitAndCleanType(type)
         val tTypeString = tType.toString()
         val seqTypeRegex = Regex(".seq'.")
         usesSequences = usesSequences || seqTypeRegex.containsMatchIn(tTypeString)
-        val res = "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
-        typeTermCache[typeString] = res
-        return res
+        return "type(${if (tType.isEmpty()) "[untyped]" else tTypeString},${type.arity()})"
     }
 }
 
