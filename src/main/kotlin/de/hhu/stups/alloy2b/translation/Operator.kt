@@ -14,6 +14,8 @@ enum class Operator {
 
     companion object {
         fun toKeyword(op: Operator) : String =
+                // one can use plus[1,1] or 1+1 in Alloy; for our translation, both should point to the same keyword
+                // (note that plus[1,1] is a function application called "integer'plus")
                 when (op) {
                     INT_PLUS -> "integer''plus"
                     INT_MINUS -> "integer''minus"
