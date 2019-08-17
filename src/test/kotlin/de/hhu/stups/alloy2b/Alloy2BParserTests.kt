@@ -186,6 +186,12 @@ class Alloy2BParserTests {
     }
 
     @Test
+    fun translateNamespaces2() {
+        val expected = getResourceAsString("moduleb.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/ModuleB.als").prologTerm)
+    }
+
+    @Test
     fun translateUtilInteger() {
         val expected = getResourceAsString("util_integer.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/util_integer.als").prologTerm)
