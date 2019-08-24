@@ -87,9 +87,8 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
                     ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprQt): String {
-        val params = p0.decls?.map { decl ->
-            "identifier(${sanitizeIdentifier(decl.names.first().label)},${getType(decl.expr.type())}," +
-                    "pos(${p0.pos?.x},${p0.pos?.y}))" }
+        val params = p0.decls?.flatMap { decl -> decl.names.map { "identifier(${sanitizeIdentifier(it.label)},${getType(decl.expr.type())}," +
+                "pos(${p0.pos?.x},${p0.pos?.y}))" } }
         return "${getOperator(p0.op.toString())}($params," +
                 "${p0.decls?.map { toPrologTerm(it) }}," +
                 "${p0.sub?.accept(this)},${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
