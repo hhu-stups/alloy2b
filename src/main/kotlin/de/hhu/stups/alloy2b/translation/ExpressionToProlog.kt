@@ -76,13 +76,13 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
                     ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprLet) =
-    // a let with multiple variables are split into several let expressions by Alloy each having only one var
+            // a let with multiple variables is split into several let expressions by Alloy each having only one var
             "let(${sanitizeIdentifier(p0.`var`.label)}," +
                     "${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
                     ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprQt): String {
-        val params = p0.decls?.map { decl -> decl.names.joinToString(",") { sanitizeIdentifier(it.label) } }
+        val params = p0.decls?.map { decl -> "identifier(${sanitizeIdentifier(decl.names.first().label)},${getType(decl.expr.type())},pos(${p0.pos?.x})" }
         return "${getOperator(p0.op.toString())}($params," +
                 "${p0.decls?.map { toPrologTerm(it) }}," +
                 "${p0.sub?.accept(this)},${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
