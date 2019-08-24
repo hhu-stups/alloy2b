@@ -28,7 +28,7 @@ class Alloy2BParser {
     private fun translateModule(module: CompModule): String {
         commands = module.allCommands
         // if the module is named by the user using 'as', module.path is set
-        val preName = if (module.path.isEmpty() or module.modelName.startsWith("util")) module.modelName else module.path
+        val preName = if (module.path.isEmpty()) "(${module.modelName},alloy2b_none)" else "(${module.modelName},${module.path})"
         val name = sanitizeIdentifier(preName)
         val listOfFacts = module.allFacts.joinToString(",") { toPrologTerm(it) }
         val listOfAssertions = module.allAssertions.joinToString(",") { toPrologTerm(it) }
