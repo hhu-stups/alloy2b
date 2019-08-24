@@ -17,14 +17,15 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
             // "sig State { near, far: set Object }" has one Decl with one Expr but two names near and far
             // we then have to define Expr for each name
             return astNode.names.joinToString(",") {
-                "field(identifier(${sanitizeIdentifier(it.label)},${getType(it.type())},pos(${it.pos?.x}))," +
+                "field(identifier(${sanitizeIdentifier(it.label)},${getType(it.type())}," +
+                        "pos(${it.pos?.x},${it.pos?.y}))," +
                         "${astNode.expr.accept(this)},${getType(astNode.expr.type())},$options," +
                         "pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
             }
         }
         val astNodeE = astNode.get()
         return "field(identifier(${sanitizeIdentifier(astNodeE.label)},${getType(astNodeE.type())}," +
-                "pos(${astNodeE.pos?.x})),${astNode.expr.accept(this)}," +
+                "pos(${astNodeE.pos?.x},${astNodeE.pos?.y})),${astNode.expr.accept(this)}," +
                 "${getType(astNode.expr.type())},$options,pos(${astNode.get().pos.x},${astNode.get().pos.y}))"
     }
 
@@ -80,13 +81,15 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
 
     override fun visit(p0: ExprLet) =
             // a let with multiple variables is split into several let expressions by Alloy each having only one var
-            "let(identifier(${sanitizeIdentifier(p0.`var`.label)},${getType(p0.`var`.type())},pos(${p0.`var`.pos?.x}))," +
+            "let(identifier(${sanitizeIdentifier(p0.`var`.label)},${getType(p0.`var`.type())}," +
+                    "pos(${p0.`var`.pos?.x},${p0.`var`.pos?.y}))," +
                     "${p0.expr?.accept(this)},${p0.sub?.accept(this)}" +
                     ",${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
 
     override fun visit(p0: ExprQt): String {
         val params = p0.decls?.map { decl ->
-            "identifier(${sanitizeIdentifier(decl.names.first().label)},${getType(decl.expr.type())},pos(${p0.pos?.x}))" }
+            "identifier(${sanitizeIdentifier(decl.names.first().label)},${getType(decl.expr.type())}," +
+                    "pos(${p0.pos?.x},${p0.pos?.y}))" }
         return "${getOperator(p0.op.toString())}($params," +
                 "${p0.decls?.map { toPrologTerm(it) }}," +
                 "${p0.sub?.accept(this)},${getType(p0.type())},pos(${p0.pos?.x},${p0.pos?.y}))"
