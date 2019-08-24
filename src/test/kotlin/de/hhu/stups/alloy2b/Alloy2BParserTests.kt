@@ -202,4 +202,16 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("quantifiers.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/quantifiers.als").prologTerm)
     }
+
+    @Test
+    fun translateSeqPreconditions() {
+        val expected = getResourceAsString("seq_preconditions.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/seq_preconditions.als").prologTerm)
+    }
+
+    @Test
+    fun translateNaturals() {
+        val expected = getResourceAsString("natural.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/natural.als").prologTerm)
+    }
 }
