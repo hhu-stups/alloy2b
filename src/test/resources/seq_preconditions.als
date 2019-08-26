@@ -3,14 +3,14 @@ s1 : seq T,
 s2 : seq T
 }
 
-run test1 {
-no T.s1
-T.s2 = T.s1.insert[1,T]
-}
-
 run test2 {
 no T.s1
 T.s2 = T.s1.setAt[1,T]
+}
+
+run test1 {
+no T.s1
+T.s2 = T.s1.insert[1,T]
 }
 
 run test3 {
