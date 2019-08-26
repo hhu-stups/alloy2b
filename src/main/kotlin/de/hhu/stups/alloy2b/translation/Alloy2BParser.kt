@@ -20,8 +20,9 @@ class Alloy2BParser {
 
     private val signatures = mutableListOf<Sig>()
     private val orderedSignatures = mutableListOf<String>()
+    private val setsOfParents = mutableSetOf<MutableSet<String>>()
     private val enums = mutableListOf<Sig>()
-    private val expressionTranslator = ExpressionToProlog(signatures, orderedSignatures)
+    private val expressionTranslator = ExpressionToProlog(signatures, orderedSignatures, setsOfParents)
 
     private lateinit var commands: ConstList<Command>
 
@@ -38,7 +39,7 @@ class Alloy2BParser {
         return "alloy_model($name,facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
                 "functions([$listOfFunctions]),signatures([$listOfSignatures])," +
                 "ordered_signatures(${orderedSignatures.map { "'$it'" }})," +
-                "[sequences:${expressionTranslator.usesSequences}])"
+                "[sequences:${expressionTranslator.usesSequences},parent_types:$setsOfParents])"
     }
 
     private fun realPath(alloyModelPath: String): String {
