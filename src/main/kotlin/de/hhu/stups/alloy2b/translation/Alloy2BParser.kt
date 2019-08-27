@@ -36,10 +36,12 @@ class Alloy2BParser {
         val listOfCommands = commands.joinToString(",") { toPrologTerm(it) }
         val listOfFunctions = module.allFunc.joinToString(",") { toPrologTerm(it) }
         val listOfSignatures = module.allSigs.joinToString(",") { toPrologTerm(it) }
+        val parentTypes = "parent_types:$setsOfParents"
+        setsOfParents.clear()
         return "alloy_model($name,facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
                 "functions([$listOfFunctions]),signatures([$listOfSignatures])," +
                 "ordered_signatures(${orderedSignatures.map { "'$it'" }})," +
-                "[sequences:${expressionTranslator.usesSequences},parent_types:$setsOfParents])"
+                "[sequences:${expressionTranslator.usesSequences},$parentTypes])"
     }
 
     private fun realPath(alloyModelPath: String): String {
