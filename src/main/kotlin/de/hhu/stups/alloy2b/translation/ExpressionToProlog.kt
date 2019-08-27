@@ -42,6 +42,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         val arityr = rightTypeClean.size
         val leftTypeGen: List<String>
         val rightTypeGen: List<String>
+        // special case for dot join possibly reversing the order of type lists
         if (p0.op.toString() == ".") {
             if (arityr == 1) {
                 leftTypeGen = leftTypeClean.reversed()
@@ -59,20 +60,17 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
             rightTypeGen = rightTypeClean
         }
 
-        /*val leftTypeGen = splitAndCleanType(left.type())
-        // reverse order of args of join's rhs to compare types
-        val rightTypeGen = if (p0.op.toString() == ".") {
-            val arityl = left.type().arity()
-            if (arityl < right.type().arity()) {
-                splitAndCleanType(right.type()).subList(0, left.type().arity()).reversed()
-            } else {
-                splitAndCleanType(right.type()).reversed()
-            }
-        } else {
-            splitAndCleanType(right.type())
-        }*/
         val typeDifferences = getTypeDifferences(leftTypeGen, rightTypeGen)
-        if (!p0.op.toString().contains("->")) { // exclude type definitions like 'date: known -> Date'
+        addToSetsOfParentsPre(p0.op.toString(), typeDifferences, leftTypeGen, rightTypeGen)
+        return "${getOperator(p0.op.toString())}($tLeft,$tRight," +
+                "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
+    }
+
+    private fun addToSetsOfParentsPre(opString: String,
+                                      typeDifferences: Set<Pair<String, String>>,
+                                      leftTypeGen: List<String>,
+                                      rightTypeGen: List<String>) {
+        if (!opString.contains("->")) { // exclude type definitions like 'date: known -> Date'
             val typeDifferencesNoOrds = mutableSetOf<Pair<String, String>>()
             // filter pairs of different types where at least one type is an ordered signature (ordered signatures
             // already have a parent type POW(INTEGER) as we translate ordered signatures as sets of integers in B)
@@ -95,8 +93,6 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
                 addToSetsOfParents(setsOfParents, typeDifferencesNoOrds)
             }
         }
-        return "${getOperator(p0.op.toString())}($tLeft,$tRight," +
-                "${getType(p0.type())},pos(${p0.pos.x},${p0.pos.y}))"
     }
 
     /**
