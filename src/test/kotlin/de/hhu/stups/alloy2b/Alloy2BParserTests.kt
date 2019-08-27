@@ -238,4 +238,10 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("restrictions.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/Restrictions.als").prologTerm)
     }
+
+    @Test
+    fun translateUtilBool() {
+        val expected = getResourceAsString("utilbool.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/utilbool.als").prologTerm)
+    }
 }
