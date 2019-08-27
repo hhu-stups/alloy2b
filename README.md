@@ -15,12 +15,7 @@ Further information on the translation can be found in our [paper](https://www3.
 
 
 # Note
-The tool is still in progress and we do not support the complete Alloy language yet. Please send us any Alloy model that cannot be loaded by ProB and does not use any feature listed below.
-
-Known missing features:
-- graphs
-- traces
-- binary interactions between different signatures without a parent type except of UNIV
+Please send us any Alloy model that cannot be loaded by ProB.
 
 # Developer Note
 
