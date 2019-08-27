@@ -159,7 +159,9 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         for (i in 0 until ntype1.size) {
             val v1 = ntype1[i]
             val v2 = ntype2[i + fromIndex]
-            if (v1 != v2) {
+            // we have real booleans in B so this is not a type difference
+            val boolException = listOf("'boolean''True'", "'boolean''False'", "'boolean''Bool'")
+            if (v1 != v2 && !(boolException.contains(v1) && boolException.contains(v2))) {
                 differentTypeSets.add(Pair(v1, v2))
             }
         }
