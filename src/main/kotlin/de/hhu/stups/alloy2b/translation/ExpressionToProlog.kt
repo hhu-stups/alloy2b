@@ -36,14 +36,41 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         val right = p0.right
         val tRight = right.accept(this)
 
-        val leftTypeGen = splitAndCleanType(left.type())
-        // reverse order of args of join's rhs to compare types
-        val rightTypeGen = if (p0.op.toString() == "." && left.type().arity() == right.type().arity()) {
-            splitAndCleanType(right.type()).reversed()
+        val leftTypeClean = splitAndCleanType(left.type())
+        val rightTypeClean = splitAndCleanType(right.type())
+        val arityl = leftTypeClean.size
+        val arityr = rightTypeClean.size
+        val leftTypeGen: List<String>
+        val rightTypeGen: List<String>
+        if (p0.op.toString() == ".") {
+            if (arityr == 1) {
+                leftTypeGen = leftTypeClean.reversed()
+                rightTypeGen = rightTypeClean
+            } else {
+                leftTypeGen = leftTypeClean
+                rightTypeGen = if (arityl < right.type().arity()) {
+                    splitAndCleanType(right.type()).subList(0, left.type().arity()).reversed()
+                } else {
+                    splitAndCleanType(right.type()).reversed()
+                }
+            }
         } else {
-            splitAndCleanType(right.type())
+            leftTypeGen = leftTypeClean
+            rightTypeGen = rightTypeClean
         }
 
+        /*val leftTypeGen = splitAndCleanType(left.type())
+        // reverse order of args of join's rhs to compare types
+        val rightTypeGen = if (p0.op.toString() == ".") {
+            val arityl = left.type().arity()
+            if (arityl < right.type().arity()) {
+                splitAndCleanType(right.type()).subList(0, left.type().arity()).reversed()
+            } else {
+                splitAndCleanType(right.type()).reversed()
+            }
+        } else {
+            splitAndCleanType(right.type())
+        }*/
         val typeDifferences = getTypeDifferences(leftTypeGen, rightTypeGen)
         if (!p0.op.toString().contains("->")) { // exclude type definitions like 'date: known -> Date'
             val typeDifferencesNoOrds = mutableSetOf<Pair<String, String>>()
@@ -126,7 +153,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         if (size2 < size1) {
             ntype1 = type2
             ntype2 = type1
-            fromIndex = size1 - size2
+            fromIndex = 0
         } else {
             ntype1 = type1
             ntype2 = type2
