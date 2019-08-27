@@ -226,4 +226,16 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("binary_differently_typed.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/binary_differently_typed.als").prologTerm)
     }
+
+    @Test
+    fun translateLists() {
+        val expected = getResourceAsString("lists.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/lists.als").prologTerm)
+    }
+
+    @Test
+    fun translateRestrictions() {
+        val expected = getResourceAsString("restrictions.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/Restrictions.als").prologTerm)
+    }
 }
