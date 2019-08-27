@@ -42,8 +42,8 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         val arityr = rightTypeClean.size
         val leftTypeGen: List<String>
         val rightTypeGen: List<String>
-        // special case for dot join possibly reversing the order of type lists
-        if (p0.op.toString() == ".") {
+        // special case for dot join and range restriction possibly reversing the order of type lists
+        if (p0.op.toString() == "." || p0.op.toString() == ":>") {
             if (arityr == 1) {
                 leftTypeGen = leftTypeClean.reversed()
                 rightTypeGen = rightTypeClean
