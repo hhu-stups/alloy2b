@@ -132,6 +132,12 @@ class Alloy2BParserTests {
     }
 
     @Test
+    fun translateJoinBinaryComplex() {
+        val expected = getResourceAsString("joinbinarycomplex.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/JoinBinaryComplex.als").prologTerm)
+    }
+
+    @Test
     fun translateArithmetic() {
         val expected = getResourceAsString("arithmetic.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/Arithmetic.als").prologTerm)
