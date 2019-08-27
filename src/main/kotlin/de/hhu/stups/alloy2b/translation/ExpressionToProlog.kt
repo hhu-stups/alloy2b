@@ -86,11 +86,14 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
                     typeDifferencesNoOrds.add(pair)
                 }
             }
+            // we cannot introduce a parent type in B if one type is Int
+            val typeDifferencesNoOrdsNoInts =
+                    typeDifferencesNoOrds.filter { it.first != "'Int'" && it.second != "'Int'" }.toSet()
             // for the remaining pairs of conflicting types we have to introduce a parent type in the translated B model
             // (binary interaction between different types without a parent type in Alloy but univ)
             if (!leftTypeGen.toString().contains("univ") && !rightTypeGen.toString().contains("univ")
-                    && typeDifferencesNoOrds.isNotEmpty()) {
-                addToSetsOfParents(setsOfParents, typeDifferencesNoOrds)
+                    && typeDifferencesNoOrdsNoInts.isNotEmpty()) {
+                addToSetsOfParents(setsOfParents, typeDifferencesNoOrdsNoInts)
             }
         }
     }
