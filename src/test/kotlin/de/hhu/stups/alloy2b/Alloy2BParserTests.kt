@@ -244,4 +244,16 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("utilbool.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/utilbool.als").prologTerm)
     }
+
+    @Test
+    fun translateAmbiguousFieldName() {
+        val expected = getResourceAsString("ambiguous_field_name.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/ambiguous_field_name.als").prologTerm)
+    }
+
+    @Test
+    fun translateQuantifierAmbiguousFieldName() {
+        val expected = getResourceAsString("ambiguous_quantifier_field_name.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/ambiguous_quantifier_field_name.als").prologTerm)
+    }
 }
