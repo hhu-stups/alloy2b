@@ -6,7 +6,14 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
                          private val orderedSignatures: MutableList<String>,
                          private val setsOfParents: MutableSet<MutableSet<String>>) : VisitReturn<String>() {
 
+    /**
+     * True if an Alloy model uses sequences.
+     */
     var usesSequences = false
+    /**
+     * True if an Alloy model only accesses successors or predecessors of ordered signatures.
+     */
+    var orderingsUseSuccessorsOnly = true
 
     /**
      * Translate a field declaration to a Prolog term.
@@ -42,6 +49,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         val arityr = rightTypeClean.size
         val leftTypeGen: List<String>
         val rightTypeGen: List<String>
+
         // special case for dot join and range restriction possibly reversing the order of type lists
         if (p0.op.toString() == "." || p0.op.toString() == ":>") {
             if (arityr == 1) {
@@ -159,7 +167,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
             fromIndex = 0
         }
         val differentTypeSets = mutableSetOf<Pair<String, String>>()
-        for (i in 0 until ntype1.size) {
+        for (i in ntype1.indices) {
             val v1 = ntype1[i]
             val v2 = ntype2[i + fromIndex]
             // we have real booleans in B so this is not a type difference
@@ -177,10 +185,12 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
     override fun visit(p0: ExprCall): String {
         val functor = if (p0.`fun`.isPred) "pred_call" else "fun_call"
         val name = sanitizeIdentifier(p0.`fun`.label)
-        // flatten types for ordering function calls to the signature name
-        val type = if (name.startsWith("'ordering_'") || name.endsWith("'first_'") || name.endsWith("'last_'"))
-            "type([${sanitizeIdentifier(p0.type().toString().split("->").first())}]," +
-                    "${p0.type().arity()})" else getType(p0.type())
+        val orderedSplit = p0.toString().split("/")
+        val suffix = orderedSplit.last()
+        if (orderedSignatures.contains(orderedSplit.first()) && (suffix == "nexts" || suffix == "prevs")) {
+            orderingsUseSuccessorsOnly = false
+        }
+        val type = getType(p0.type())
         return "$functor($name,${p0.args?.map { it.accept(this) }}," +
                 "$type,pos(${p0.pos?.x},${p0.pos?.y}))"
     }

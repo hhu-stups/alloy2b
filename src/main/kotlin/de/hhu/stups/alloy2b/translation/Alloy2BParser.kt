@@ -30,7 +30,8 @@ class Alloy2BParser {
         commands = module.allCommands
         // if the module is named by the user using 'as', module.path is set
         val sModelName = sanitizeIdentifier(module.modelName)
-        val name = if (module.path.isEmpty()) "($sModelName,alloy2b_none)" else "($sModelName,${sanitizeIdentifier(module.path)})"
+        val name = if (module.path.isEmpty()) "($sModelName,alloy2b_none)" else
+            "($sModelName,${sanitizeIdentifier(module.path)})"
         val listOfFacts = module.allFacts.joinToString(",") { toPrologTerm(it) }
         val listOfAssertions = module.allAssertions.joinToString(",") { toPrologTerm(it) }
         val listOfCommands = commands.joinToString(",") { toPrologTerm(it) }
@@ -41,7 +42,8 @@ class Alloy2BParser {
         return "alloy_model($name,facts([$listOfFacts]),assertions([$listOfAssertions]),commands([$listOfCommands])," +
                 "functions([$listOfFunctions]),signatures([$listOfSignatures])," +
                 "ordered_signatures(${orderedSignatures.map { "'$it'" }})," +
-                "[sequences:${expressionTranslator.usesSequences},$parentTypes])"
+                "[sequences:${expressionTranslator.usesSequences},$parentTypes," +
+                "ordering_successors_only:${expressionTranslator.orderingsUseSuccessorsOnly}])"
     }
 
     private fun realPath(alloyModelPath: String): String {
@@ -115,7 +117,7 @@ class Alloy2BParser {
     private fun toPrologTerm(astNode: Sig): String {
         // enums are syntactical sugar: elements are 'one sigs' which extend the base sig
         val parentSig = enums.filter { astNode.isSameOrDescendentOf(it) && !astNode.isSame(it) }
-        val isSubsig = !parentSig.isEmpty()
+        val isSubsig = parentSig.isNotEmpty()
         val options =
                 if (isSubsig) "[one,subsig(${sanitizeIdentifier((astNode as Sig.PrimSig).parent.label)})]"
                 else collectSignatureOptionsToPrologList(astNode)
