@@ -256,4 +256,28 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("ambiguous_quantifier_field_name.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/ambiguous_quantifier_field_name.als").prologTerm)
     }
+
+    @Test
+    fun translateEinstein1() {
+        val expected = getResourceAsString("einstein1.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/einstein1.als").prologTerm)
+    }
+
+    @Test
+    fun translateEinstein2() {
+        val expected = getResourceAsString("einstein2.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/einstein2.als").prologTerm)
+    }
+
+    @Test
+    fun translateMultiplicities() {
+        val expected = getResourceAsString("multiplicities.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/multiplicities.als").prologTerm)
+    }
+
+    @Test
+    fun translateIdenIn() {
+        val expected = getResourceAsString("iden_in.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/iden_in.als").prologTerm)
+    }
 }
