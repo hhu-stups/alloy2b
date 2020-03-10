@@ -4,9 +4,9 @@ import edu.mit.csail.sdg.alloy4.A4Reporter
 import edu.mit.csail.sdg.alloy4.ConstList
 import edu.mit.csail.sdg.alloy4.Err
 import edu.mit.csail.sdg.alloy4.Pair
-import edu.mit.csail.sdg.alloy4compiler.ast.*
-import edu.mit.csail.sdg.alloy4compiler.parser.CompModule
-import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil
+import edu.mit.csail.sdg.ast.*
+import edu.mit.csail.sdg.parser.CompModule
+import edu.mit.csail.sdg.parser.CompUtil
 
 data class ParserResult(val prologTerm: String, val commandNames: ConstList<String>)
 

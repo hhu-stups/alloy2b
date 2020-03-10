@@ -20,7 +20,7 @@ apply plugin: 'maven'
 
 group = 'de.hhu.stups'
 archivesBaseName = 'alloy2b'
-version = '1.1'
+version = '1.2'
 mainClassName = 'de.hhu.stups.alloy2b.Alloy2BKt'
 
 repositories {
@@ -33,27 +33,13 @@ sourceSets {
 }
 
 dependencies {
-    compile files('alloy4.2.jar')
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "de.hhu.stups:alloy-core:5.1.0"
     testImplementation('org.junit.jupiter:junit-jupiter-api:5.4.2')
-}
-
-task downloadAlloy {
-    doFirst {
-        download {
-            src 'http://alloytools.org/download/alloy4.2_2015-02-22.jar'
-            dest 'alloy4.2.jar'
-            onlyIfNewer true
-            overwrite false
-        }
-    }
 }
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
-    dependsOn {
-        downloadAlloy
-    }
 }
 
 compileTestKotlin {
@@ -113,7 +99,7 @@ if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
     }
 
     artifacts {
-        archives sourcesJar, javadocJar, shadowJar
+        archives sourcesJar, javadocJar
     }
 
     signing {
@@ -160,12 +146,7 @@ if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
                         developer {
                             id = 'JoshuaAtSTUPS'
                             name = 'Joshua Schmidt'
-                            email = 'schmidt@cs.hhu.de'
-                        }
-                        developer {
-                            id = 'wysiib'
-                            name = 'Sebastian Krings'
-                            email = 'krings@cs.hhu.de'
+                            email = 'joshua.schmidt@hhu.de'
                         }
                     }
                 }

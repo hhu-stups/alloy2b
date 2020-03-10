@@ -1,6 +1,6 @@
 package de.hhu.stups.alloy2b.translation
 
-import edu.mit.csail.sdg.alloy4compiler.ast.*
+import edu.mit.csail.sdg.ast.*
 
 class ExpressionToProlog(private val signatures: MutableList<Sig>,
                          private val orderedSignatures: MutableList<String>,
