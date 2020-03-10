@@ -1,7 +1,7 @@
 #!/bin/sh
 ./gradlew jar
 
-version='1.0-SNAPSHOT'
+version='1.2'
 
 for a in $(ls src/test/resources/*.als)
 do
