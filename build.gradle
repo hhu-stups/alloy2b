@@ -11,7 +11,8 @@ buildscript {
 
 apply plugin: 'kotlin'
 apply plugin: 'application'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 group = 'de.hhu.stups'
 archivesBaseName = 'alloy2b'
@@ -32,9 +33,14 @@ sourceSets {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "de.hhu.stups:alloy-core:5.1.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "de.hhu.stups:alloy-core:5.1.0"
     testImplementation('org.junit.jupiter:junit-jupiter-api:5.4.2')
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 compileKotlin {
@@ -49,95 +55,66 @@ jar {
     manifest {
         attributes(
                 'Main-Class': mainClassName,
-                'version': version,
+                'version': project.version, // FIXME What is this used by?
         )
     }
     from {
-        configurations.compile.collect {
+        configurations.runtimeClasspath.collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
     exclude('META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA')
 }
 
+sourcesJar {
+    manifest {
+        // FIXME Does the sources jar need these attributes?
+        attributes(
+            'Main-Class': mainClassName,
+            'version': project.version,
+        )
+    }
+}
+
 javadoc {
     failOnError = false
 }
 
-if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
-        && project.hasProperty("signing.keyId")) {
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
 
-    apply plugin: 'signing'
+            pom {
+                name = 'alloy2b'
+                description = 'The Parser for our translation from Alloy to B returning a Prolog Term.'
+                url = 'https://github.com/hhu-stups/alloy2b'
 
-    task javadocJar(type: Jar) {
-        classifier = 'javadoc'
-        from javadoc
-    }
-
-    task sourcesJar(type: Jar) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-        manifest {
-            attributes(
-                    'Main-Class': mainClassName,
-                    'version': version,
-            )
-        }
-    }
-
-    artifacts {
-        archives sourcesJar, javadocJar
-    }
-
-    signing {
-        sign configurations.archives
-    }
-
-    uploadArchives {
-        println "Configuring deployment for ${project.name}"
-        repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment ->
-                    signing.signPom(deployment)
+                licenses {
+                    license {
+                        name = 'Eclipse Public License, Version 1.0'
+                        url = 'http://www.eclipse.org/org/documents/epl-v10.html'
+                    }
                 }
 
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
-
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
-
-                pom.project {
-                    name = 'alloy2b'
-                    packaging = 'jar'
-                    description = 'The Parser for our translation from Alloy to B returning a Prolog Term.'
+                scm {
+                    connection = 'scm:git:git://github.com/hhu-stups/alloy2b.git'
+                    developerConnection = 'scm:git:git@github.com:hhu-stups/alloy2b.git'
                     url = 'https://github.com/hhu-stups/alloy2b'
+                }
 
-                    licenses {
-                        license {
-                            name = 'Eclipse Public License, Version 1.0'
-                            url = 'http://www.eclipse.org/org/documents/epl-v10.html'
-                        }
-                    }
-
-                    scm {
-                        connection = 'scm:git:git://github.com/hhu-stups/alloy2b.git'
-                        developerConnection = 'scm:git:git@github.com:hhu-stups/alloy2b.git'
-                        url = 'https://github.com/hhu-stups/alloy2b'
-                    }
-
-
-                    developers {
-                        developer {
-                            id = 'JoshuaAtSTUPS'
-                            name = 'Joshua Schmidt'
-                            email = 'joshua.schmidt@hhu.de'
-                        }
+                developers {
+                    developer {
+                        id = 'JoshuaAtSTUPS'
+                        name = 'Joshua Schmidt'
+                        email = 'joshua.schmidt@hhu.de'
                     }
                 }
             }
         }
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
     }
 }
