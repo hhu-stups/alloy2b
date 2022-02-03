@@ -20,7 +20,7 @@ version = '1.3-SNAPSHOT'
 mainClassName = 'de.hhu.stups.alloy2b.Alloy2BKt'
 
 wrapper {
-    gradleVersion = "6.9.1"
+    gradleVersion = "7.3.3"
 }
 
 repositories {
