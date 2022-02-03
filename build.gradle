@@ -18,6 +18,10 @@ archivesBaseName = 'alloy2b'
 version = '1.2'
 mainClassName = 'de.hhu.stups.alloy2b.Alloy2BKt'
 
+wrapper {
+    gradleVersion = "5.6.4"
+}
+
 repositories {
     mavenCentral()
 }
