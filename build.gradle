@@ -36,7 +36,12 @@ sourceSets {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "de.hhu.stups:alloy-core:5.1.0"
-    testImplementation('org.junit.jupiter:junit-jupiter-api:5.9.0')
+    testImplementation  platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 java {
