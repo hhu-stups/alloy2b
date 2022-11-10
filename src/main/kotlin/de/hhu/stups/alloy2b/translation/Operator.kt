@@ -1,5 +1,7 @@
 package de.hhu.stups.alloy2b.translation
 
+import java.util.*
+
 enum class Operator {
     LONEOF, ONEOF, SETOF, EXACTLYOF, SOMEOF, IS_SEQ, COMPREHENSION,
     LONE, SET, ALL, JOIN, EQUAL, NOT_EQUAL, PLUS, INTERSECTION, MINUS, NO, NOT_IN, IN, CLOSURE, CLOSURE1, ONE, SOME, AND, OR,
@@ -25,7 +27,7 @@ enum class Operator {
                     INT_SUM -> "integer''sum"
                     INT_MAX -> "integer''max"
                     INT_MIN -> "integer''min"
-                    else -> op.toString().toLowerCase()
+                    else -> op.toString().lowercase(Locale.getDefault())
                 }
 
         fun fromString(op: String): Operator =

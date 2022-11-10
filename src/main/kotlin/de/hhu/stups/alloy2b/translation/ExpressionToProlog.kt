@@ -1,6 +1,7 @@
 package de.hhu.stups.alloy2b.translation
 
 import edu.mit.csail.sdg.ast.*
+import java.util.*
 
 class ExpressionToProlog(private val signatures: MutableList<Sig>,
                          private val orderedSignatures: MutableList<String>,
@@ -90,7 +91,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
                     orderedSignatures.add(pair.second)
                 } else if (!c1 && c2) {
                     orderedSignatures.add(pair.first)
-                } else if (!c1 && !c2) {
+                } else {
                     typeDifferencesNoOrds.add(pair)
                 }
             }
@@ -118,7 +119,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
             var added = false
             val pList = pair.toList()
             setsOfParents.forEach { set ->
-                if (set.intersect(pList).isNotEmpty()) {
+                if (set.intersect(pList.toSet()).isNotEmpty()) {
                     set.addAll(pList)
                     added = true
                 }
@@ -155,21 +156,18 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         val size2 = type2.size
         val ntype1: List<String>
         val ntype2: List<String>
-        val fromIndex: Int
         // join has different arities
         if (size2 < size1) {
             ntype1 = type2
             ntype2 = type1
-            fromIndex = 0
         } else {
             ntype1 = type1
             ntype2 = type2
-            fromIndex = 0
         }
         val differentTypeSets = mutableSetOf<Pair<String, String>>()
         for (i in ntype1.indices) {
             val v1 = ntype1[i]
-            val v2 = ntype2[i + fromIndex]
+            val v2 = ntype2[i]
             // we have real booleans in B so this is not a type difference
             val boolException = listOf("'boolean''True'", "'boolean''False'", "'boolean''Bool'")
             if (v1 != v2 && !(boolException.contains(v1) && boolException.contains(v2))) {
@@ -252,7 +250,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
             Operator.toKeyword(Operator.fromString(op))
         } catch (exception: UnsupportedOperationException) {
             System.err.println(exception)
-            op.toLowerCase().replace(" ", "")
+            op.lowercase(Locale.getDefault()).replace(" ", "")
         }
         return "'$operator'"
     }
