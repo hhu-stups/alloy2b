@@ -284,4 +284,10 @@ class Alloy2BParserTests {
         val expected = getResourceAsString("iden_in.pl")
         assertEquals(expected, Alloy2BParser().parseFromFile("/iden_in.als").prologTerm)
     }
+
+    @Test
+    fun translateSudoku() {
+        val expected = getResourceAsString("sudoku1.pl")
+        assertEquals(expected, Alloy2BParser().parseFromFile("/sudoku1.als").prologTerm)
+    }
 }
