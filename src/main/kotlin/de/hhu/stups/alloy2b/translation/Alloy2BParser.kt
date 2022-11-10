@@ -10,8 +10,10 @@ import edu.mit.csail.sdg.parser.CompUtil
 
 data class ParserResult(val prologTerm: String, val commandNames: ConstList<String>)
 
-data class Alloy2BParserErr(val msg: String, val filename: String,
-                            val colStart: Int, val rowStart: Int, val colEnd: Int, val rowEnd: Int) : Exception(msg)
+data class Alloy2BParserErr(
+    val msg: String, val filename: String,
+    val colStart: Int, val rowStart: Int, val colEnd: Int, val rowEnd: Int
+) : Exception(msg)
 
 /**
  * Convert the abstract syntax tree of an Alloy model to a Prolog term.
@@ -49,7 +51,7 @@ class Alloy2BParser {
     private fun realPath(alloyModelPath: String): String {
         return try {
             // either from resources
-            object {}.javaClass.getResource(alloyModelPath).file
+            object {}.javaClass.getResource(alloyModelPath)?.file ?: alloyModelPath
         } catch (exception: IllegalStateException) {
             // or an absolute path
             alloyModelPath
@@ -77,7 +79,7 @@ class Alloy2BParser {
             val modules = astRoot.allReachableModules.joinToString(",", transform = ::translateModule)
             val rootModule = sanitizeIdentifier(astRoot.rootModule.modelName)
             val commandNames: ConstList<String> = ConstList.make(astRoot.rootModule.allCommands
-                    .mapIndexed { i, cmd -> if (cmd.check) "check$i" else "run$i" })
+                .mapIndexed { i, cmd -> if (cmd.check) "check$i" else "run$i" })
             return ParserResult("alloy($rootModule,[$modules]).", commandNames)
         } catch (exception: Err) {
             val pos = exception.pos
@@ -86,14 +88,14 @@ class Alloy2BParser {
     }
 
     private fun toPrologTerm(astNode: Pair<String, Expr>) =
-            "fact(${astNode.b.accept(expressionTranslator)},(${astNode.b?.pos?.x},${astNode.b?.pos?.y}))"
+        "fact(${astNode.b.accept(expressionTranslator)},(${astNode.b?.pos?.x},${astNode.b?.pos?.y}))"
 
     private fun toPrologTerm(astNode: Command): String {
         val functor = if (astNode.check) "check" else "run"
         val exactScopes = astNode.scope.asSequence().filter { it.isExact }
-                .map { createSigScopeTuple(it) }.toList()
+            .map { createSigScopeTuple(it) }.toList()
         val upperBoundScopes = astNode.scope.asSequence().filter { !it.isExact }
-                .map { createSigScopeTuple(it) }.toList()
+            .map { createSigScopeTuple(it) }.toList()
         return "$functor(${astNode.formula.accept(expressionTranslator)},global_scope(${astNode.overall})," +
                 "exact_scopes($exactScopes)," +
                 "upper_bound_scopes($upperBoundScopes)," +
@@ -102,7 +104,7 @@ class Alloy2BParser {
     }
 
     private fun createSigScopeTuple(scope: CommandScope) =
-            "(${sanitizeIdentifier(scope.sig.label)},${scope.startingScope})"
+        "(${sanitizeIdentifier(scope.sig.label)},${scope.startingScope})"
 
     private fun toPrologTerm(astNode: Func): String {
         val functor = if (astNode.isPred) "predicate" else "function"
@@ -112,15 +114,15 @@ class Alloy2BParser {
     }
 
     private fun toPrologTerm(astNode: Expr) =
-            astNode.accept(expressionTranslator)
+        astNode.accept(expressionTranslator)
 
     private fun toPrologTerm(astNode: Sig): String {
         // enums are syntactical sugar: elements are 'one sigs' which extend the base sig
         val parentSig = enums.filter { astNode.isSameOrDescendentOf(it) && !astNode.isSame(it) }
         val isSubsig = parentSig.isNotEmpty()
         val options =
-                if (isSubsig) "[one,subsig(${sanitizeIdentifier((astNode as Sig.PrimSig).parent.label)})]"
-                else collectSignatureOptionsToPrologList(astNode)
+            if (isSubsig) "[one,subsig(${sanitizeIdentifier((astNode as Sig.PrimSig).parent.label)})]"
+            else collectSignatureOptionsToPrologList(astNode)
         if (astNode.isEnum != null) {
             enums.add(astNode)
         }
