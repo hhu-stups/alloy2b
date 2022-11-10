@@ -3,12 +3,16 @@ package de.hhu.stups.alloy2b
 import de.hhu.stups.alloy2b.translation.Alloy2BParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.io.FileNotFoundException
 
 class Alloy2BParserTests {
 
     private fun getResourceAsString(resourceName: String): String {
         val expected = object {}.javaClass.getResourceAsStream("/$resourceName")
-        return expected.bufferedReader().use { it.readText() }.trim()
+        if (expected != null) {
+            return expected.bufferedReader().use { it.readText() }.trim()
+        }
+        throw FileNotFoundException()
     }
 
     @Test
