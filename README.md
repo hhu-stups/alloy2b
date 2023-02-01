@@ -1,7 +1,7 @@
 # A Translation from Alloy to B
 
 We introduce a translation of the formal specification language Alloy to classical B.
-The translation allows us to load Alloy models into [ProB Tcl/Tk](https://www3.hhu.de/stups/prob/index.php/Main_Page/) in order to find solutions to the model's constraints.
+The translation allows us to load Alloy models into [ProB Tcl/Tk](https://prob.hhu.de/w/) in order to find solutions to the model's constraints.
 Our translation closely follows the Alloy grammar, each construct is translated into a semantically equivalent component of the B language.
 
 This repository does not contain a standalone software but the parser to translate an Alloy model to a Prolog term which can then be processed by ProB.
@@ -9,7 +9,7 @@ We use the Alloy parser which can be extracted from the [jar-file](http://alloyt
 The actual translation is implemented in Prolog and located in the core of ProB.
 Further information on the translation can be found in our [paper](https://www3.hhu.de/stups/downloads/pdf/Alloy2B.pdf).
 
-[Here](https://www3.hhu.de/stups/prob/index.php/Alloy) you can find some examples how to load Alloy models in ProB Tcl/Tk.
+[Here](https://prob.hhu.de/w/index.php/Alloy) you can find some examples how to load Alloy models in ProB Tcl/Tk.
 
 
 # Note
