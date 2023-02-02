@@ -7,7 +7,7 @@ Our translation closely follows the Alloy grammar, each construct is translated 
 This repository does not contain a standalone software but the parser to translate an Alloy model to a Prolog term which can then be processed by ProB.
 We use the Alloy parser which can be extracted from the [jar-file](http://alloytools.org/download.html).
 The actual translation is implemented in Prolog and located in the core of ProB.
-Further information on the translation can be found in our [paper](https://www3.hhu.de/stups/downloads/pdf/Alloy2B.pdf).
+Further information on the translation can be found in our [paper](https://stups.hhu-hosting.de/downloads/pdf/Alloy2B.pdf).
 
 [Here](https://prob.hhu.de/w/index.php/Alloy) you can find some examples how to load Alloy models in ProB Tcl/Tk.
 
