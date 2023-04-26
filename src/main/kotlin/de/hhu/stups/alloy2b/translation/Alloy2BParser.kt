@@ -10,10 +10,25 @@ import edu.mit.csail.sdg.parser.CompUtil
 
 data class ParserResult(val prologTerm: String, val commandNames: ConstList<String>)
 
-data class Alloy2BParserErr(
-    val msg: String, val filename: String,
+class Alloy2BParserErr(
+    msg: String, cause: Throwable?, val filename: String,
     val colStart: Int, val rowStart: Int, val colEnd: Int, val rowEnd: Int
-) : Exception(msg)
+) : Exception(msg, cause) {
+    constructor(
+        msg: String, filename: String, colStart: Int, rowStart: Int, colEnd: Int, rowEnd: Int
+    ) : this(
+        msg, null, filename, colStart, rowStart, colEnd, rowEnd
+    )
+
+    constructor(err: Err) : this(
+        err.msg, err, err.pos.filename, err.pos.x, err.pos.y, err.pos.x2, err.pos.y2
+    )
+
+    @Deprecated("Use getMessage instead", ReplaceWith("this.message"))
+    fun getMsg(): String? {
+        return this.message
+    }
+}
 
 /**
  * Convert the abstract syntax tree of an Alloy model to a Prolog term.
@@ -82,8 +97,7 @@ class Alloy2BParser {
                 .mapIndexed { i, cmd -> if (cmd.check) "check$i" else "run$i" })
             return ParserResult("alloy($rootModule,[$modules]).", commandNames)
         } catch (exception: Err) {
-            val pos = exception.pos
-            throw Alloy2BParserErr(exception.msg, exception.pos.filename, pos.x, pos.y, pos.x2, pos.y2)
+            throw Alloy2BParserErr(exception)
         }
     }
 
