@@ -5,16 +5,12 @@ variables:
 
 cache:
   paths:
-    - .gradle/wrapper
     - .gradle/caches
+    - .gradle/native
+    - .gradle/wrapper
 
 test:
   stage: test
-  cache:
-    paths:
-      - .gradle/caches
-      - .gradle/native
-      - .gradle/wrapper
   script:
     - ./gradlew clean check
 
