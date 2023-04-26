@@ -56,6 +56,28 @@ application {
     mainClass = "de.hhu.stups.alloy2b.Alloy2BKt"
 }
 
+// Regenerate .pl files in test resources from the corresponding .als files.
+tasks.register("regenerate") {
+    dependsOn = ["classes"]
+    final resourcesDir = sourceSets.test.resources.srcDirs.iterator().next()
+    final files = fileTree(dir: resourcesDir, include: "*.als").files.collectEntries {alloyFile ->
+        [alloyFile, new File(alloyFile.toString().replaceAll(/\.als$/, ".pl"))]
+    }
+    inputs.files(files.keySet())
+    outputs.files(files.values())
+    
+    doLast {
+        files.each {alloyFile, prologFile ->
+            println("Regenerating ${prologFile.name} from ${alloyFile.name}...")
+            javaexec {
+                mainClass = application.mainClass
+                args = [alloyFile, "-toProlog", prologFile]
+                classpath(sourceSets.main.runtimeClasspath)
+            }
+        }
+    }
+}
+
 jar {
     manifest {
         attributes(
