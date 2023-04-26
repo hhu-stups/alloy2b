@@ -1,3 +1,5 @@
+image: openjdk:8-jdk-slim
+
 variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
@@ -8,7 +10,6 @@ cache:
 
 test:
   stage: test
-  image: openjdk:8-jdk-slim
   cache:
     paths:
       - .gradle/caches
