@@ -134,6 +134,8 @@ tasks.withType(Jar.class).configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+ext."signing.secretKeyRingFile" = rootProject.file("secring.gpg").absolutePath
+
 signing {
     sign publishing.publications.mavenJava
 }

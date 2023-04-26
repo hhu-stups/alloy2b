@@ -1,6 +1,9 @@
 stages:
   - test
 
+variables:
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+
 cache:
   paths:
     - .gradle/wrapper
@@ -9,9 +12,6 @@ cache:
 test:
   stage: test
   image: openjdk:8-jdk-slim
-  variables:
-    GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
-    GRADLE_OPTIONS: --no-daemon --info --stacktrace --warning-mode=all
   cache:
     paths:
       - .gradle/caches
@@ -19,3 +19,13 @@ test:
       - .gradle/wrapper
   script:
     - ./gradlew clean check
+
+publish:
+  stage: deploy
+  script:
+    - openssl aes-256-cbc -pass "env:ENCRYPTION_PASSWORD" -d -a -md md5 -in secring.gpg.enc -out secring.gpg
+    - openssl aes-256-cbc -pass "env:ENCRYPTION_PASSWORD" -d -a -md md5 -in pubring.gpg.enc -out pubring.gpg
+    - openssl aes-256-cbc -pass "env:ENCRYPTION_PASSWORD" -d -a -md md5 -in gradle.properties.enc -out gradle.properties
+    - ./gradlew publish
+  only:
+    - master@stups/prob/tla2bAST
