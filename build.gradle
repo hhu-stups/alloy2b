@@ -15,7 +15,6 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group = 'de.hhu.stups'
-archivesBaseName = 'alloy2b'
 version = '1.3-SNAPSHOT'
 final isSnapshot = project.version.endsWith("-SNAPSHOT")
 mainClassName = 'de.hhu.stups.alloy2b.Alloy2BKt'
