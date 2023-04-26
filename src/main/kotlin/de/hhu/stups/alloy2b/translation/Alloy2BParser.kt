@@ -7,6 +7,8 @@ import edu.mit.csail.sdg.alloy4.Pair
 import edu.mit.csail.sdg.ast.*
 import edu.mit.csail.sdg.parser.CompModule
 import edu.mit.csail.sdg.parser.CompUtil
+import java.io.File
+import java.net.URISyntaxException
 
 data class ParserResult(val prologTerm: String, val commandNames: ConstList<String>)
 
@@ -66,7 +68,16 @@ class Alloy2BParser {
     private fun realPath(alloyModelPath: String): String {
         return try {
             // either from resources
-            object {}.javaClass.getResource(alloyModelPath)?.file ?: alloyModelPath
+            val resourceUrl = object {}.javaClass.getResource(alloyModelPath)
+            if (resourceUrl == null) {
+                alloyModelPath
+            } else {
+                try {
+                    File(resourceUrl.toURI()).toString()
+                } catch (exc: URISyntaxException) {
+                    throw IllegalArgumentException(exc)
+                }
+            }
         } catch (exception: IllegalStateException) {
             // or an absolute path
             alloyModelPath
