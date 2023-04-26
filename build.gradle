@@ -17,7 +17,6 @@ apply plugin: 'signing'
 group = 'de.hhu.stups'
 version = '1.3-SNAPSHOT'
 final isSnapshot = project.version.endsWith("-SNAPSHOT")
-mainClassName = 'de.hhu.stups.alloy2b.Alloy2BKt'
 
 repositories {
     mavenCentral()
@@ -47,10 +46,14 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+application {
+    mainClass = "de.hhu.stups.alloy2b.Alloy2BKt"
+}
+
 jar {
     manifest {
         attributes(
-            'Main-Class': mainClassName,
+            'Main-Class': application.mainClass,
         )
     }
 }
