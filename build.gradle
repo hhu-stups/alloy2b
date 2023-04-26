@@ -23,6 +23,9 @@ repositories {
 }
 
 dependencies {
+    // The Kotlin plugin automatically adds an api dependency on kotlin-stdlib,
+    // but this library doesn't use Kotlin in its external API,
+    // so re-declare it as an implementation dependency.
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "de.hhu.stups:alloy-core:5.1.0"
     testImplementation platform('org.junit:junit-bom:5.9.3')
