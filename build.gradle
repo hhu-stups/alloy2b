@@ -55,24 +55,7 @@ compileTestKotlin {
 jar {
     manifest {
         attributes(
-                'Main-Class': mainClassName,
-                'version': project.version, // FIXME What is this used by?
-        )
-    }
-    from {
-        configurations.runtimeClasspath.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    exclude('META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA')
-}
-
-sourcesJar {
-    manifest {
-        // FIXME Does the sources jar need these attributes?
-        attributes(
             'Main-Class': mainClassName,
-            'version': project.version,
         )
     }
 }
@@ -130,12 +113,10 @@ publishing {
     }
 }
 
-tasks.withType(Jar.class).configureEach {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
 ext."signing.secretKeyRingFile" = rootProject.file("secring.gpg").absolutePath
 
 signing {
     sign publishing.publications.mavenJava
 }
+
+apply(from: "../common.gradle")
