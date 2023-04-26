@@ -55,10 +55,6 @@ jar {
     }
 }
 
-javadoc {
-    failOnError = false
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
