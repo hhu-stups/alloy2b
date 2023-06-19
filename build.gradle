@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.8.21'
+    ext.kotlin_version = '1.8.22'
 
     repositories {
         mavenCentral()
@@ -18,8 +18,21 @@ group = 'de.hhu.stups'
 version = '1.4-SNAPSHOT'
 final isSnapshot = project.version.endsWith("-SNAPSHOT")
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 repositories {
     mavenCentral()
+    maven {
+        name "sonatype snapshots"
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+    maven {
+        name "sonatype release"
+        url "https://oss.sonatype.org/content/repositories/releases"
+    }
 }
 
 dependencies {
@@ -27,7 +40,7 @@ dependencies {
     // but this library doesn't use Kotlin in its external API,
     // so re-declare it as an implementation dependency.
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "de.hhu.stups:alloy-core:5.1.0"
+    implementation "org.alloytools:org.alloytools.alloy.core:5.1.0-SNAPSHOT"
     testImplementation platform('org.junit:junit-bom:5.9.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
