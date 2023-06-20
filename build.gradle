@@ -24,10 +24,6 @@ repositories {
         name "sonatype snapshots"
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
-    maven {
-        name "sonatype release"
-        url "https://oss.sonatype.org/content/repositories/releases"
-    }
 }
 
 dependencies {
