@@ -15,7 +15,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group = 'de.hhu.stups'
-version = '1.4'
+version = '1.5-SNAPSHOT'
 final isSnapshot = project.version.endsWith("-SNAPSHOT")
 
 repositories {
