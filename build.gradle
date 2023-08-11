@@ -33,7 +33,11 @@ dependencies {
     // but this library doesn't use Kotlin in its external API,
     // so re-declare it as an implementation dependency.
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "org.alloytools:org.alloytools.alloy.core:5.1.0-SNAPSHOT"
+    // Alloy is officially published as org.alloytools:org.alloytools.alloy.core:5.1.0-SNAPSHOT,
+    // but only on Sonatype Snapshots and not Maven Central,
+    // so we cannot use that dependency in a release version
+    // and we have to use our own upload of alloy-core instead.
+    implementation "de.hhu.stups:alloy-core:5.1.0"
     testImplementation platform('org.junit:junit-bom:5.9.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
