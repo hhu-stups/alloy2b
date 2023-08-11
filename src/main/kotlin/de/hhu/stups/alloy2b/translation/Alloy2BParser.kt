@@ -25,11 +25,6 @@ class Alloy2BParserErr(
     constructor(err: Err) : this(
         err.msg, err, err.pos.filename, err.pos.x, err.pos.y, err.pos.x2, err.pos.y2
     )
-
-    @Deprecated("Use getMessage instead", ReplaceWith("this.message"))
-    fun getMsg(): String? {
-        return this.message
-    }
 }
 
 /**
