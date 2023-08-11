@@ -10,27 +10,12 @@ import edu.mit.csail.sdg.parser.CompUtil
 import java.io.File
 import java.net.URISyntaxException
 
-data class ParserResult(val prologTerm: String, val commandNames: ConstList<String>)
-
-class Alloy2BParserErr(
-    msg: String, cause: Throwable?, val filename: String,
-    val colStart: Int, val rowStart: Int, val colEnd: Int, val rowEnd: Int
-) : Exception(msg, cause) {
-    constructor(
-        msg: String, filename: String, colStart: Int, rowStart: Int, colEnd: Int, rowEnd: Int
-    ) : this(
-        msg, null, filename, colStart, rowStart, colEnd, rowEnd
-    )
-
-    constructor(err: Err) : this(
-        err.msg, err, err.pos.filename, err.pos.x, err.pos.y, err.pos.x2, err.pos.y2
-    )
-}
-
 /**
- * Convert the abstract syntax tree of an Alloy model to a Prolog term.
+ * Internal Kotlin implementation of Alloy2BParser.
+ * This is kept separate from the public pure Java API so that non-Kotlin callers can use the API
+ * without needing an API dependency on Kotlin or getting warnings about the kotlin.Metadata annotation not being found.
  */
-class Alloy2BParser {
+internal class Alloy2BParserInternal {
 
     private val signatures = mutableListOf<Sig>()
     private val orderedSignatures = mutableListOf<String>()
