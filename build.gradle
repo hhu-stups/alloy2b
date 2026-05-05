@@ -13,6 +13,8 @@ plugins {
     id("application")
     id("maven-publish")
     id("signing")
+
+    id("io.github.gradle-nexus.publish-plugin").version("2.0.0")
 }
 
 apply plugin: 'kotlin' // from buildscript dependencies above
@@ -21,12 +23,14 @@ group = 'de.hhu.stups'
 version = '1.5-SNAPSHOT'
 final isSnapshot = project.version.endsWith("-SNAPSHOT")
 
+final snapshotsRepoUrl = "https://central.sonatype.com/repository/maven-snapshots/"
+final releasesStagingRepoUrl = "https://ossrh-staging-api.central.sonatype.com/service/local/"
 repositories {
     mavenCentral()
     if (isSnapshot) {
         maven {
-            name = "sonatype snapshots"
-            url = "https://oss.sonatype.org/content/repositories/snapshots"
+            name = "Sonatype snapshots"
+            url = snapshotsRepoUrl
         }
     }
 }
@@ -132,18 +136,13 @@ publishing {
             }
         }
     }
+}
 
+nexusPublishing {
     repositories {
-        maven {
-            final releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            final snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
-            url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
-            if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')) {
-                credentials {
-                    username = project.ossrhUsername
-                    password = project.ossrhPassword
-                }
-            }
+        mavenCentral {
+            snapshotRepositoryUrl.set(uri(snapshotsRepoUrl))
+            nexusUrl.set(uri(releasesStagingRepoUrl))
         }
     }
 }
