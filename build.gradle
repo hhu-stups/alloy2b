@@ -84,7 +84,9 @@ final execOperations = objects.newInstance(InjectedExecOperations).execOperation
 
 // Regenerate .pl files in test resources from the corresponding .als files.
 tasks.register("regenerate") {
-    dependsOn = ["classes"]
+    final applicationClasspath = sourceSets.main.runtimeClasspath
+    inputs.files(applicationClasspath)
+
     final resourcesDir = sourceSets.test.resources.srcDirs.iterator().next()
     final files = fileTree(dir: resourcesDir, include: "*.als").files.collectEntries {alloyFile ->
         [alloyFile, new File(alloyFile.toString().replaceAll(/\.als$/, ".pl"))]
@@ -98,7 +100,7 @@ tasks.register("regenerate") {
             execOperations.javaexec {
                 mainClass = application.mainClass
                 args = [alloyFile, "-toProlog", prologFile]
-                classpath(sourceSets.main.runtimeClasspath)
+                classpath = applicationClasspath
             }
         }
     }
