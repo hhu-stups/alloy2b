@@ -1,6 +1,7 @@
 image: eclipse-temurin:8
 
 variables:
+  GRADLE_OPTIONS: --no-daemon --warning-mode=all
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
 cache:
@@ -13,7 +14,7 @@ cache:
 test:
   stage: test
   script:
-    - ./gradlew check
+    - ./gradlew ${GRADLE_OPTIONS} check
 
 publish:
   stage: deploy
