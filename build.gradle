@@ -38,10 +38,6 @@ repositories {
 }
 
 dependencies {
-    // The Kotlin plugin automatically adds an api dependency on kotlin-stdlib,
-    // but this library doesn't use Kotlin in its external API,
-    // so re-declare it as an implementation dependency.
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     // Alloy is officially published as org.alloytools:org.alloytools.alloy.core:5.1.0-SNAPSHOT,
     // but only on Sonatype Snapshots and not Maven Central,
     // so we cannot use that dependency in a release version
@@ -51,6 +47,19 @@ dependencies {
     testImplementation platform("org.junit:junit-bom:5.14.4")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+kotlin {
+    sourceSets {
+        main {
+            dependencies {
+                // The Kotlin plugin automatically adds an api dependency on kotlin-stdlib,
+                // but this library doesn't use Kotlin in its external API,
+                // so re-declare it as an implementation dependency.
+                implementation kotlin("stdlib")
+            }
+        }
+    }
 }
 
 test {
