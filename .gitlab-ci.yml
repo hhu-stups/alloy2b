@@ -13,7 +13,7 @@ cache:
 test:
   stage: test
   script:
-    - ./gradlew clean check
+    - ./gradlew check
 
 publish:
   stage: deploy
