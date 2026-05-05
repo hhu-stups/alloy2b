@@ -72,6 +72,16 @@ application {
     mainClass = "de.hhu.stups.alloy2b.Alloy2BKt"
 }
 
+// This is the shortest recommended way to access ExecOperations.javaexec :(
+// The other alternative is to create a dedicated class for each task that needs exec,
+// which is even less convenient...
+// https://docs.gradle.org/current/userguide/service_injection.html#execoperations
+interface InjectedExecOperations {
+    @Inject
+    ExecOperations getExecOperations()
+}
+final execOperations = objects.newInstance(InjectedExecOperations).execOperations
+
 // Regenerate .pl files in test resources from the corresponding .als files.
 tasks.register("regenerate") {
     dependsOn = ["classes"]
@@ -85,7 +95,7 @@ tasks.register("regenerate") {
     doLast {
         files.each {alloyFile, prologFile ->
             println("Regenerating ${prologFile.name} from ${alloyFile.name}...")
-            javaexec {
+            execOperations.javaexec {
                 mainClass = application.mainClass
                 args = [alloyFile, "-toProlog", prologFile]
                 classpath(sourceSets.main.runtimeClasspath)
