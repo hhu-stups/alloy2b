@@ -1,8 +1,15 @@
+# Gradle
 .gradle
-.idea
 build
+
+# IntelliJ
+*.iml
+.idea
 out
+
+# ANTLR
 *.tokens
+
+# Alloy2B
 *.prob
 alloy4.2.jar
-*.iml
