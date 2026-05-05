@@ -45,8 +45,10 @@ dependencies {
     // so we cannot use that dependency in a release version
     // and we have to use our own upload of alloy-core instead.
     implementation "de.hhu.stups:alloy-core:5.1.0"
+
     testImplementation platform('org.junit:junit-bom:5.11.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 test {
