@@ -1,5 +1,6 @@
 package de.hhu.stups.alloy2b.translation
 
+import de.hhu.stups.alloy2b.translation.ParserUtil.sanitizeIdentifier
 import edu.mit.csail.sdg.alloy4.A4Reporter
 import edu.mit.csail.sdg.alloy4.ConstList
 import edu.mit.csail.sdg.alloy4.Err

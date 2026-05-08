@@ -1,5 +1,6 @@
 package de.hhu.stups.alloy2b.translation
 
+import de.hhu.stups.alloy2b.translation.ParserUtil.sanitizeIdentifier
 import edu.mit.csail.sdg.ast.*
 import java.util.*
 
@@ -292,7 +293,7 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
     }
 
     private fun cleanUpType(type: Type) =
-            sanitizeIdentifier(type.toString().replace("{", "").replace("}", ""))
+        sanitizeIdentifier(type.toString().replace("{", "").replace("}", ""))
 
     private fun getMostGeneralType(types: List<Sig>): Type {
         var mgt = types.first()
