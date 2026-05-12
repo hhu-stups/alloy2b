@@ -4,7 +4,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,7 +41,7 @@ public final class Alloy2BParser {
     public Alloy2BParser() {
         this.signatures = new ArrayList<>();
         this.orderedSignatures = new ArrayList<>();
-        this.setsOfParents = new HashSet<>();
+        this.setsOfParents = new LinkedHashSet<>();
         this.enums = new ArrayList<>();
         this.expressionTranslator = new ExpressionToProlog(this.signatures, this.orderedSignatures, this.setsOfParents);
 
