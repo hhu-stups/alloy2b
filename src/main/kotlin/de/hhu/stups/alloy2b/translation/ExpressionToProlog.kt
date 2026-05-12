@@ -256,14 +256,6 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         return "'$operator'"
     }
 
-    /**
-     * Transform the type of an Alloy ast node (like t1->t2->..->tn, with arity n) to a Prolog list.
-     * Types are generalized to top level signatures.
-     */
-    private fun splitAndCleanType(type: Type): List<String> {
-        return generalizeTypes(type)
-    }
-
     private fun generalizeType(type: Type): String {
         val typeString = type.toString()
         val parents = signatures.filter { type.isSubtypeOf(it.type()) }
@@ -276,7 +268,11 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
         return cleanUpType(getMostGeneralType(parents))
     }
 
-    private fun generalizeTypes(type: Type): MutableList<String> {
+    /**
+     * Transform the type of an Alloy ast node (like t1->t2->..->tn, with arity n) to a Prolog list.
+     * Types are generalized to top level signatures.
+     */
+    private fun splitAndCleanType(type: Type): List<String> {
         if (type.arity() == 0) {
             return arrayListOf(cleanUpType(type))
         }
