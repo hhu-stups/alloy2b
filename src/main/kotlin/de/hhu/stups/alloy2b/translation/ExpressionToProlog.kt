@@ -261,9 +261,6 @@ class ExpressionToProlog(private val signatures: MutableList<Sig>,
      * Types are generalized to top level signatures.
      */
     private fun splitAndCleanType(type: Type): List<String> {
-        if (type.size() == 0) {
-            arrayListOf<String>()
-        }
         return generalizeTypes(type)
     }
 
