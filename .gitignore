@@ -2,10 +2,6 @@
 .gradle
 build
 
-# Kotlin Gradle plugin
-# https://kotlinlang.org/docs/gradle-configure-project.html#kotlin-gradle-plugin-data-in-a-project
-.kotlin
-
 # IntelliJ
 *.iml
 .idea

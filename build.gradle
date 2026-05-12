@@ -1,12 +1,9 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id("application")
     id("maven-publish")
     id("signing")
 
     id("io.github.gradle-nexus.publish-plugin").version("2.0.0")
-    id("org.jetbrains.kotlin.jvm").version("2.3.21")
 }
 
 group = "de.hhu.stups"
@@ -37,19 +34,6 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
-kotlin {
-    sourceSets {
-        main {
-            dependencies {
-                // The Kotlin plugin automatically adds an api dependency on kotlin-stdlib,
-                // but this library doesn't use Kotlin in its external API,
-                // so re-declare it as an implementation dependency.
-                implementation kotlin("stdlib")
-            }
-        }
-    }
-}
-
 test {
     useJUnitPlatform()
 }
@@ -65,10 +49,6 @@ java {
             languageVersion = JavaLanguageVersion.of(project.javaToolchainVersion)
         }
     }
-}
-
-tasks.withType(KotlinCompile).configureEach {
-    kotlinOptions.jvmTarget = "1.8"
 }
 
 application {
@@ -96,7 +76,7 @@ tasks.register("regenerate") {
     }
     inputs.files(files.keySet())
     outputs.files(files.values())
-    
+
     doLast {
         files.each {alloyFile, prologFile ->
             println("Regenerating ${prologFile.name} from ${alloyFile.name}...")
