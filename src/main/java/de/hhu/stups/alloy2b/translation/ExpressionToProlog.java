@@ -115,15 +115,17 @@ public final class ExpressionToProlog extends VisitReturn<String> {
         // special case for dot join and range restriction possibly reversing the order of type lists
         if (".".equals(p0.op.toString()) || ":>".equals(p0.op.toString())) {
             if (arityr == 1) {
-                leftTypeGen = leftTypeClean.reversed();
+                leftTypeGen = new ArrayList<>(leftTypeClean);
+                Collections.reverse(leftTypeGen);
                 rightTypeGen = rightTypeClean;
             } else {
                 leftTypeGen = leftTypeClean;
                 if (arityl < right.type().arity()) {
-                    rightTypeGen = this.splitAndCleanType(right.type()).subList(0, left.type().arity()).reversed();
+                    rightTypeGen = this.splitAndCleanType(right.type()).subList(0, left.type().arity());
                 } else {
-                    rightTypeGen = this.splitAndCleanType(right.type()).reversed();
+                    rightTypeGen = this.splitAndCleanType(right.type());
                 }
+                Collections.reverse(rightTypeGen);
             }
         } else {
             leftTypeGen = leftTypeClean;
