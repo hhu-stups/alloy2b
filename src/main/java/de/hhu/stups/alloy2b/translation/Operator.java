@@ -74,9 +74,11 @@ public enum Operator {
             case "iff": return IFF;
             case "<=>": return IFF;
             case "->": return CARTESIAN;
+
             case "->one": return TOTAL_FUNCTION;
             case "->lone": return PARTIAL_FUNCTION;
             case "->some": return TOTAL_RELATION;
+
             case "lone->lone": return PARTIAL_INJECTION;
             case "lone->one": return TOTAL_INJECTION;
             case "lone->": return INJECTION_RELATION; // not supported
